@@ -11,7 +11,7 @@
   &quot;short_name&quot;:&quot;Budget&quot;,
   &quot;start_url&quot;:&quot;.&quot;,
   &quot;display&quot;:&quot;standalone&quot;,
-  &quot;background_color&quot;:&quot;#4f7cff%22,
+  &quot;background_color&quot;:&quot;#4f7cff&quot;,
   &quot;theme_color&quot;:&quot;#4f7cff&quot;
 }">
 <meta name="theme-color" content="#4f7cff">
@@ -23,6 +23,7 @@
   --green:#2ecc71;
   --red:#e74c3c;
   --blue:#4f7cff;
+  --bg-blur:4px;
 }
 
 body{
@@ -134,33 +135,6 @@ input,select{
 
 .add-income{ background:var(--green); }
 .add-expense{ background:var(--red); }
-
-/* ===== Modal ===== */
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.6);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:999;
-}
-
-.modal.show{ display:flex; }
-
-.modal-box{
-  background:white;
-  width:90%;
-  max-width:420px;
-  border-radius:16px;
-  padding:16px;
-}
-
-.close-btn{
-  text-align:right;
-  font-weight:bold;
-  cursor:pointer;
-}
 </style>
 </head>
 <body>
@@ -179,30 +153,31 @@ input,select{
 </div>
 
 <div class="toolbar">
-  <button class="btn btn-orange" onclick="openChart()">กราฟ</button>
+  <button class="btn btn-orange" onclick="alert('กราฟยังไม่ได้เปิดในเวอร์ชันนี้')">กราฟ</button>
   <button class="btn btn-green" onclick="backup()">Backup</button>
   <button class="btn btn-blue" onclick="importData()">Import</button>
 </div>
 
 <div id="months"></div>
 
-<!-- Modal -->
-<div class="modal" id="chartModal">
-  <div class="modal-box">
-    <div class="close-btn" onclick="closeChart()">✖ ปิด</div>
-    <canvas id="chart" height="260"></canvas>
-  </div>
-</div>
-
 <script>
+/* ===================== PWA ===================== */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register(URL.createObjectURL(
+    new Blob([`
+      self.addEventListener('install',e=>self.skipWaiting());
+      self.addEventListener('fetch',e=>{});
+    `], {type:'text/javascript'})
+  ));
+}
+
 /* ===================== DATA ===================== */
 const months = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 
 let data = JSON.parse(localStorage.getItem("budget-data")) ||
   months.map(()=>({salary:0, extra:0, items:[]}));
 
-let openState = {};
-let chart = null;
+let openState = {};   // 👈 จำว่าเดือนไหนเปิดอยู่
 
 const container = document.getElementById("months");
 
@@ -210,8 +185,8 @@ function render(){
   container.innerHTML = "";
 
   data.forEach((m,i)=>{
-    const income = calcIncome(m);
-    const expense = calcExpense(m);
+    const income = m.salary + m.extra + m.items.filter(x=>x.type==="income").reduce((s,a)=>s+a.amount,0);
+    const expense = m.items.filter(x=>x.type==="expense").reduce((s,a)=>s+a.amount,0);
     const balance = income-expense;
 
     const month = document.createElement("div");
@@ -237,9 +212,13 @@ function render(){
 
     container.appendChild(month);
     container.appendChild(detail);
+
     renderItems(i);
 
-    if(openState[i]) detail.style.display="block";
+    // 👇 คืนสถานะเปิดอัตโนมัติ
+    if(openState[i]){
+      detail.style.display="block";
+    }
   });
 
   calcTotal();
@@ -248,7 +227,6 @@ function render(){
 function renderItems(i){
   const box = document.getElementById("items-"+i);
   if(!box) return;
-
   box.innerHTML="";
   data[i].items.forEach((it,idx)=>{
     const row = document.createElement("div");
@@ -270,15 +248,7 @@ function toggleDetail(i){
   const el = document.getElementById("detail-"+i);
   const open = el.style.display==="block";
   el.style.display = open ? "none" : "block";
-  openState[i] = !open;
-}
-
-function calcIncome(m){
-  return m.salary + m.extra + m.items.filter(x=>x.type==="income").reduce((s,a)=>s+a.amount,0);
-}
-
-function calcExpense(m){
-  return m.items.filter(x=>x.type==="expense").reduce((s,a)=>s+a.amount,0);
+  openState[i] = !open;   // 👈 จำสถานะ
 }
 
 function updateBase(i,key,val){
@@ -304,8 +274,8 @@ function removeItem(i,idx){
 function calcTotal(){
   let inc=0, exp=0;
   data.forEach(m=>{
-    inc += calcIncome(m);
-    exp += calcExpense(m);
+    inc += m.salary + m.extra + m.items.filter(x=>x.type==="income").reduce((s,a)=>s+a.amount,0);
+    exp += m.items.filter(x=>x.type==="expense").reduce((s,a)=>s+a.amount,0);
   });
   document.getElementById("totalIncome").innerText = inc.toLocaleString();
   document.getElementById("totalExpense").innerText = exp.toLocaleString();
@@ -318,54 +288,13 @@ function save(reRender=true){
   else calcTotal();
 }
 
-/* ===================== CHART ===================== */
-
-function openChart(){
-  const modal = document.getElementById("chartModal");
-  modal.classList.add("show");
-
-  const incomes = data.map(m=>calcIncome(m));
-  const expenses = data.map(m=>calcExpense(m));
-
-  const ctx = document.getElementById("chart");
-
-  if(chart) chart.destroy();
-
-  chart = new Chart(ctx,{
-    type:"scatter",
-    data:{
-      datasets:[{
-        label:"รายรับ vs รายจ่าย",
-        data: incomes.map((inc,i)=>({
-          x: expenses[i],
-          y: inc,
-          label: months[i]
-        })),
-        backgroundColor:"#4f7cff"
-      }]
-    },
-    options:{
-      scales:{
-        x:{ title:{display:true,text:"รายจ่าย (บาท)"} },
-        y:{ title:{display:true,text:"รายรับ (บาท)"} }
-      },
-      plugins:{
-        tooltip:{
-          callbacks:{
-            label:(ctx)=>`${ctx.raw.label} | รับ ${ctx.raw.y.toLocaleString()} | จ่าย ${ctx.raw.x.toLocaleString()}`
-          }
-        }
-      }
-    }
-  });
+function backup(){
+  alert("Backup ยังเป็นตัวอย่าง (localStorage)");
 }
 
-function closeChart(){
-  document.getElementById("chartModal").classList.remove("show");
+function importData(){
+  alert("Import ยังเป็นตัวอย่าง");
 }
-
-function backup(){ alert("Backup กำลังพัฒนา"); }
-function importData(){ alert("Import กำลังพัฒนา"); }
 
 render();
 </script>
