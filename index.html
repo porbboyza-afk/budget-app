@@ -1,302 +1,560 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Budget Mobile App</title>
-
-<!-- PWA -->
-<link rel="manifest" href="data:application/manifest+json,{
-  &quot;name&quot;:&quot;Budget Mobile&quot;,
-  &quot;short_name&quot;:&quot;Budget&quot;,
-  &quot;start_url&quot;:&quot;.&quot;,
-  &quot;display&quot;:&quot;standalone&quot;,
-  &quot;background_color&quot;:&quot;#4f7cff&quot;,
-  &quot;theme_color&quot;:&quot;#4f7cff&quot;
-}">
-<meta name="theme-color" content="#4f7cff">
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-:root{
-  --green:#2ecc71;
-  --red:#e74c3c;
-  --blue:#4f7cff;
-  --bg-blur:4px;
-}
-
-body{
-  margin:0;
-  font-family:system-ui,-apple-system,sans-serif;
-  background:#20242d;
-  color:#111;
-  padding:14px;
-}
-
-.header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:12px;
-}
-
-.title{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  font-weight:700;
-  color:#fff;
-  font-size:20px;
-}
-
-.status{
-  background:#2ecc71;
-  color:white;
-  padding:4px 10px;
-  border-radius:999px;
-  font-size:12px;
-}
-
-.card{
-  background:white;
-  border-radius:16px;
-  padding:14px;
-  margin-bottom:12px;
-}
-
-.summary{
-  display:flex;
-  justify-content:space-between;
-  font-weight:600;
-}
-
-.green{ color:var(--green); }
-.red{ color:var(--red); }
-
-.toolbar{
-  display:flex;
-  gap:10px;
-  margin:12px 0;
-}
-
-.btn{
-  flex:1;
-  border:none;
-  border-radius:999px;
-  padding:10px;
-  color:white;
-  font-weight:600;
-}
-
-.btn-orange{ background:#f39c12; }
-.btn-green{ background:#2ecc71; }
-.btn-blue{ background:#4f7cff; }
-
-.month{
-  background:#f3f6fb;
-  border-radius:14px;
-  padding:12px;
-  margin-bottom:10px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  cursor:pointer;
-}
-
-.detail{
-  display:none;
-  background:white;
-  border-radius:14px;
-  padding:12px;
-  margin-bottom:10px;
-}
-
-input,select{
-  padding:6px;
-  border-radius:8px;
-  border:1px solid #ddd;
-}
-
-.row{
-  display:flex;
-  gap:6px;
-  margin-bottom:6px;
-}
-
-.row input{ flex:1; }
-
-.small-btn{
-  border:none;
-  border-radius:8px;
-  padding:6px 10px;
-  color:white;
-}
-
-.add-income{ background:var(--green); }
-.add-expense{ background:var(--red); }
-</style>
-</head>
-<body>
-
-<div class="header">
-  <div class="title">📊 Budget Mobile</div>
-  <div class="status">● Online</div>
-</div>
-
-<div class="card">
-  <div class="summary">
-    <div>รายรับ: <span id="totalIncome" class="green">0</span></div>
-    <div>รายจ่าย: <span id="totalExpense" class="red">0</span></div>
-    <div>คงเหลือ: <span id="totalBalance">0</span></div>
-  </div>
-</div>
-
-<div class="toolbar">
-  <button class="btn btn-orange" onclick="alert('กราฟยังไม่ได้เปิดในเวอร์ชันนี้')">กราฟ</button>
-  <button class="btn btn-green" onclick="backup()">Backup</button>
-  <button class="btn btn-blue" onclick="importData()">Import</button>
-</div>
-
-<div id="months"></div>
-
-<script>
-/* ===================== PWA ===================== */
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register(URL.createObjectURL(
-    new Blob([`
-      self.addEventListener('install',e=>self.skipWaiting());
-      self.addEventListener('fetch',e=>{});
-    `], {type:'text/javascript'})
-  ));
-}
-
-/* ===================== DATA ===================== */
-const months = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-
-let data = JSON.parse(localStorage.getItem("budget-data")) ||
-  months.map(()=>({salary:0, extra:0, items:[]}));
-
-let openState = {};   // 👈 จำว่าเดือนไหนเปิดอยู่
-
-const container = document.getElementById("months");
-
-function render(){
-  container.innerHTML = "";
-
-  data.forEach((m,i)=>{
-    const income = m.salary + m.extra + m.items.filter(x=>x.type==="income").reduce((s,a)=>s+a.amount,0);
-    const expense = m.items.filter(x=>x.type==="expense").reduce((s,a)=>s+a.amount,0);
-    const balance = income-expense;
-
-    const month = document.createElement("div");
-    month.className="month";
-    month.innerHTML = `<b>${months[i]}</b><span class="green">${balance.toLocaleString()}</span>`;
-    month.onclick = ()=>toggleDetail(i);
-
-    const detail = document.createElement("div");
-    detail.className="detail";
-    detail.id="detail-"+i;
-
-    detail.innerHTML = `
-      <div class="row">
-        <input type="number" placeholder="เงินเดือน" value="${m.salary}" oninput="updateBase(${i},'salary',this.value)">
-        <input type="number" placeholder="รายได้พิเศษ" value="${m.extra}" oninput="updateBase(${i},'extra',this.value)">
-      </div>
-      <div id="items-${i}"></div>
-      <div class="row">
-        <button class="small-btn add-income" onclick="addItem(${i},'income')">+ รับ</button>
-        <button class="small-btn add-expense" onclick="addItem(${i},'expense')">- จ่าย</button>
-      </div>
-    `;
-
-    container.appendChild(month);
-    container.appendChild(detail);
-
-    renderItems(i);
-
-    // 👇 คืนสถานะเปิดอัตโนมัติ
-    if(openState[i]){
-      detail.style.display="block";
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>รายรับจ่ายรายปี (AI Mobile)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- ใช้ FontAwesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- Markdown Parser สำหรับแสดงผล AI -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  
+  <style>
+    :root {
+      --primary: #4f7cff;
+      --success: #2ecc71;
+      --danger: #e74c3c;
+      --warning: #f1c40f;
+      --bg-blur: 3px;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --text-color: #1f2933;
+      --ai-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
-  });
 
-  calcTotal();
-}
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-function renderItems(i){
-  const box = document.getElementById("items-"+i);
-  if(!box) return;
-  box.innerHTML="";
-  data[i].items.forEach((it,idx)=>{
-    const row = document.createElement("div");
-    row.className="row";
-    row.innerHTML=`
-      <select onchange="updateItem(${i},${idx},'type',this.value)">
-        <option value="income" ${it.type==="income"?"selected":""}>รับ</option>
-        <option value="expense" ${it.type==="expense"?"selected":""}>จ่าย</option>
-      </select>
-      <input placeholder="รายการ" value="${it.desc}" oninput="updateItem(${i},${idx},'desc',this.value)">
-      <input type="number" value="${it.amount}" oninput="updateItem(${i},${idx},'amount',this.value)">
-      <button onclick="removeItem(${i},${idx})">❌</button>
-    `;
-    box.appendChild(row);
-  });
-}
+    body {
+      font-family: 'Sarabun', -apple-system, sans-serif;
+      margin: 0; padding: 15px;
+      min-height: 100vh;
+      color: var(--text-color);
+      padding-bottom: 80px;
+    }
 
-function toggleDetail(i){
-  const el = document.getElementById("detail-"+i);
-  const open = el.style.display==="block";
-  el.style.display = open ? "none" : "block";
-  openState[i] = !open;   // 👈 จำสถานะ
-}
+    /* ===== Background ===== */
+    .bg-layer { position: fixed; inset: 0; z-index: -2; overflow: hidden; }
+    .bg {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      filter: blur(var(--bg-blur)); transform: scale(1.05);
+      transition: opacity 2s ease; opacity: 0;
+    }
+    .bg.active { opacity: 1; }
+    .bg-overlay { position: fixed; inset: 0; z-index: -1; transition: background 1s; }
+    .day { background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(240,248,255,0.9)); }
+    .night { background: linear-gradient(180deg, rgba(20,25,40,0.8), rgba(10,15,30,0.9)); color: #eee; --card-bg: rgba(30, 40, 60, 0.95); --text-color: #eee; }
 
-function updateBase(i,key,val){
-  data[i][key]=Number(val)||0;
-  save();
-}
+    /* ===== Dashboard ===== */
+    .dashboard {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+    .dashboard h2 { margin: 0 0 15px 0; font-size: 1.2rem; }
+    .summary-grid { display: flex; justify-content: space-between; gap: 10px; }
+    .sum-item { flex: 1; }
+    .sum-label { font-size: 0.8rem; opacity: 0.7; }
+    .sum-val { font-size: 1.1rem; font-weight: bold; margin-top: 5px; }
+    .val-inc { color: var(--success); }
+    .val-exp { color: var(--danger); }
+    .val-bal { color: var(--primary); }
 
-function addItem(i,type){
-  data[i].items.push({type,desc:"",amount:0});
-  save();
-}
+    /* ===== Tool Bar ===== */
+    .toolbar { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+    .btn {
+      flex: 1; white-space: nowrap; padding: 10px 15px;
+      border: none; border-radius: 50px; color: white;
+      font-size: 0.9rem; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .btn-ai { background: var(--ai-gradient); box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4); }
+    .btn-exp { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+    .btn-clr { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+    .btn-chart { background: linear-gradient(135deg, #f39c12, #d35400); }
+    .btn-scan { background: #34495e; color: white; width: 100%; margin-top: 10px; padding: 12px; border-radius: 12px; }
 
-function updateItem(i,idx,key,val){
-  data[i].items[idx][key] = key==="amount" ? Number(val)||0 : val;
-  save(false);
-}
+    /* ===== Month Card ===== */
+    .month-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .card-header {
+      padding: 15px;
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; background: rgba(0,0,0,0.02);
+    }
+    .m-name { font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+    .m-balance { font-weight: bold; font-size: 1rem; }
+    .chevron { transition: transform 0.3s; font-size: 0.8rem; opacity: 0.5; margin-left: 8px; }
+    
+    .card-body {
+      display: none; padding: 15px;
+      border-top: 1px solid rgba(0,0,0,0.05);
+      animation: slideDown 0.3s ease;
+    }
+    .month-card.open .card-body { display: block; }
+    .month-card.open .chevron { transform: rotate(180deg); }
+    .month-card.open .card-header { background: rgba(79, 124, 255, 0.1); }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-function removeItem(i,idx){
-  data[i].items.splice(idx,1);
-  save();
-}
+    /* Inputs */
+    .input-group { margin-bottom: 15px; }
+    .input-label { font-size: 0.85rem; margin-bottom: 5px; display: block; opacity: 0.8; }
+    input[type="number"], input[type="text"], select {
+      width: 100%; padding: 12px; border-radius: 8px;
+      border: 1px solid #ddd; background: rgba(255,255,255,0.8);
+      font-size: 1rem; outline: none;
+    }
+    .night input, .night select { background: #3b4a5a; border-color: #556; color: white; }
 
-function calcTotal(){
-  let inc=0, exp=0;
-  data.forEach(m=>{
-    inc += m.salary + m.extra + m.items.filter(x=>x.type==="income").reduce((s,a)=>s+a.amount,0);
-    exp += m.items.filter(x=>x.type==="expense").reduce((s,a)=>s+a.amount,0);
-  });
-  document.getElementById("totalIncome").innerText = inc.toLocaleString();
-  document.getElementById("totalExpense").innerText = exp.toLocaleString();
-  document.getElementById("totalBalance").innerText = (inc-exp).toLocaleString();
-}
+    /* Detail List */
+    .detail-list { margin-top: 10px; }
+    .detail-item { display: flex; gap: 8px; margin-bottom: 8px; }
+    .btn-icon {
+      width: 40px; border-radius: 8px; border: none; color: white;
+      display: flex; align-items: center; justify-content: center;
+    }
 
-function save(reRender=true){
-  localStorage.setItem("budget-data", JSON.stringify(data));
-  if(reRender) render();
-  else calcTotal();
-}
+    /* Modal */
+    .modal {
+      display: none; position: fixed; inset: 0; z-index: 999;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal.show { display: flex; }
+    .modal-content {
+      background: white; width: 100%; max-width: 500px;
+      border-radius: 16px; padding: 20px; position: relative;
+      max-height: 85vh; overflow-y: auto;
+    }
+    .night .modal-content { background: #1f2933; color: #eee; }
+    .close-modal {
+      position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: #888;
+    }
+    
+    /* Loading Overlay */
+    .loading-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 2000;
+      display: none; justify-content: center; align-items: center; flex-direction: column; color: white;
+    }
+    .spinner {
+      width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.3);
+      border-radius: 50%; border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite; margin-bottom: 15px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    /* Markdown Styles */
+    .ai-result h2 { font-size: 1.2rem; color: var(--primary); }
+    .ai-result strong { color: var(--success); }
+    .night .ai-result strong { color: #4ade80; }
+  </style>
+</head>
+<body id="mainBody">
 
-function backup(){
-  alert("Backup ยังเป็นตัวอย่าง (localStorage)");
-}
+  <!-- Background -->
+  <div class="bg-layer">
+    <div class="bg active" id="bg1"></div>
+    <div class="bg" id="bg2"></div>
+  </div>
+  <div class="bg-overlay day" id="overlay"></div>
 
-function importData(){
-  alert("Import ยังเป็นตัวอย่าง");
-}
+  <!-- Hidden File Input for Receipt Scanning -->
+  <input type="file" id="receiptInput" accept="image/*" style="display: none;">
 
-render();
-</script>
+  <!-- Loading Screen -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div id="loadingText">กำลังวิเคราะห์ข้อมูล...</div>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="dashboard">
+    <h2>📊 สรุปภาพรวมทั้งปี</h2>
+    <div class="summary-grid">
+      <div class="sum-item">
+        <div class="sum-label">รายรับ</div>
+        <div class="sum-val val-inc" id="grandIncome">0</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-label">รายจ่าย</div>
+        <div class="sum-val val-exp" id="grandExpense">0</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-label">คงเหลือ</div>
+        <div class="sum-val val-bal" id="grandBalance">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button class="btn btn-ai" onclick="analyzeBudgetWithAI()"><i class="fas fa-magic"></i> วิเคราะห์ (AI)</button>
+    <button class="btn btn-chart" onclick="openChart()"><i class="fas fa-chart-pie"></i> กราฟ</button>
+    <button class="btn btn-exp" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+    <button class="btn btn-clr" onclick="clearData()"><i class="fas fa-trash"></i> ล้าง</button>
+  </div>
+
+  <!-- Cards Container -->
+  <div id="cardsContainer"></div>
+
+  <!-- Chart Modal -->
+  <div class="modal" id="chartModal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeChart()">&times;</span>
+      <h3 style="text-align:center; margin-top:0;">กราฟสรุปรายเดือน</h3>
+      <canvas id="chart" height="300"></canvas>
+    </div>
+  </div>
+
+  <!-- AI Result Modal -->
+  <div class="modal" id="aiModal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeAiModal()">&times;</span>
+      <h3 style="text-align:center; margin-top:0;"><i class="fas fa-robot"></i> คำแนะนำจาก AI</h3>
+      <div id="aiContent" class="ai-result" style="line-height: 1.6;"></div>
+    </div>
+  </div>
+
+  <script>
+    // --- 0. API Config ---
+    const apiKey = ""; // Runtime environment provides this
+
+    // --- 1. Background & System ---
+    const backgroundImages = ['DSCF1292.jpg', 'DSCF1361.jpg', 'DSCF1400.jpg', 'DSC00543.jpg', 'DSCF0921.jpg'];
+    let currentBgIndex = 0;
+    const bgA = document.getElementById('bg1');
+    const bgB = document.getElementById('bg2');
+    
+    bgA.style.backgroundImage = `url(${backgroundImages[0]})`;
+    setInterval(() => {
+      currentBgIndex = (currentBgIndex + 1) % backgroundImages.length;
+      const show = (currentBgIndex % 2 === 0) ? bgA : bgB;
+      const hide = (currentBgIndex % 2 === 0) ? bgB : bgA;
+      show.style.backgroundImage = `url(${backgroundImages[currentBgIndex]})`;
+      show.classList.add('active');
+      hide.classList.remove('active');
+    }, 8000);
+
+    function updateDayNight() {
+      const hour = new Date().getHours();
+      const isNight = hour >= 18 || hour < 6;
+      document.getElementById('overlay').className = `bg-overlay ${isNight ? 'night' : 'day'}`;
+      if(isNight) document.body.classList.add('night');
+      else document.body.classList.remove('night');
+    }
+    updateDayNight();
+
+    // --- 2. Data Logic ---
+    const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+    let monthlyData = JSON.parse(localStorage.getItem('yearlyBudget_v1')) || months.map(() => ({ salary: 0, extra: 0, details: [] }));
+
+    function saveData() {
+      localStorage.setItem('yearlyBudget_v1', JSON.stringify(monthlyData));
+      renderCards(); 
+    }
+
+    function renderCards() {
+      const container = document.getElementById('cardsContainer');
+      const openStates = Array.from(document.querySelectorAll('.month-card')).map(c => c.classList.contains('open'));
+      
+      let html = '';
+      let gInc = 0, gExp = 0;
+
+      monthlyData.forEach((m, idx) => {
+        const dInc = m.details.filter(d => d.type === 'income').reduce((s, d) => s + (Number(d.amount)||0), 0);
+        const dExp = m.details.filter(d => d.type === 'expense').reduce((s, d) => s + (Number(d.amount)||0), 0);
+        const totalInc = (Number(m.salary)||0) + (Number(m.extra)||0) + dInc;
+        const totalExp = dExp;
+        const balance = totalInc - totalExp;
+
+        gInc += totalInc; gExp += totalExp;
+        const isOpen = openStates[idx] ? 'open' : '';
+
+        let detailsHtml = '';
+        m.details.forEach((d, dIdx) => {
+          detailsHtml += `
+            <div class="detail-item">
+              <select style="width:30%" onchange="updateDetail(${idx}, ${dIdx}, 'type', this.value)">
+                <option value="income" ${d.type==='income'?'selected':''}>รับ</option>
+                <option value="expense" ${d.type==='expense'?'selected':''}>จ่าย</option>
+              </select>
+              <input type="text" style="width:40%" placeholder="รายการ" value="${d.desc}" onchange="updateDetail(${idx}, ${dIdx}, 'desc', this.value)">
+              <input type="number" style="width:30%" placeholder="บาท" value="${d.amount}" onchange="updateDetail(${idx}, ${dIdx}, 'amount', this.value)">
+              <button class="btn-icon btn-clr" onclick="removeDetail(${idx}, ${dIdx})"><i class="fas fa-times"></i></button>
+            </div>
+          `;
+        });
+
+        html += `
+          <div class="month-card ${isOpen}" id="card-${idx}">
+            <div class="card-header" onclick="toggleCard(${idx})">
+              <div class="m-name"><i class="far fa-calendar-alt"></i> ${months[idx]}</div>
+              <div class="m-name">
+                <span class="${balance >= 0 ? 'val-inc' : 'val-exp'}">${balance.toLocaleString()}</span>
+                <i class="fas fa-chevron-down chevron"></i>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="input-group">
+                <label class="input-label">เงินเดือน</label>
+                <input type="number" value="${m.salary||''}" placeholder="0" onchange="updateBase(${idx}, 'salary', this.value)">
+              </div>
+              <div class="input-group">
+                <label class="input-label">รายได้พิเศษ</label>
+                <input type="number" value="${m.extra||''}" placeholder="0" onchange="updateBase(${idx}, 'extra', this.value)">
+              </div>
+              
+              <div style="border-top:1px dashed #ccc; margin: 15px 0;"></div>
+              
+              <label class="input-label">รายการเพิ่มเติม</label>
+              <button class="btn-scan" onclick="triggerScan(${idx})"><i class="fas fa-camera"></i> สแกนสลิป/ใบเสร็จ (AI)</button>
+              <div class="detail-list">${detailsHtml}</div>
+              
+              <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn btn-exp" style="flex:1; padding:8px;" onclick="addDetail(${idx}, 'income')">+ รับ</button>
+                <button class="btn btn-clr" style="flex:1; padding:8px;" onclick="addDetail(${idx}, 'expense')">- จ่าย</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+      document.getElementById('grandIncome').innerText = gInc.toLocaleString();
+      document.getElementById('grandExpense').innerText = gExp.toLocaleString();
+      document.getElementById('grandBalance').innerText = (gInc - gExp).toLocaleString();
+    }
+
+    // --- 3. Gemini AI Features ---
+    let currentUploadMonthIdx = -1;
+
+    async function callGemini(prompt) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      });
+      if (!response.ok) throw new Error("Gemini API Error");
+      const data = await response.json();
+      return data.candidates[0].content.parts[0].text;
+    }
+
+    async function callGeminiVision(base64Image) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+      const payload = {
+        contents: [{
+          role: "user",
+          parts: [
+            { text: "Analyze this receipt/slip. Extract the merchant/description and the total amount. Return ONLY a JSON object with this format: { \"description\": \"string\", \"amount\": number, \"type\": \"expense\" }. If it looks like income slip, set type to \"income\"." },
+            { inlineData: { mimeType: "image/jpeg", data: base64Image } }
+          ]
+        }]
+      };
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!response.ok) throw new Error("Gemini Vision Error");
+      const data = await response.json();
+      const text = data.candidates[0].content.parts[0].text;
+      // Clean up markdown code blocks if present
+      const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      return JSON.parse(jsonStr);
+    }
+
+    async function analyzeBudgetWithAI() {
+      const overlay = document.getElementById('loadingOverlay');
+      const modal = document.getElementById('aiModal');
+      const content = document.getElementById('aiContent');
+      
+      document.getElementById('loadingText').innerText = "AI กำลังวิเคราะห์ข้อมูลการเงินของคุณ...";
+      overlay.style.display = 'flex';
+
+      try {
+        // Prepare Data Summary for AI
+        const summary = monthlyData.map((m, i) => {
+            const inc = (m.salary||0) + (m.extra||0) + m.details.filter(d=>d.type==='income').reduce((s,d)=>s+d.amount,0);
+            const exp = m.details.filter(d=>d.type==='expense').reduce((s,d)=>s+d.amount,0);
+            return `${months[i]}: Inc=${inc}, Exp=${exp}`;
+        }).join('\n');
+
+        const prompt = `
+          You are a friendly Thai financial coach. Analyze this yearly budget data (in Thai Baht). 
+          Data:
+          ${summary}
+          
+          Please provide:
+          1. A brief summary of spending trends.
+          2. Which month had the highest expenses.
+          3. Three actionable tips to save money based on this data.
+          
+          Respond in Thai language using Markdown formatting. Be encouraging and helpful.
+        `;
+
+        const result = await callGemini(prompt);
+        content.innerHTML = marked.parse(result);
+        modal.classList.add('show');
+      } catch (e) {
+        alert("เกิดข้อผิดพลาดในการเชื่อมต่อ AI: " + e.message);
+      } finally {
+        overlay.style.display = 'none';
+      }
+    }
+
+    function triggerScan(idx) {
+      currentUploadMonthIdx = idx;
+      document.getElementById('receiptInput').click();
+    }
+
+    // Handle Receipt Image Upload
+    document.getElementById('receiptInput').addEventListener('change', async function(e) {
+      if (this.files && this.files[0]) {
+        const file = this.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = async function(event) {
+          const base64Raw = event.target.result;
+          const base64Image = base64Raw.split(',')[1]; // Remove data:image/jpeg;base64,
+          
+          const overlay = document.getElementById('loadingOverlay');
+          document.getElementById('loadingText').innerText = "AI กำลังอ่านข้อมูลสลิป...";
+          overlay.style.display = 'flex';
+
+          try {
+            const result = await callGeminiVision(base64Image);
+            
+            if (result && result.amount) {
+              // Add to data
+              monthlyData[currentUploadMonthIdx].details.push({
+                type: result.type || 'expense',
+                desc: result.description || 'สแกนสลิป',
+                amount: result.amount
+              });
+              saveData();
+              alert(`เพิ่มรายการสำเร็จ: ${result.description} (${result.amount} บาท)`);
+            } else {
+              alert("AI ไม่สามารถอ่านข้อมูลได้ชัดเจน กรุณาลองใหม่");
+            }
+          } catch (err) {
+            console.error(err);
+            alert("เกิดข้อผิดพลาดในการสแกน");
+          } finally {
+            overlay.style.display = 'none';
+            document.getElementById('receiptInput').value = ''; // Reset input
+          }
+        };
+        
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function closeAiModal() { document.getElementById('aiModal').classList.remove('show'); }
+
+    // --- 4. Standard App Actions ---
+    function toggleCard(idx) {
+      const card = document.getElementById(`card-${idx}`);
+      card.classList.toggle('open');
+    }
+
+    function updateBase(idx, field, val) {
+      monthlyData[idx][field] = Number(val);
+      saveData();
+      updateGrandTotalOnly(); 
+    }
+    
+    function updateGrandTotalOnly() {
+      let gInc = 0, gExp = 0;
+      monthlyData.forEach(m => {
+        const dInc = m.details.filter(d => d.type === 'income').reduce((s, d) => s + (Number(d.amount)||0), 0);
+        const dExp = m.details.filter(d => d.type === 'expense').reduce((s, d) => s + (Number(d.amount)||0), 0);
+        gInc += (Number(m.salary)||0) + (Number(m.extra)||0) + dInc;
+        gExp += dExp;
+      });
+      document.getElementById('grandIncome').innerText = gInc.toLocaleString();
+      document.getElementById('grandExpense').innerText = gExp.toLocaleString();
+      document.getElementById('grandBalance').innerText = (gInc - gExp).toLocaleString();
+    }
+
+    function updateDetail(mIdx, dIdx, field, val) {
+      monthlyData[mIdx].details[dIdx][field] = (field === 'amount') ? Number(val) : val;
+      localStorage.setItem('yearlyBudget_v1', JSON.stringify(monthlyData));
+      updateGrandTotalOnly();
+    }
+
+    function addDetail(idx, type) {
+      monthlyData[idx].details.push({ type, desc: '', amount: 0 });
+      saveData();
+    }
+
+    function removeDetail(mIdx, dIdx) {
+      monthlyData[mIdx].details.splice(dIdx, 1);
+      saveData();
+    }
+
+    function clearData() {
+      if(confirm('ลบข้อมูลทั้งหมด?')) {
+        monthlyData = months.map(() => ({ salary: 0, extra: 0, details: [] }));
+        saveData();
+      }
+    }
+
+    let myChart = null;
+    function openChart() {
+      document.getElementById('chartModal').classList.add('show');
+      const ctx = document.getElementById('chart').getContext('2d');
+      if(myChart) myChart.destroy();
+      
+      const labels = months;
+      const dataInc = monthlyData.map(m => (m.salary||0) + (m.extra||0) + m.details.filter(d=>d.type==='income').reduce((s,d)=>s+(d.amount||0),0));
+      const dataExp = monthlyData.map(m => m.details.filter(d=>d.type==='expense').reduce((s,d)=>s+(d.amount||0),0));
+
+      myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'รับ', data: dataInc, backgroundColor: '#2ecc71', borderRadius: 4 },
+            { label: 'จ่าย', data: dataExp, backgroundColor: '#e74c3c', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: { x: { grid: { display:false } } }
+        }
+      });
+    }
+    function closeChart() { document.getElementById('chartModal').classList.remove('show'); }
+
+    function exportToExcel() {
+      let csv = "\uFEFFเดือน,ประเภท,รายการ,จำนวนเงิน\n";
+      monthlyData.forEach((m, idx) => {
+        const mm = months[idx];
+        if(m.salary) csv += `${mm},รายรับ,เงินเดือน,${m.salary}\n`;
+        if(m.extra) csv += `${mm},รายรับ,พิเศษ,${m.extra}\n`;
+        m.details.forEach(d => csv += `${mm},${d.type==='income'?'รายรับ':'รายจ่าย'},${d.desc},${d.amount}\n`);
+      });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+      link.download = "Budget_Yearly.csv";
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    }
+
+    renderCards();
+  </script>
 </body>
 </html>
