@@ -23,6 +23,7 @@
       --danger: #f5365c;
       --danger-soft: #fee6ea;
       --warning: #fb6340;
+      --warning-soft: #fff3cd;
       --info: #11cdef;
       --info-soft: #e0f7fa;
       
@@ -57,6 +58,7 @@
         --success-soft: rgba(45, 206, 137, 0.15);
         --danger-soft: rgba(245, 54, 92, 0.15); 
         --info-soft: rgba(17, 205, 239, 0.15);
+        --warning-soft: rgba(251, 99, 64, 0.15);
     }
 
     /* Layout */
@@ -215,6 +217,11 @@
         max-height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
     }
     
+    /* Chart Buttons Grid */
+    .chart-btn-grid {
+        margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+    }
+    
     /* Settings Grid */
     .color-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px; }
     .color-swatch { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; }
@@ -231,6 +238,13 @@
     /* Utility */
     .hidden { display: none !important; }
     .btn-full { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; }
+    .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(94, 114, 228, 0.3); }
+    .btn-outline { background: transparent; border: 2px solid var(--text-muted); color: var(--text-muted); }
+    
+    /* Chart container wrapper */
+    .chart-container-wrapper {
+        position: relative; flex: 1; min-height: 0; height: 45vh; width: 100%;
+    }
     
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   </style>
@@ -314,24 +328,26 @@
         <h3 style="margin:0;">สถิติภาพรวม</h3>
         <i class="fas fa-times" style="cursor:pointer; font-size:1.2rem;" onclick="closeModal('chartModal')"></i>
       </div>
-      <div style="height:300px; position:relative;">
+      <div class="chart-container-wrapper">
         <canvas id="chart"></canvas>
       </div>
-      <div style="margin-top:20px; display:flex; gap:10px;">
-          <button class="btn-full" style="background:var(--primary-soft); color:var(--primary);" onclick="renderChart('bar')">แผนภูมิแท่ง</button>
-          <button class="btn-full" style="background:var(--info-soft); color:var(--info);" onclick="renderChart('line')">เงินออม</button>
+      <!-- 3 Buttons Grid -->
+      <div class="chart-btn-grid">
+          <button class="btn-full" style="background:var(--primary-soft); color:var(--primary); margin:0;" onclick="renderChart('bar')">แท่ง</button>
+          <button class="btn-full" style="background:var(--info-soft); color:var(--info); margin:0;" onclick="renderChart('line')">เงินออม</button>
+          <button class="btn-full" style="background:var(--warning-soft); color:var(--warning); margin:0;" onclick="renderChart('pie')">วงกลม</button>
       </div>
     </div>
   </div>
 
   <!-- 2. AI Modal -->
   <div class="modal" id="aiModal">
-    <div class="modal-card" style="max-height:80vh;">
+    <div class="modal-card" style="max-height:80vh; overflow-x: hidden;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <h3 style="margin:0; color:var(--primary);"><i class="fas fa-robot"></i> AI Coach</h3>
         <i class="fas fa-times" style="cursor:pointer;" onclick="closeModal('aiModal')"></i>
       </div>
-      <div id="aiContent" style="line-height:1.7; font-size:0.95rem; overflow-y:auto;"></div>
+      <div id="aiContent" style="line-height:1.7; font-size:0.95rem; overflow-y:auto; overflow-x:hidden; word-wrap:break-word;"></div>
     </div>
   </div>
 
@@ -621,6 +637,7 @@
         return { totalInc, totalExp, balance, freeBalance, progress };
     }
 
+    // Animation Utility
     function animateValue(obj, start, end, duration) {
         let startTimestamp = null;
         const step = (timestamp) => {
@@ -632,6 +649,7 @@
         window.requestAnimationFrame(step);
     }
 
+    // Render Main
     window.renderCards = function() {
         const container = document.getElementById('cardsContainer');
         const openStates = Array.from(document.querySelectorAll('.month-card')).map(c => c.classList.contains('open'));
@@ -642,6 +660,7 @@
             const stats = calculateStats(m);
             gInc += stats.totalInc; gExp += stats.totalExp; gSave += (Number(m.savings)||0);
             
+            // Generate Details
             let detailsHtml = '';
             m.details.forEach((d, dIdx) => {
                 const isInc = d.type === 'income';
@@ -657,6 +676,7 @@
                 `;
             });
 
+            // Quick Category Picker
             const catPickerHtml = categories.map(c => 
                 `<div class="cat-item" onclick="addWithIcon(${idx}, '${c.icon} ${c.label}')">
                     <button class="cat-btn">${c.icon}</button>
@@ -664,6 +684,7 @@
                 </div>`
             ).join('');
 
+            // Copy Prev Button (Only for Feb onwards)
             const copyBtn = idx > 0 && m.details.length === 0 
                 ? `<button class="btn-full" style="background:#f1f5f9; color:var(--primary); font-size:0.9rem;" onclick="copyFromPrev(${idx})"><i class="fas fa-copy"></i> คัดลอกรายการเดือนก่อน</button>` 
                 : '';
@@ -732,12 +753,15 @@
         });
 
         container.innerHTML = html;
+        
+        // Rolling Numbers
         animateValue(document.getElementById('grandBalance'), 0, gInc - gExp, 800);
         document.getElementById('grandIncome').innerText = gInc.toLocaleString();
         document.getElementById('grandExpense').innerText = gExp.toLocaleString();
         document.getElementById('grandSavings').innerText = gSave.toLocaleString();
     }
 
+    // Logic Functions
     window.toggleCard = (idx) => document.getElementById(`card-${idx}`).classList.toggle('open');
     window.switchView = (view) => {
         document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
@@ -794,48 +818,84 @@
         localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData));
     }
 
+    // Modal Helpers
     window.openChartModal = () => { document.getElementById('chartModal').classList.add('show'); renderChart('bar'); }
     window.openToolsModal = () => document.getElementById('toolsModal').classList.add('show');
     window.openSettingsModal = () => document.getElementById('settingsModal').classList.add('show');
     window.closeModal = (id) => document.getElementById(id).classList.remove('show');
 
+    // Chart
     let myChart = null;
     window.renderChart = (type) => {
         const ctx = document.getElementById('chart').getContext('2d');
         if(myChart) myChart.destroy();
         
         const labels = months;
-        let datasets = [];
+        let chartData = {};
         
-        if (type === 'bar') {
-            const dInc = window.monthlyData.map(m=>calculateStats(m).totalInc);
-            const dExp = window.monthlyData.map(m=>calculateStats(m).totalExp);
-            datasets = [
-                { label: 'รับ', data: dInc, backgroundColor: '#2dce89', borderRadius:4 },
-                { label: 'จ่าย', data: dExp, backgroundColor: '#f5365c', borderRadius:4 }
-            ];
+        if (type === 'pie') {
+            // Aggregate expenses by category for pie chart
+            const expMap = {};
+            window.monthlyData.forEach(m => {
+                 m.details.filter(d => d.type === 'expense').forEach(d => {
+                     let key = d.desc.trim() || 'อื่นๆ';
+                     expMap[key] = (expMap[key] || 0) + (Number(d.amount)||0);
+                 });
+            });
+            const sorted = Object.entries(expMap).sort((a,b) => b[1] - a[1]);
+            let pLabels = [], pData = [], others = 0;
+            sorted.forEach((item, index) => {
+                if (index < 8) { pLabels.push(item[0]); pData.push(item[1]); }
+                else others += item[1];
+            });
+            if (others > 0) { pLabels.push('อื่นๆ'); pData.push(others); }
+            
+            const colors = ['#f5365c', '#fb6340', '#ffd600', '#2dce89', '#11cdef', '#5e72e4', '#8965e0', '#32325d', '#adb5bd'];
+            chartData = {
+                labels: pLabels,
+                datasets: [{ data: pData, backgroundColor: colors.slice(0, pData.length), borderWidth: 0 }]
+            };
         } else {
-            const dSave = window.monthlyData.map(m=>Number(m.savings)||0);
-            const dFree = window.monthlyData.map(m=>calculateStats(m).freeBalance);
-            datasets = [
-                { label: 'ออม', data: dSave, borderColor: '#11cdef', backgroundColor: 'rgba(17,205,239,0.2)', fill:true, tension:0.4 },
-                { label: 'เหลือใช้', data: dFree, borderColor: '#2dce89', borderDash:[5,5], borderWidth:2, tension:0.4 }
-            ];
+            // Bar or Line chart data
+            let datasets = [];
+            if (type === 'bar') {
+                const dInc = window.monthlyData.map(m=>calculateStats(m).totalInc);
+                const dExp = window.monthlyData.map(m=>calculateStats(m).totalExp);
+                datasets = [
+                    { label: 'รับ', data: dInc, backgroundColor: '#2dce89', borderRadius:4 },
+                    { label: 'จ่าย', data: dExp, backgroundColor: '#f5365c', borderRadius:4 }
+                ];
+            } else {
+                const dSave = window.monthlyData.map(m=>Number(m.savings)||0);
+                const dFree = window.monthlyData.map(m=>calculateStats(m).freeBalance);
+                datasets = [
+                    { label: 'ออม', data: dSave, borderColor: '#11cdef', backgroundColor: 'rgba(17,205,239,0.2)', fill:true, tension:0.4 },
+                    { label: 'เหลือใช้', data: dFree, borderColor: '#2dce89', borderDash:[5,5], borderWidth:2, tension:0.4 }
+                ];
+            }
+            chartData = { labels: labels, datasets: datasets };
         }
 
         myChart = new Chart(ctx, {
-            type: type === 'line' ? 'line' : 'bar',
-            data: { labels, datasets },
-            options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display:false } } } }
+            type: type === 'line' ? 'line' : (type === 'pie' ? 'doughnut' : 'bar'),
+            data: chartData,
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                scales: type === 'pie' ? {} : { x: { grid: { display:false } }, y: { grid: { borderDash: [4, 4] }, beginAtZero: true } },
+                plugins: { legend: { position: 'bottom' }, title: { display: type==='pie', text: 'สัดส่วนรายจ่ายปีนี้' } }
+            }
         });
     }
 
+    // Theme Customizer
     window.setTheme = (color) => {
         document.documentElement.style.setProperty('--primary', color);
         document.documentElement.style.setProperty('--primary-soft', color + '20'); 
         localStorage.setItem('app_theme', color);
     }
     
+    // Background Handlers
     window.handleBgChange = (input) => {
         if(input.files[0]) {
             const r = new FileReader();
@@ -856,7 +916,6 @@
     // AI & Gemini
     const apiKey = "AIzaSyD-wO4EzjPsLNrXC0v8J4jqTunMKWMJRjw"; // ใส่คีย์ให้แล้วครับ
     window.analyzeBudgetWithAI = async () => {
-        // ให้ใช้คีย์ในเครื่องก่อน ถ้าไม่มีใช้คีย์สำรอง (แต่แนะนำให้กรอกใน Settings จะดีสุด)
         const key = localStorage.getItem('gemini_api_key') || apiKey;
         
         document.getElementById('loadingOverlay').style.display='flex';
