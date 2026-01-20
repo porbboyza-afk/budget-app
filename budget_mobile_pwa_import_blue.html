@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Budget Mobile App</title>
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Budget%20Mobile%22,%22short_name%22:%22Budget%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23111111%22,%22theme_color%22:%22%234f7cff%22}">
+<meta name="theme-color" content="#4f7cff">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+ --green:#2ecc71;
+ --red:#e74c3c;
+ --blue:#4f7cff;
+ --bg-blur:4px;
+}
+
+body{
+ margin:0;
+ font-family:system-ui,-apple-system,sans-serif;
+ padding:14px;
+ color:#222;
+ min-height:100vh;
+}
+
+h1{margin:4px 0 12px 0;font-size:22px;}
+
+.bg-layer{position:fixed;inset:0;z-index:-2;overflow:hidden;}
+.bg{position:absolute;inset:0;background-size:cover;background-position:center;
+ filter:blur(var(--bg-blur)) brightness(1.05);transform:scale(1.05);
+ opacity:0;transition:opacity 4s ease;}
+.bg.active{opacity:1;}
+.bg-overlay{position:fixed;inset:0;z-index:-1;transition:background 1s;}
+.day{background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(245,248,255,.95));}
+.night{background:linear-gradient(180deg,rgba(10,15,30,.8),rgba(5,10,20,.9));color:#eee;}
+
+#netStatus{
+ position:fixed;top:10px;right:10px;z-index:50;
+ font-size:12px;padding:6px 12px;border-radius:999px;
+ background:#2ecc71;color:white;
+ box-shadow:0 2px 6px rgba(0,0,0,.25)
+}
+
+.card{
+ background:rgba(255,255,255,.95);
+ border-radius:14px;
+ padding:14px;
+ margin-bottom:12px;
+ box-shadow:0 4px 10px rgba(0,0,0,.08)
+}
+
+.toolbar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+button, .btn{
+ border:none;border-radius:999px;padding:8px 14px;
+ color:white;font-weight:600;cursor:pointer;
+ background:linear-gradient(135deg,#4f7cff,#6fa3ff);
+ display:inline-flex;align-items:center;justify-content:center;
+}
+.btn-green{background:linear-gradient(135deg,#2ecc71,#27ae60);}
+.btn-orange{background:linear-gradient(135deg,#f39c12,#d35400);}
+
+.month{
+ border-radius:12px;
+ overflow:hidden;
+ background:white;
+ margin-bottom:10px;
+ box-shadow:0 2px 6px rgba(0,0,0,.06)
+}
+.month-header{
+ padding:12px;
+ display:flex;justify-content:space-between;align-items:center;
+ cursor:pointer;
+ background:#f3f6ff;
+}
+.month-body{display:none;padding:12px;}
+.month.open .month-body{display:block;}
+
+input,select{
+ width:100%;
+ padding:8px;border-radius:8px;border:1px solid #ccc;
+ margin-bottom:6px;
+}
+
+.income{color:var(--green);font-weight:700;}
+.expense{color:var(--red);font-weight:700;}
+
+canvas{background:white;border-radius:12px;padding:10px;}
+</style>
+</head>
+<body>
+
+<div class="bg-layer">
+ <div class="bg active" id="bg1"></div>
+ <div class="bg" id="bg2"></div>
+</div>
+<div class="bg-overlay day" id="overlay"></div>
+
+<div id="netStatus">● Online</div>
+
+<h1>📊 Budget Mobile</h1>
+
+<div class="card">
+ <b>สรุปรวมทั้งปี</b><br>
+ รายรับ: <span id="sumIncome" class="income">0</span> |
+ รายจ่าย: <span id="sumExpense" class="expense">0</span> |
+ คงเหลือ: <span id="sumBalance">0</span>
+</div>
+
+<div class="toolbar">
+ <button class="btn btn-orange" onclick="openChart()">กราฟ</button>
+ <button class="btn btn-green" onclick="backupJSON()">Backup</button>
+
+ <!-- Import button styled like others (rounded pill) -->
+ <label class="btn">
+   Import
+   <input type="file" hidden accept="application/json" onchange="importJSON(event)">
+ </label>
+</div>
+
+<div id="months"></div>
+
+<canvas id="chart" height="140"></canvas>
+
+<script>
+// ===== PWA Service Worker =====
+if('serviceWorker' in navigator){
+ const code = `
+  self.addEventListener('install',e=>self.skipWaiting());
+  self.addEventListener('fetch',e=>{});
+ `;
+ const blob = new Blob([code],{type:'text/javascript'});
+ navigator.serviceWorker.register(URL.createObjectURL(blob));
+}
+
+// ===== Online / Offline =====
+function updateNet(){
+ const el=document.getElementById('netStatus');
+ if(navigator.onLine){
+   el.innerText='● Online'; el.style.background='#2ecc71';
+ }else{
+   el.innerText='● Offline'; el.style.background='#e74c3c';
+ }
+}
+window.addEventListener('online',updateNet);
+window.addEventListener('offline',updateNet);
+updateNet();
+
+// ===== Background Slideshow =====
+const images=['DSCF1292.jpg','DSCF1361.jpg','DSCF1400.jpg'];
+let bgIndex=0,showA=true;
+const bg1=document.getElementById('bg1');
+const bg2=document.getElementById('bg2');
+bg1.style.backgroundImage=`url(${images[0]})`;
+setInterval(()=>{
+ bgIndex=(bgIndex+1)%images.length;
+ const show=showA?bg2:bg1;
+ const hide=showA?bg1:bg2;
+ show.style.backgroundImage=`url(${images[bgIndex]})`;
+ show.classList.add('active');
+ hide.classList.remove('active');
+ showA=!showA;
+},20*60*1000);
+
+// ===== Day/Night =====
+function updateDayNight(){
+ const h=new Date().getHours();
+ const night=h>=18||h<6;
+ document.getElementById('overlay').className='bg-overlay '+(night?'night':'day');
+}
+setInterval(updateDayNight,60000);
+updateDayNight();
+
+// ===== Data =====
+const monthsName=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+let data = JSON.parse(localStorage.getItem('budgetData')) ||
+ monthsName.map(()=>({salary:0,extra:0,details:[]}));
+
+const monthsDiv=document.getElementById('months');
+
+function save(){
+ localStorage.setItem('budgetData',JSON.stringify(data));
+}
+
+function render(){
+ monthsDiv.innerHTML='';
+ let sumInc=0,sumExp=0;
+
+ data.forEach((m,i)=>{
+   const inc = Number(m.salary||0)+Number(m.extra||0)
+     + m.details.filter(d=>d.type==='income').reduce((s,d)=>s+Number(d.amount||0),0);
+   const exp = m.details.filter(d=>d.type==='expense').reduce((s,d)=>s+Number(d.amount||0),0);
+   sumInc+=inc; sumExp+=exp;
+
+   const div=document.createElement('div');
+   div.className='month';
+   div.innerHTML=`
+    <div class="month-header" onclick="toggle(${i})">
+      <b>${monthsName[i]}</b>
+      <span class="${inc-exp>=0?'income':'expense'}">${(inc-exp).toLocaleString()}</span>
+    </div>
+    <div class="month-body" id="body-${i}">
+      เงินเดือน<input type="number" value="${m.salary}" onchange="updBase(${i},'salary',this.value)">
+      รายได้พิเศษ<input type="number" value="${m.extra}" onchange="updBase(${i},'extra',this.value)">
+      <div id="detail-${i}"></div>
+      <button class="btn btn-green" onclick="addDetail(${i},'income')">+รับ</button>
+      <button class="btn" style="background:linear-gradient(135deg,#e74c3c,#c0392b)" onclick="addDetail(${i},'expense')">-จ่าย</button>
+    </div>
+   `;
+   monthsDiv.appendChild(div);
+   renderDetail(i);
+ });
+
+ document.getElementById('sumIncome').innerText=sumInc.toLocaleString();
+ document.getElementById('sumExpense').innerText=sumExp.toLocaleString();
+ document.getElementById('sumBalance').innerText=(sumInc-sumExp).toLocaleString();
+ drawChart();
+ save();
+}
+
+function renderDetail(i){
+ const box=document.getElementById('detail-'+i);
+ if(!box) return;
+ box.innerHTML='';
+ data[i].details.forEach((d,idx)=>{
+   const row=document.createElement('div');
+   row.innerHTML=`
+    <select onchange="updDetail(${i},${idx},'type',this.value)">
+     <option value="income" ${d.type==='income'?'selected':''}>รับ</option>
+     <option value="expense" ${d.type==='expense'?'selected':''}>จ่าย</option>
+    </select>
+    <input type="text" value="${d.desc||''}" onchange="updDetail(${i},${idx},'desc',this.value)">
+    <input type="number" value="${d.amount||0}" onchange="updDetail(${i},${idx},'amount',this.value)">
+    <button class="btn" style="background:linear-gradient(135deg,#e74c3c,#c0392b)" onclick="delDetail(${i},${idx})">ลบ</button>
+   `;
+   box.appendChild(row);
+ });
+}
+
+function toggle(i){
+ const el=document.getElementById('body-'+i);
+ el.parentElement.classList.toggle('open');
+}
+
+function updBase(i,f,v){ data[i][f]=Number(v); render(); }
+function updDetail(i,d,f,v){ data[i].details[d][f]=f==='amount'?Number(v):v; render(); }
+function addDetail(i,type){ data[i].details.push({type,desc:'',amount:0}); render(); }
+function delDetail(i,d){ data[i].details.splice(d,1); render(); }
+
+// ===== Backup / Import =====
+function backupJSON(){
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);
+ a.download='budget-backup.json';
+ a.click();
+}
+function importJSON(e){
+ const f=e.target.files[0];
+ if(!f) return;
+ const r=new FileReader();
+ r.onload=()=>{
+  try{
+    data=JSON.parse(r.result);
+    render();
+    alert('นำเข้าข้อมูลสำเร็จ');
+  }catch{ alert('ไฟล์ไม่ถูกต้อง'); }
+ };
+ r.readAsText(f);
+}
+
+// ===== Chart =====
+let chart;
+function drawChart(){
+ const ctx=document.getElementById('chart');
+ if(chart) chart.destroy();
+ chart=new Chart(ctx,{
+  type:'bar',
+  data:{
+   labels:monthsName,
+   datasets:[{
+    label:'รายรับ',
+    data:data.map(m=>Number(m.salary||0)+Number(m.extra||0)),
+   }]
+  }
+ });
+}
+
+// ===== Daily Reminder =====
+function enableReminder(){
+ if(!('Notification' in window)) return;
+ if(Notification.permission==='granted') schedule();
+ else Notification.requestPermission().then(p=>{if(p==='granted')schedule();});
+}
+function schedule(){
+ setInterval(()=>{
+  const h=new Date().getHours();
+  if(h===20){
+    new Notification('บันทึกรายรับรายจ่าย',{body:'อย่าลืมบันทึกค่าใช้จ่ายวันนี้ 💰'});
+  }
+ },60*60*1000);
+}
+enableReminder();
+
+render();
+</script>
+</body>
+</html>
