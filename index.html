@@ -2,308 +2,370 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Budget Mobile App</title>
 
-<!-- PWA Manifest -->
-<link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Budget%20Mobile%22,%22short_name%22:%22Budget%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23111111%22,%22theme_color%22:%22%234f7cff%22}">
+<!-- PWA -->
+<link rel="manifest" href="data:application/manifest+json,{
+  &quot;name&quot;:&quot;Budget Mobile&quot;,
+  &quot;short_name&quot;:&quot;Budget&quot;,
+  &quot;start_url&quot;:&quot;.&quot;,
+  &quot;display&quot;:&quot;standalone&quot;,
+  &quot;background_color&quot;:&quot;#4f7cff%22,
+  &quot;theme_color&quot;:&quot;#4f7cff&quot;
+}">
 <meta name="theme-color" content="#4f7cff">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root{
- --green:#2ecc71;
- --red:#e74c3c;
- --blue:#4f7cff;
- --bg-blur:4px;
+  --green:#2ecc71;
+  --red:#e74c3c;
+  --blue:#4f7cff;
 }
 
 body{
- margin:0;
- font-family:system-ui,-apple-system,sans-serif;
- padding:14px;
- color:#222;
- min-height:100vh;
+  margin:0;
+  font-family:system-ui,-apple-system,sans-serif;
+  background:#20242d;
+  color:#111;
+  padding:14px;
 }
 
-h1{margin:4px 0 12px 0;font-size:22px;}
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:12px;
+}
 
-.bg-layer{position:fixed;inset:0;z-index:-2;overflow:hidden;}
-.bg{position:absolute;inset:0;background-size:cover;background-position:center;
- filter:blur(var(--bg-blur)) brightness(1.05);transform:scale(1.05);
- opacity:0;transition:opacity 4s ease;}
-.bg.active{opacity:1;}
-.bg-overlay{position:fixed;inset:0;z-index:-1;transition:background 1s;}
-.day{background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(245,248,255,.95));}
-.night{background:linear-gradient(180deg,rgba(10,15,30,.8),rgba(5,10,20,.9));color:#eee;}
+.title{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  font-weight:700;
+  color:#fff;
+  font-size:20px;
+}
 
-#netStatus{
- position:fixed;top:10px;right:10px;z-index:50;
- font-size:12px;padding:6px 12px;border-radius:999px;
- background:#2ecc71;color:white;
- box-shadow:0 2px 6px rgba(0,0,0,.25)
+.status{
+  background:#2ecc71;
+  color:white;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
 }
 
 .card{
- background:rgba(255,255,255,.95);
- border-radius:14px;
- padding:14px;
- margin-bottom:12px;
- box-shadow:0 4px 10px rgba(0,0,0,.08)
+  background:white;
+  border-radius:16px;
+  padding:14px;
+  margin-bottom:12px;
 }
 
-.toolbar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
-button, .btn{
- border:none;border-radius:999px;padding:8px 14px;
- color:white;font-weight:600;cursor:pointer;
- background:linear-gradient(135deg,#4f7cff,#6fa3ff);
- display:inline-flex;align-items:center;justify-content:center;
+.summary{
+  display:flex;
+  justify-content:space-between;
+  font-weight:600;
 }
-.btn-green{background:linear-gradient(135deg,#2ecc71,#27ae60);}
-.btn-orange{background:linear-gradient(135deg,#f39c12,#d35400);}
+
+.green{ color:var(--green); }
+.red{ color:var(--red); }
+
+.toolbar{
+  display:flex;
+  gap:10px;
+  margin:12px 0;
+}
+
+.btn{
+  flex:1;
+  border:none;
+  border-radius:999px;
+  padding:10px;
+  color:white;
+  font-weight:600;
+}
+
+.btn-orange{ background:#f39c12; }
+.btn-green{ background:#2ecc71; }
+.btn-blue{ background:#4f7cff; }
 
 .month{
- border-radius:12px;
- overflow:hidden;
- background:white;
- margin-bottom:10px;
- box-shadow:0 2px 6px rgba(0,0,0,.06)
+  background:#f3f6fb;
+  border-radius:14px;
+  padding:12px;
+  margin-bottom:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
 }
-.month-header{
- padding:12px;
- display:flex;justify-content:space-between;align-items:center;
- cursor:pointer;
- background:#f3f6ff;
+
+.detail{
+  display:none;
+  background:white;
+  border-radius:14px;
+  padding:12px;
+  margin-bottom:10px;
 }
-.month-body{display:none;padding:12px;}
-.month.open .month-body{display:block;}
 
 input,select{
- width:100%;
- padding:8px;border-radius:8px;border:1px solid #ccc;
- margin-bottom:6px;
+  padding:6px;
+  border-radius:8px;
+  border:1px solid #ddd;
 }
 
-.income{color:var(--green);font-weight:700;}
-.expense{color:var(--red);font-weight:700;}
+.row{
+  display:flex;
+  gap:6px;
+  margin-bottom:6px;
+}
 
-canvas{background:white;border-radius:12px;padding:10px;}
+.row input{ flex:1; }
+
+.small-btn{
+  border:none;
+  border-radius:8px;
+  padding:6px 10px;
+  color:white;
+}
+
+.add-income{ background:var(--green); }
+.add-expense{ background:var(--red); }
+
+/* ===== Modal ===== */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+}
+
+.modal.show{ display:flex; }
+
+.modal-box{
+  background:white;
+  width:90%;
+  max-width:420px;
+  border-radius:16px;
+  padding:16px;
+}
+
+.close-btn{
+  text-align:right;
+  font-weight:bold;
+  cursor:pointer;
+}
 </style>
 </head>
 <body>
 
-<div class="bg-layer">
- <div class="bg active" id="bg1"></div>
- <div class="bg" id="bg2"></div>
+<div class="header">
+  <div class="title">📊 Budget Mobile</div>
+  <div class="status">● Online</div>
 </div>
-<div class="bg-overlay day" id="overlay"></div>
-
-<div id="netStatus">● Online</div>
-
-<h1>📊 Budget Mobile</h1>
 
 <div class="card">
- <b>สรุปรวมทั้งปี</b><br>
- รายรับ: <span id="sumIncome" class="income">0</span> |
- รายจ่าย: <span id="sumExpense" class="expense">0</span> |
- คงเหลือ: <span id="sumBalance">0</span>
+  <div class="summary">
+    <div>รายรับ: <span id="totalIncome" class="green">0</span></div>
+    <div>รายจ่าย: <span id="totalExpense" class="red">0</span></div>
+    <div>คงเหลือ: <span id="totalBalance">0</span></div>
+  </div>
 </div>
 
 <div class="toolbar">
- <button class="btn btn-orange" onclick="openChart()">กราฟ</button>
- <button class="btn btn-green" onclick="backupJSON()">Backup</button>
-
- <!-- Import button styled like others (rounded pill) -->
- <label class="btn">
-   Import
-   <input type="file" hidden accept="application/json" onchange="importJSON(event)">
- </label>
+  <button class="btn btn-orange" onclick="openChart()">กราฟ</button>
+  <button class="btn btn-green" onclick="backup()">Backup</button>
+  <button class="btn btn-blue" onclick="importData()">Import</button>
 </div>
 
 <div id="months"></div>
 
-<canvas id="chart" height="140"></canvas>
+<!-- Modal -->
+<div class="modal" id="chartModal">
+  <div class="modal-box">
+    <div class="close-btn" onclick="closeChart()">✖ ปิด</div>
+    <canvas id="chart" height="260"></canvas>
+  </div>
+</div>
 
 <script>
-// ===== PWA Service Worker =====
-if('serviceWorker' in navigator){
- const code = `
-  self.addEventListener('install',e=>self.skipWaiting());
-  self.addEventListener('fetch',e=>{});
- `;
- const blob = new Blob([code],{type:'text/javascript'});
- navigator.serviceWorker.register(URL.createObjectURL(blob));
-}
+/* ===================== DATA ===================== */
+const months = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 
-// ===== Online / Offline =====
-function updateNet(){
- const el=document.getElementById('netStatus');
- if(navigator.onLine){
-   el.innerText='● Online'; el.style.background='#2ecc71';
- }else{
-   el.innerText='● Offline'; el.style.background='#e74c3c';
- }
-}
-window.addEventListener('online',updateNet);
-window.addEventListener('offline',updateNet);
-updateNet();
+let data = JSON.parse(localStorage.getItem("budget-data")) ||
+  months.map(()=>({salary:0, extra:0, items:[]}));
 
-// ===== Background Slideshow =====
-const images=['DSCF1292.jpg','DSCF1361.jpg','DSCF1400.jpg'];
-let bgIndex=0,showA=true;
-const bg1=document.getElementById('bg1');
-const bg2=document.getElementById('bg2');
-bg1.style.backgroundImage=`url(${images[0]})`;
-setInterval(()=>{
- bgIndex=(bgIndex+1)%images.length;
- const show=showA?bg2:bg1;
- const hide=showA?bg1:bg2;
- show.style.backgroundImage=`url(${images[bgIndex]})`;
- show.classList.add('active');
- hide.classList.remove('active');
- showA=!showA;
-},20*60*1000);
+let openState = {};
+let chart = null;
 
-// ===== Day/Night =====
-function updateDayNight(){
- const h=new Date().getHours();
- const night=h>=18||h<6;
- document.getElementById('overlay').className='bg-overlay '+(night?'night':'day');
-}
-setInterval(updateDayNight,60000);
-updateDayNight();
-
-// ===== Data =====
-const monthsName=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-let data = JSON.parse(localStorage.getItem('budgetData')) ||
- monthsName.map(()=>({salary:0,extra:0,details:[]}));
-
-const monthsDiv=document.getElementById('months');
-
-function save(){
- localStorage.setItem('budgetData',JSON.stringify(data));
-}
+const container = document.getElementById("months");
 
 function render(){
- monthsDiv.innerHTML='';
- let sumInc=0,sumExp=0;
+  container.innerHTML = "";
 
- data.forEach((m,i)=>{
-   const inc = Number(m.salary||0)+Number(m.extra||0)
-     + m.details.filter(d=>d.type==='income').reduce((s,d)=>s+Number(d.amount||0),0);
-   const exp = m.details.filter(d=>d.type==='expense').reduce((s,d)=>s+Number(d.amount||0),0);
-   sumInc+=inc; sumExp+=exp;
+  data.forEach((m,i)=>{
+    const income = calcIncome(m);
+    const expense = calcExpense(m);
+    const balance = income-expense;
 
-   const div=document.createElement('div');
-   div.className='month';
-   div.innerHTML=`
-    <div class="month-header" onclick="toggle(${i})">
-      <b>${monthsName[i]}</b>
-      <span class="${inc-exp>=0?'income':'expense'}">${(inc-exp).toLocaleString()}</span>
-    </div>
-    <div class="month-body" id="body-${i}">
-      เงินเดือน<input type="number" value="${m.salary}" onchange="updBase(${i},'salary',this.value)">
-      รายได้พิเศษ<input type="number" value="${m.extra}" onchange="updBase(${i},'extra',this.value)">
-      <div id="detail-${i}"></div>
-      <button class="btn btn-green" onclick="addDetail(${i},'income')">+รับ</button>
-      <button class="btn" style="background:linear-gradient(135deg,#e74c3c,#c0392b)" onclick="addDetail(${i},'expense')">-จ่าย</button>
-    </div>
-   `;
-   monthsDiv.appendChild(div);
-   renderDetail(i);
- });
+    const month = document.createElement("div");
+    month.className="month";
+    month.innerHTML = `<b>${months[i]}</b><span class="green">${balance.toLocaleString()}</span>`;
+    month.onclick = ()=>toggleDetail(i);
 
- document.getElementById('sumIncome').innerText=sumInc.toLocaleString();
- document.getElementById('sumExpense').innerText=sumExp.toLocaleString();
- document.getElementById('sumBalance').innerText=(sumInc-sumExp).toLocaleString();
- drawChart();
- save();
+    const detail = document.createElement("div");
+    detail.className="detail";
+    detail.id="detail-"+i;
+
+    detail.innerHTML = `
+      <div class="row">
+        <input type="number" placeholder="เงินเดือน" value="${m.salary}" oninput="updateBase(${i},'salary',this.value)">
+        <input type="number" placeholder="รายได้พิเศษ" value="${m.extra}" oninput="updateBase(${i},'extra',this.value)">
+      </div>
+      <div id="items-${i}"></div>
+      <div class="row">
+        <button class="small-btn add-income" onclick="addItem(${i},'income')">+ รับ</button>
+        <button class="small-btn add-expense" onclick="addItem(${i},'expense')">- จ่าย</button>
+      </div>
+    `;
+
+    container.appendChild(month);
+    container.appendChild(detail);
+    renderItems(i);
+
+    if(openState[i]) detail.style.display="block";
+  });
+
+  calcTotal();
 }
 
-function renderDetail(i){
- const box=document.getElementById('detail-'+i);
- if(!box) return;
- box.innerHTML='';
- data[i].details.forEach((d,idx)=>{
-   const row=document.createElement('div');
-   row.innerHTML=`
-    <select onchange="updDetail(${i},${idx},'type',this.value)">
-     <option value="income" ${d.type==='income'?'selected':''}>รับ</option>
-     <option value="expense" ${d.type==='expense'?'selected':''}>จ่าย</option>
-    </select>
-    <input type="text" value="${d.desc||''}" onchange="updDetail(${i},${idx},'desc',this.value)">
-    <input type="number" value="${d.amount||0}" onchange="updDetail(${i},${idx},'amount',this.value)">
-    <button class="btn" style="background:linear-gradient(135deg,#e74c3c,#c0392b)" onclick="delDetail(${i},${idx})">ลบ</button>
-   `;
-   box.appendChild(row);
- });
+function renderItems(i){
+  const box = document.getElementById("items-"+i);
+  if(!box) return;
+
+  box.innerHTML="";
+  data[i].items.forEach((it,idx)=>{
+    const row = document.createElement("div");
+    row.className="row";
+    row.innerHTML=`
+      <select onchange="updateItem(${i},${idx},'type',this.value)">
+        <option value="income" ${it.type==="income"?"selected":""}>รับ</option>
+        <option value="expense" ${it.type==="expense"?"selected":""}>จ่าย</option>
+      </select>
+      <input placeholder="รายการ" value="${it.desc}" oninput="updateItem(${i},${idx},'desc',this.value)">
+      <input type="number" value="${it.amount}" oninput="updateItem(${i},${idx},'amount',this.value)">
+      <button onclick="removeItem(${i},${idx})">❌</button>
+    `;
+    box.appendChild(row);
+  });
 }
 
-function toggle(i){
- const el=document.getElementById('body-'+i);
- el.parentElement.classList.toggle('open');
+function toggleDetail(i){
+  const el = document.getElementById("detail-"+i);
+  const open = el.style.display==="block";
+  el.style.display = open ? "none" : "block";
+  openState[i] = !open;
 }
 
-function updBase(i,f,v){ data[i][f]=Number(v); render(); }
-function updDetail(i,d,f,v){ data[i].details[d][f]=f==='amount'?Number(v):v; render(); }
-function addDetail(i,type){ data[i].details.push({type,desc:'',amount:0}); render(); }
-function delDetail(i,d){ data[i].details.splice(d,1); render(); }
-
-// ===== Backup / Import =====
-function backupJSON(){
- const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
- const a=document.createElement('a');
- a.href=URL.createObjectURL(blob);
- a.download='budget-backup.json';
- a.click();
-}
-function importJSON(e){
- const f=e.target.files[0];
- if(!f) return;
- const r=new FileReader();
- r.onload=()=>{
-  try{
-    data=JSON.parse(r.result);
-    render();
-    alert('นำเข้าข้อมูลสำเร็จ');
-  }catch{ alert('ไฟล์ไม่ถูกต้อง'); }
- };
- r.readAsText(f);
+function calcIncome(m){
+  return m.salary + m.extra + m.items.filter(x=>x.type==="income").reduce((s,a)=>s+a.amount,0);
 }
 
-// ===== Chart =====
-let chart;
-function drawChart(){
- const ctx=document.getElementById('chart');
- if(chart) chart.destroy();
- chart=new Chart(ctx,{
-  type:'bar',
-  data:{
-   labels:monthsName,
-   datasets:[{
-    label:'รายรับ',
-    data:data.map(m=>Number(m.salary||0)+Number(m.extra||0)),
-   }]
-  }
- });
+function calcExpense(m){
+  return m.items.filter(x=>x.type==="expense").reduce((s,a)=>s+a.amount,0);
 }
 
-// ===== Daily Reminder =====
-function enableReminder(){
- if(!('Notification' in window)) return;
- if(Notification.permission==='granted') schedule();
- else Notification.requestPermission().then(p=>{if(p==='granted')schedule();});
+function updateBase(i,key,val){
+  data[i][key]=Number(val)||0;
+  save();
 }
-function schedule(){
- setInterval(()=>{
-  const h=new Date().getHours();
-  if(h===20){
-    new Notification('บันทึกรายรับรายจ่าย',{body:'อย่าลืมบันทึกค่าใช้จ่ายวันนี้ 💰'});
-  }
- },60*60*1000);
+
+function addItem(i,type){
+  data[i].items.push({type,desc:"",amount:0});
+  save();
 }
-enableReminder();
+
+function updateItem(i,idx,key,val){
+  data[i].items[idx][key] = key==="amount" ? Number(val)||0 : val;
+  save(false);
+}
+
+function removeItem(i,idx){
+  data[i].items.splice(idx,1);
+  save();
+}
+
+function calcTotal(){
+  let inc=0, exp=0;
+  data.forEach(m=>{
+    inc += calcIncome(m);
+    exp += calcExpense(m);
+  });
+  document.getElementById("totalIncome").innerText = inc.toLocaleString();
+  document.getElementById("totalExpense").innerText = exp.toLocaleString();
+  document.getElementById("totalBalance").innerText = (inc-exp).toLocaleString();
+}
+
+function save(reRender=true){
+  localStorage.setItem("budget-data", JSON.stringify(data));
+  if(reRender) render();
+  else calcTotal();
+}
+
+/* ===================== CHART ===================== */
+
+function openChart(){
+  const modal = document.getElementById("chartModal");
+  modal.classList.add("show");
+
+  const incomes = data.map(m=>calcIncome(m));
+  const expenses = data.map(m=>calcExpense(m));
+
+  const ctx = document.getElementById("chart");
+
+  if(chart) chart.destroy();
+
+  chart = new Chart(ctx,{
+    type:"scatter",
+    data:{
+      datasets:[{
+        label:"รายรับ vs รายจ่าย",
+        data: incomes.map((inc,i)=>({
+          x: expenses[i],
+          y: inc,
+          label: months[i]
+        })),
+        backgroundColor:"#4f7cff"
+      }]
+    },
+    options:{
+      scales:{
+        x:{ title:{display:true,text:"รายจ่าย (บาท)"} },
+        y:{ title:{display:true,text:"รายรับ (บาท)"} }
+      },
+      plugins:{
+        tooltip:{
+          callbacks:{
+            label:(ctx)=>`${ctx.raw.label} | รับ ${ctx.raw.y.toLocaleString()} | จ่าย ${ctx.raw.x.toLocaleString()}`
+          }
+        }
+      }
+    }
+  });
+}
+
+function closeChart(){
+  document.getElementById("chartModal").classList.remove("show");
+}
+
+function backup(){ alert("Backup กำลังพัฒนา"); }
+function importData(){ alert("Import กำลังพัฒนา"); }
 
 render();
 </script>
