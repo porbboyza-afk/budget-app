@@ -166,6 +166,10 @@
     .btn-tool.excel { background: #2dce89; color: white; border: none; box-shadow: 0 4px 10px rgba(45, 206, 137, 0.3); }
     .btn-tool.clear { background: #f5365c; color: white; border: none; box-shadow: 0 4px 10px rgba(245, 54, 92, 0.3); }
     
+    /* ปุ่มใหม่: เงินออม */
+    .btn-tool.savings { background: #11cdef; color: white; border: none; box-shadow: 0 4px 10px rgba(17, 205, 239, 0.3); }
+    .btn-tool.savings:active, .btn-tool.savings:hover { background: #0da5c0; transform: translateY(1px); }
+
     .btn-tool.graph:active, .btn-tool.graph:hover { background: #e65230; transform: translateY(1px); }
     .btn-tool.excel:active, .btn-tool.excel:hover { background: #24b073; transform: translateY(1px); }
     .btn-tool.clear:active, .btn-tool.clear:hover { background: #d62c4d; transform: translateY(1px); }
@@ -300,9 +304,27 @@
     /* Modal & Loading */
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
     .modal.show { display: flex; animation: fadeIn 0.2s; }
-    .modal-card { background: white; width: 100%; max-width: 500px; border-radius: 20px; padding: 25px; max-height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+    
+    .modal-card { 
+        background: white; width: 100%; max-width: 600px; /* ขยายกว้างขึ้นนิดหน่อยสำหรับกราฟ */
+        border-radius: 20px; padding: 25px; 
+        max-height: 90vh; /* เพิ่มความสูงสูงสุด */
+        display: flex; flex-direction: column; /* จัดเรียงแนวตั้ง */
+        position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); 
+        overflow: hidden; /* ซ่อน Scrollbar ของการ์ดถ้าไม่จำเป็น */
+    }
+    
+    /* Container สำหรับกราฟเพื่อให้ยืดเต็มพื้นที่แต่ไม่ล้น */
+    .chart-container-wrapper {
+        position: relative;
+        flex: 1; /* ยืดให้เต็มพื้นที่ที่เหลือ */
+        min-height: 0; /* ป้องกันการล้นใน Flexbox */
+        height: 50vh; /* ความสูงพื้นฐาน 50% ของหน้าจอ */
+        width: 100%;
+    }
+
     .night .modal-card { background: #1e293b; color: #fff; }
-    .close-btn { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
+    .close-btn { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); z-index: 10; }
     
     .loading-overlay { 
         position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 2000;
@@ -375,7 +397,7 @@
   <div class="main-container">
       <div class="dashboard">
         <div class="dash-header">
-            <h2>My Budget Year</h2>
+            <h2>การเงินของฉัน</h2>
             <div style="font-size: 0.8rem; color: var(--text-muted);">
                 <i class="fas fa-wallet"></i> Wallet
             </div>
@@ -410,6 +432,8 @@
       <div class="toolbar-container">
         <button class="btn-tool ai" onclick="analyzeBudgetWithAI()"><i class="fas fa-sparkles"></i> AI Coach</button>
         <button class="btn-tool graph" onclick="openChart()"><i class="fas fa-chart-pie"></i> กราฟ</button>
+        <!-- เพิ่มปุ่มเงินออม -->
+        <button class="btn-tool savings" onclick="openSavingsChart()"><i class="fas fa-piggy-bank"></i> เงินออม</button>
         <button class="btn-tool excel" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel</button>
         <button class="btn-tool clear" onclick="clearData()"><i class="fas fa-trash-alt"></i> ล้าง</button>
       </div>
@@ -421,13 +445,16 @@
   <div class="modal" id="chartModal">
     <div class="modal-card">
       <span class="close-btn" onclick="closeChart()">&times;</span>
-      <h3 style="margin-top:0;">สถิติรายเดือน</h3>
-      <canvas id="chart" height="300"></canvas>
+      <h3 style="margin-top:0; margin-bottom: 15px;">สถิติ</h3>
+      <!-- หุ้ม Canvas ด้วย Wrapper เพื่อคุมขนาด -->
+      <div class="chart-container-wrapper">
+        <canvas id="chart"></canvas>
+      </div>
     </div>
   </div>
 
   <div class="modal" id="aiModal">
-    <div class="modal-card">
+    <div class="modal-card" style="overflow-y: auto; display: block;"> <!-- AI Modal ยังคง Scroll ได้เพราะข้อความอาจยาว -->
       <span class="close-btn" onclick="closeAiModal()">&times;</span>
       <h3 style="margin-top:0; display:flex; align-items:center; gap:10px; color:#667eea;">
         <i class="fas fa-robot"></i> AI Coach
@@ -749,6 +776,7 @@
     // --- Chart & Export ---
     let myChart = null;
     function openChart() {
+        document.querySelector('#chartModal h3').innerText = 'ภาพรวม รายรับ-รายจ่าย';
         document.getElementById('chartModal').classList.add('show');
         const ctx = document.getElementById('chart').getContext('2d');
         if(myChart) myChart.destroy();
@@ -769,9 +797,65 @@
                 ]
             },
             options: {
-                responsive: true, maintainAspectRatio: false,
-                scales: { x: { grid: { display:false } }, y: { grid: { borderDash: [4, 4] } } },
-                plugins: { legend: { position: 'bottom' } }
+                responsive: true, 
+                maintainAspectRatio: false, 
+                scales: { 
+                    x: { grid: { display:false } }, 
+                    y: { grid: { borderDash: [4, 4] }, beginAtZero: true } 
+                },
+                plugins: { legend: { position: 'bottom' } },
+                layout: { padding: { top: 10, bottom: 0, left: 0, right: 0 } }
+            }
+        });
+    }
+
+    function openSavingsChart() {
+        document.querySelector('#chartModal h3').innerText = 'สถิติเงินออม & คงเหลือ';
+        document.getElementById('chartModal').classList.add('show');
+        const ctx = document.getElementById('chart').getContext('2d');
+        if(myChart) myChart.destroy();
+        
+        const labels = months;
+        const dataSavings = monthlyData.map(m => Number(m.savings)||0);
+        const dataFreeCash = monthlyData.map(m => {
+            const stats = calculateStats(m);
+            return stats.freeBalance; 
+        });
+
+        myChart = new Chart(ctx, {
+            type: 'line', 
+            data: {
+                labels: labels,
+                datasets: [
+                    { 
+                        label: 'เงินออมที่จัดสรร', 
+                        data: dataSavings, 
+                        borderColor: '#11cdef', 
+                        backgroundColor: 'rgba(17, 205, 239, 0.2)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4 
+                    },
+                    { 
+                        label: 'เงินเหลือใช้จริง', 
+                        data: dataFreeCash, 
+                        borderColor: '#2dce89', 
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true, 
+                maintainAspectRatio: false,
+                scales: { 
+                    x: { grid: { display:false } }, 
+                    y: { grid: { borderDash: [4, 4] }, beginAtZero: true } 
+                },
+                plugins: { legend: { position: 'bottom' } },
+                layout: { padding: { top: 10, bottom: 0, left: 0, right: 0 } }
             }
         });
     }
