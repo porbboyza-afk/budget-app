@@ -15,7 +15,7 @@
   
   <style>
     :root {
-      /* Theme Variables (Can be changed dynamically) */
+      /* Theme Variables */
       --primary: #5e72e4;
       --primary-soft: #eaecfb;
       --success: #2dce89;
@@ -64,7 +64,7 @@
         max-width: 600px; margin: 0 auto; width: 100%; padding: 20px;
     }
 
-    /* Dashboard (Convex Style) */
+    /* Dashboard */
     .dashboard {
       background: var(--bg-card);
       border-radius: var(--radius); padding: 24px;
@@ -80,7 +80,6 @@
     
     .dash-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
     
-    /* User Profile */
     .user-profile-header { display: flex; align-items: center; gap: 12px; }
     .main-avatar {
         width: 45px; height: 45px; border-radius: 50%; object-fit: cover;
@@ -138,18 +137,43 @@
     .night .modern-input { border-color: #334155; }
     .modern-input:focus { border-color: var(--primary); outline: none; }
     
-    /* Category Picker (New) */
+    /* Category Picker */
+    .category-picker-container { position: relative; display: flex; align-items: center; margin-bottom: 15px; }
     .category-scroll {
-        display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-bottom: 15px;
-        scrollbar-width: none;
+        display: flex; gap: 12px; overflow-x: auto; padding: 10px 5px; 
+        scrollbar-width: none; flex: 1; scroll-behavior: smooth;
     }
+    .cat-item { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: none; width: 60px; cursor: pointer; }
     .cat-btn {
-        flex: none; width: 40px; height: 40px; border-radius: 50%; border: 1px solid #eee;
-        background: var(--bg-card); display: flex; align-items: center; justify-content: center;
-        font-size: 1.2rem; cursor: pointer; transition: transform 0.1s;
+        width: 48px; height: 48px; border-radius: 50%; border: none;
+        background: var(--bg-body); display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem; transition: transform 0.1s, background 0.2s;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
-    .cat-btn:active { transform: scale(0.9); background: var(--primary-soft); }
-    .night .cat-btn { border-color: #334155; }
+    .cat-item:active .cat-btn { transform: scale(0.9); background: var(--primary-soft); }
+    .cat-label { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; text-align: center; }
+    .night .cat-btn { background: #334155; }
+    .cat-nav-btn {
+      background: var(--bg-body); border: 1px solid rgba(0,0,0,0.05); width: 24px; height: 24px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); font-size: 0.8rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); z-index: 2;
+    }
+    .cat-nav-btn:hover { color: var(--primary); }
+    .night .cat-nav-btn { background: #334155; }
+
+    /* Action Buttons */
+    .action-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
+    .action-btn {
+        padding: 12px; border: none; border-radius: 50px;
+        font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: transform 0.1s;
+        font-size: 0.9rem; height: 60px;
+    }
+    .action-btn:active { transform: scale(0.95); }
+    .action-btn i { font-size: 1.2rem; }
+    
+    .btn-inc { background: linear-gradient(135deg, #2dce89, #2dcecc); }
+    .btn-exp { background: linear-gradient(135deg, #f5365c, #f56636); }
+    .btn-scan { background: linear-gradient(135deg, #5e72e4, #825ee4); }
 
     /* Detail Row */
     .detail-row {
@@ -164,7 +188,7 @@
     .badge-inc { background: var(--success-soft); color: var(--success); }
     .badge-exp { background: var(--danger-soft); color: var(--danger); }
     
-    /* Bottom Navigation (New) */
+    /* Bottom Navigation */
     .bottom-nav {
         position: fixed; bottom: 0; left: 0; width: 100%; height: var(--bottom-nav-height);
         background: var(--bg-card); 
@@ -172,12 +196,11 @@
         display: flex; justify-content: space-around; align-items: center;
         z-index: 1000; border-top-left-radius: 20px; border-top-right-radius: 20px;
         backdrop-filter: blur(10px);
-        padding-bottom: env(safe-area-inset-bottom); /* Safe area for iPhone X+ */
+        padding-bottom: env(safe-area-inset-bottom);
     }
     .nav-item {
         display: flex; flex-direction: column; align-items: center; gap: 4px;
-        color: var(--text-muted); cursor: pointer; transition: color 0.2s;
-        width: 20%;
+        color: var(--text-muted); cursor: pointer; transition: color 0.2s; width: 20%;
     }
     .nav-item i { font-size: 1.3rem; margin-bottom: 2px; transition: transform 0.2s; }
     .nav-item span { font-size: 0.7rem; font-weight: 500; }
@@ -192,27 +215,22 @@
         max-height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
     }
     
-    /* Settings Color Grid */
+    /* Settings Grid */
     .color-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px; }
     .color-swatch { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; }
     .color-swatch.active { border-color: var(--text-main); transform: scale(1.1); }
     
-    /* Settings Mode Buttons */
     .btn-mode {
         flex: 1; padding: 10px; border-radius: 12px; border: 1px solid #eee;
         background: transparent; color: var(--text-muted); cursor: pointer; font-weight: 500; font-size: 0.9rem;
         transition: all 0.2s;
     }
     .night .btn-mode { border-color: #334155; }
-    .btn-mode.active {
-        border-color: var(--primary); color: var(--primary); background: var(--primary-soft);
-    }
+    .btn-mode.active { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
 
     /* Utility */
     .hidden { display: none !important; }
     .btn-full { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; }
-    .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(94, 114, 228, 0.3); }
-    .btn-outline { background: transparent; border: 2px solid var(--text-muted); color: var(--text-muted); }
     
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   </style>
@@ -356,6 +374,16 @@
             </button>
         </div>
         
+        <!-- API Key Input -->
+        <div style="margin-bottom:20px;">
+            <h4 style="margin:0 0 5px 0; font-size:0.9rem; color:var(--text-muted);">Gemini API Key</h4>
+            <div style="display:flex; gap:10px;">
+                <input id="apiKeyInput" type="password" class="modern-input" placeholder="AIza..." style="padding:10px;">
+                <button class="btn-full" style="width:auto; margin:0; background:var(--primary); color:white;" onclick="saveApiKey()">บันทึก</button>
+            </div>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size:0.75rem; color:var(--primary); text-decoration:none;">👉 สมัครขอคีย์ฟรีที่นี่</a>
+        </div>
+
         <!-- Mode Toggle -->
         <div style="margin-bottom:20px;">
             <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--text-muted);">โหมดแสดงผล</h4>
@@ -516,7 +544,16 @@
   <!-- App Logic -->
   <script>
     const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-    const categories = ['🍔', '🚗', '🏠', '🛍️', '💊', '🎉', '💡', '💸']; // Quick Icon Picker
+    const categories = [
+        {icon: '🍔', label: 'อาหาร'},
+        {icon: '🚗', label: 'เดินทาง'},
+        {icon: '🏠', label: 'ที่พัก'},
+        {icon: '🛍️', label: 'ช้อปปิ้ง'},
+        {icon: '💊', label: 'สุขภาพ'},
+        {icon: '🎉', label: 'บันเทิง'},
+        {icon: '💡', label: 'บิลต่างๆ'},
+        {icon: '💸', label: 'ลงทุน'}
+    ];
 
     // Data Init
     window.monthlyData = JSON.parse(localStorage.getItem('yearlyBudget_v1')) || months.map(() => ({ salary: 0, extra: 0, savings: 0, budget: 0, details: [] }));
@@ -528,7 +565,16 @@
     const savedBg = localStorage.getItem('custom_bg');
     if(savedBg) document.body.style.backgroundImage = `url(${savedBg})`;
 
-    // Display Mode Logic
+    // Load API Key
+    const storedKey = localStorage.getItem('gemini_api_key');
+    if(storedKey) document.getElementById('apiKeyInput').value = storedKey;
+
+    function saveApiKey() {
+        const key = document.getElementById('apiKeyInput').value;
+        localStorage.setItem('gemini_api_key', key);
+        alert("บันทึก API Key เรียบร้อย");
+    }
+
     function setDisplayMode(mode) {
         localStorage.setItem('display_mode', mode);
         applyThemeMode();
@@ -558,7 +604,6 @@
         });
     }
 
-    // Initialize Mode on Load
     const currentMode = localStorage.getItem('display_mode') || 'auto';
     applyThemeMode();
     updateModeButtons(currentMode);
@@ -576,7 +621,6 @@
         return { totalInc, totalExp, balance, freeBalance, progress };
     }
 
-    // Animation Utility
     function animateValue(obj, start, end, duration) {
         let startTimestamp = null;
         const step = (timestamp) => {
@@ -588,7 +632,6 @@
         window.requestAnimationFrame(step);
     }
 
-    // Render Main
     window.renderCards = function() {
         const container = document.getElementById('cardsContainer');
         const openStates = Array.from(document.querySelectorAll('.month-card')).map(c => c.classList.contains('open'));
@@ -599,7 +642,6 @@
             const stats = calculateStats(m);
             gInc += stats.totalInc; gExp += stats.totalExp; gSave += (Number(m.savings)||0);
             
-            // Generate Details
             let detailsHtml = '';
             m.details.forEach((d, dIdx) => {
                 const isInc = d.type === 'income';
@@ -615,12 +657,13 @@
                 `;
             });
 
-            // Quick Category Picker
             const catPickerHtml = categories.map(c => 
-                `<div class="cat-btn" onclick="addWithIcon(${idx}, '${c}')">${c}</div>`
+                `<div class="cat-item" onclick="addWithIcon(${idx}, '${c.icon} ${c.label}')">
+                    <button class="cat-btn">${c.icon}</button>
+                    <span class="cat-label">${c.label}</span>
+                </div>`
             ).join('');
 
-            // Copy Prev Button (Only for Feb onwards)
             const copyBtn = idx > 0 && m.details.length === 0 
                 ? `<button class="btn-full" style="background:#f1f5f9; color:var(--primary); font-size:0.9rem;" onclick="copyFromPrev(${idx})"><i class="fas fa-copy"></i> คัดลอกรายการเดือนก่อน</button>` 
                 : '';
@@ -649,23 +692,33 @@
                     <div class="modern-input-group" style="margin-top:10px;"><label>เป้าหมายงบประมาณ (Budget)</label><input class="modern-input" style="border-color:var(--warning);" type="number" value="${m.budget||''}" placeholder="ตั้งงบเดือนนี้..." oninput="updateBase(${idx}, 'budget', this.value)"></div>
                   </div>
 
-                  <!-- Details -->
                   ${copyBtn}
                   <div class="detail-container">${detailsHtml}</div>
                   
-                  <!-- Quick Add -->
                   <div style="margin-top:15px;">
                       <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:5px;">เพิ่มรายการด่วน:</div>
-                      <div class="category-scroll">${catPickerHtml}</div>
+                      <div class="category-picker-container">
+                          <div class="cat-nav-btn" onclick="document.getElementById('cat-scroll-${idx}').scrollLeft -= 50"><i class="fas fa-chevron-left"></i></div>
+                          <div id="cat-scroll-${idx}" class="category-scroll">${catPickerHtml}</div>
+                          <div class="cat-nav-btn" onclick="document.getElementById('cat-scroll-${idx}').scrollLeft += 50"><i class="fas fa-chevron-right"></i></div>
+                      </div>
                   </div>
                   
                   <div class="action-row">
-                    <button class="action-btn" style="background:var(--success)" onclick="addDetail(${idx}, 'income')">รับ</button>
-                    <button class="action-btn" style="background:var(--danger)" onclick="addDetail(${idx}, 'expense')">จ่าย</button>
-                    <button class="action-btn" style="background:var(--primary)" onclick="triggerScan(${idx})"><i class="fas fa-camera"></i></button>
+                    <button class="action-btn btn-inc" onclick="addDetail(${idx}, 'income')">
+                        <i class="fas fa-plus"></i>
+                        <span>รับ</span>
+                    </button>
+                    <button class="action-btn btn-exp" onclick="addDetail(${idx}, 'expense')">
+                        <i class="fas fa-minus"></i>
+                        <span>จ่าย</span>
+                    </button>
+                    <button class="action-btn btn-scan" onclick="triggerScan(${idx})">
+                        <i class="fas fa-camera"></i>
+                        <span>สแกน</span>
+                    </button>
                   </div>
 
-                  <!-- Savings -->
                   <div style="margin-top:20px; padding-top:15px; border-top:1px dashed #eee;">
                       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                           <div style="font-size:0.9rem; font-weight:600; color:var(--info);"><i class="fas fa-piggy-bank"></i> เงินออม</div>
@@ -679,15 +732,12 @@
         });
 
         container.innerHTML = html;
-        
-        // Rolling Numbers
         animateValue(document.getElementById('grandBalance'), 0, gInc - gExp, 800);
         document.getElementById('grandIncome').innerText = gInc.toLocaleString();
         document.getElementById('grandExpense').innerText = gExp.toLocaleString();
         document.getElementById('grandSavings').innerText = gSave.toLocaleString();
     }
 
-    // Logic Functions
     window.toggleCard = (idx) => document.getElementById(`card-${idx}`).classList.toggle('open');
     window.switchView = (view) => {
         document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
@@ -744,13 +794,11 @@
         localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData));
     }
 
-    // Modal Helpers
     window.openChartModal = () => { document.getElementById('chartModal').classList.add('show'); renderChart('bar'); }
     window.openToolsModal = () => document.getElementById('toolsModal').classList.add('show');
     window.openSettingsModal = () => document.getElementById('settingsModal').classList.add('show');
     window.closeModal = (id) => document.getElementById(id).classList.remove('show');
 
-    // Chart
     let myChart = null;
     window.renderChart = (type) => {
         const ctx = document.getElementById('chart').getContext('2d');
@@ -782,14 +830,12 @@
         });
     }
 
-    // Theme Customizer
     window.setTheme = (color) => {
         document.documentElement.style.setProperty('--primary', color);
         document.documentElement.style.setProperty('--primary-soft', color + '20'); 
         localStorage.setItem('app_theme', color);
     }
     
-    // Background Handlers
     window.handleBgChange = (input) => {
         if(input.files[0]) {
             const r = new FileReader();
@@ -808,32 +854,37 @@
     }
 
     // AI & Gemini
-    const apiKey = ""; 
+    const apiKey = "AIzaSyD-wO4EzjPsLNrXC0v8J4jqTunMKWMJRjw"; // ใส่คีย์ให้แล้วครับ
     window.analyzeBudgetWithAI = async () => {
+        // ให้ใช้คีย์ในเครื่องก่อน ถ้าไม่มีใช้คีย์สำรอง (แต่แนะนำให้กรอกใน Settings จะดีสุด)
+        const key = localStorage.getItem('gemini_api_key') || apiKey;
+        
         document.getElementById('loadingOverlay').style.display='flex';
         try {
             const sum = window.monthlyData.map((m,i)=>`${months[i]}: In=${calculateStats(m).totalInc}, Out=${calculateStats(m).totalExp}`).join('\n');
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
                 method:'POST', headers:{'Content-Type':'application/json'},
                 body:JSON.stringify({contents:[{parts:[{text:`Analyze this budget:\n${sum}\nGive 3 quick tips in Thai markdown.`}]}]})
             });
             const d = await res.json();
             document.getElementById('aiContent').innerHTML = marked.parse(d.candidates[0].content.parts[0].text);
             document.getElementById('aiModal').classList.add('show');
-        } catch(e) { alert("API Error"); }
+        } catch(e) { alert("API Error: " + e.message); }
         finally { document.getElementById('loadingOverlay').style.display='none'; }
     }
     
     // Slip Scan
     window.triggerScan = (idx) => { window.scanIdx = idx; document.getElementById('receiptInput').click(); }
     window.handleReceiptScan = async (input) => {
+        const key = localStorage.getItem('gemini_api_key') || apiKey;
+
         if(!input.files[0]) return;
         document.getElementById('loadingOverlay').style.display='flex';
         const r = new FileReader();
         r.onload = async (e) => {
             try {
                 const b64 = e.target.result.split(',')[1];
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
                     method:'POST', headers:{'Content-Type':'application/json'},
                     body:JSON.stringify({contents:[{role:"user", parts:[{text:"Extract: {\"desc\":\"str\",\"amount\":num,\"type\":\"expense\"}"},{inlineData:{mimeType:"image/jpeg",data:b64}}]}]})
                 });
