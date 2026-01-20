@@ -177,8 +177,9 @@
     .night .cat-btn { background: #334155; }
     .cat-nav-btn {
       background: var(--bg-card); border: none; width: 30px; height: 30px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); font-size: 0.8rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 2;
+      display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); font-size: 0.8rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 2; flex-shrink: 0;
     }
+    .night .cat-nav-btn { background: #334155; }
 
     /* Action Buttons */
     .action-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
@@ -236,7 +237,7 @@
     .nav-item.active { color: var(--primary); }
     .nav-item.active i { transform: translateY(-3px); }
 
-    /* Modals */
+    /* Modals, Utils, etc. */
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 2000; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.2s; }
     .modal.show { display: flex; }
     .modal-card { background: var(--bg-card); width: 100%; max-width: 500px; border-radius: 24px; padding: 25px; max-height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
@@ -256,18 +257,38 @@
     
     .chart-container-wrapper { position: relative; flex: 1; min-height: 0; height: 45vh; width: 100%; }
     
-    /* Sidebar */
-    .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2999; display: none; opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(2px); }
-    .menu-overlay.active { display: block; opacity: 1; }
-    .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 280px; background: var(--bg-card); z-index: 3000; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 2px 0 15px rgba(0,0,0,0.1); padding: 25px; display: flex; flex-direction: column; }
-    .sidebar.active { transform: translateX(0); }
-    
     /* Top Expenses */
     .top-expenses-widget { margin-top: 20px; padding-top: 15px; border-top: 1px dashed rgba(0,0,0,0.1); }
-    .top-pill { display: inline-flex; align-items: center; gap: 6px; background: var(--danger-soft); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; color: var(--danger); margin-right: 5px; margin-bottom: 5px; font-weight: 500; }
+    .top-pill { display: inline-flex; align-items: center; gap: 6px; background: var(--danger-soft); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; color: var(--danger); margin-right: 5px; margin-bottom: 5px; font-weight: 500; white-space: nowrap; }
+    
+    /* Clear Data Modal Specific */
+    #clearDataModal .modal-card { max-width: 350px; }
+    
+    /* Hide scrollbar for cross-browser */
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    
+    /* Scroll Wrapper for Top Expenses */
+    .scroll-wrapper { display: flex; align-items: center; position: relative; }
+    .scroll-btn {
+        background: var(--bg-card); border: 1px solid rgba(0,0,0,0.05); width: 24px; height: 24px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); font-size: 0.8rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); z-index: 2; flex-shrink: 0;
+    }
+    .scroll-btn.left { margin-right: 5px; }
+    .scroll-btn.right { margin-left: 5px; }
+    .night .scroll-btn { background: #334155; border-color: rgba(255,255,255,0.1); }
 
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes spin{to{transform:rotate(360deg)}}
+    
+    /* Desktop Responsive */
+    @media (min-width: 1024px) {
+        .main-container { max-width: 1200px; }
+        #cardsContainer { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; }
+        .month-card { margin-bottom: 0; height: fit-content; }
+        .month-card.open { grid-column: 1 / -1; transform: scale(1.02); box-shadow: 0 15px 35px rgba(50, 50, 93, 0.1); }
+        .toolbar-container { justify-content: center; }
+    }
   </style>
 </head>
 <body id="mainBody">
@@ -279,7 +300,6 @@
           <div class="dashboard">
               <div class="dash-header">
                   <div class="user-profile-header">
-                      <i class="fas fa-bars" style="font-size:1.4rem; cursor:pointer;" onclick="toggleMenu()"></i>
                       <img id="mainAvatar" class="main-avatar" src="" alt="Me">
                       <div class="user-info">
                           <h2 style="margin:0; font-size:1.2rem;">การเงินของฉัน</h2>
@@ -313,7 +333,11 @@
               
               <div class="top-expenses-widget">
                   <div style="font-size:0.8rem; font-weight:600; color:var(--warning); margin-bottom:8px;"><i class="fas fa-trophy"></i> รายจ่ายสูงสุดปีนี้</div>
-                  <div id="yearTopExpList" style="white-space: nowrap; overflow-x: auto; padding-bottom: 5px;"></div>
+                  <div class="scroll-wrapper">
+                      <button class="scroll-btn left" onclick="scrollContainer('yearTopExpList', -100)"><i class="fas fa-chevron-left"></i></button>
+                      <div id="yearTopExpList" class="hide-scrollbar" style="overflow-x: auto; flex: 1; padding-bottom: 5px; white-space: nowrap;"></div>
+                      <button class="scroll-btn right" onclick="scrollContainer('yearTopExpList', 100)"><i class="fas fa-chevron-right"></i></button>
+                  </div>
               </div>
           </div>
 
@@ -382,9 +406,9 @@
               
               <!-- Quick Add -->
               <div class="category-picker-container">
-                  <div class="cat-nav-btn" onclick="document.getElementById('cat-scroll').scrollLeft -= 50"><i class="fas fa-chevron-left"></i></div>
+                  <button class="cat-nav-btn" onclick="document.getElementById('cat-scroll').scrollLeft -= 50"><i class="fas fa-chevron-left"></i></button>
                   <div id="cat-scroll" class="category-scroll"></div> <!-- Injected by JS -->
-                  <div class="cat-nav-btn" onclick="document.getElementById('cat-scroll').scrollLeft += 50"><i class="fas fa-chevron-right"></i></div>
+                  <button class="cat-nav-btn" onclick="document.getElementById('cat-scroll').scrollLeft += 50"><i class="fas fa-chevron-right"></i></button>
               </div>
 
               <!-- List -->
@@ -433,54 +457,6 @@
       </div>
   </div>
 
-  <!-- Sidebar & Overlay -->
-  <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
-  <div class="sidebar" id="sideMenu">
-      <div class="sidebar-header">
-          <div class="sidebar-title"><i class="fas fa-bars"></i> เมนูหลัก</div>
-          <i class="fas fa-times" onclick="toggleMenu()" style="cursor:pointer; font-size:1.2rem; color:var(--text-muted);"></i>
-      </div>
-      
-      <div class="sidebar-content">
-          <!-- User Info (Hidden by default) -->
-          <div id="sidebarUserInfo" class="sidebar-user" style="display:none;">
-               <img id="sidebarAvatar" src="" class="sidebar-avatar" alt="Avatar">
-               <div id="sidebarName" style="font-weight:700; font-size:1.1rem; margin-bottom:5px;">User</div>
-               <div style="font-size:0.8rem; color:var(--text-muted);">Logged in via Google</div>
-          </div>
-
-          <!-- Auth Buttons -->
-          <button id="sidebarBtnLogin" class="btn-sidebar btn-google" onclick="loginGoogle()">
-              <i class="fab fa-google"></i> เข้าสู่ระบบ
-          </button>
-          
-          <button id="sidebarBtnLogout" class="btn-sidebar btn-logout" onclick="logout()" style="display:none;">
-              <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
-          </button>
-
-          <!-- Data Management -->
-          <div style="margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px;">
-              <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px; font-weight:600;">จัดการข้อมูล</div>
-              
-              <button class="btn-sidebar" onclick="exportToExcel()" style="background:#d1fae5; color:#065f46;">
-                  <i class="fas fa-file-excel"></i> ส่งออก Excel
-              </button>
-              
-              <button class="btn-sidebar" onclick="exportJSON()" style="background:#f1f5f9; color:#475569;">
-                  <i class="fas fa-download"></i> สำรองข้อมูล (Backup)
-              </button>
-              
-              <button class="btn-sidebar" onclick="document.getElementById('restoreInput').click()" style="background:#f1f5f9; color:#475569;">
-                  <i class="fas fa-upload"></i> กู้คืนข้อมูล (Restore)
-              </button>
-          </div>
-      </div>
-      
-      <div style="margin-top:auto; text-align:center; font-size:0.75rem; color:var(--text-muted);">
-          v 2.4 (No Duplicates)
-      </div>
-  </div>
-
   <!-- Inputs -->
   <input type="file" id="receiptInput" accept="image/*" style="display: none;">
   <input type="file" id="restoreInput" accept="application/json" style="display: none;" onchange="importJSON(this)">
@@ -521,8 +497,27 @@
     <div class="modal-card" style="max-width:400px;">
       <h3 style="margin-top:0;">เครื่องมือ</h3>
       <button class="btn-full" style="background:#d1fae5; color:#065f46;" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel</button>
-      <button class="btn-full" style="background:#fee2e2; color:#dc2626;" onclick="clearData()"><i class="fas fa-trash-alt"></i> ล้างข้อมูล</button>
+      <button class="btn-full" style="background:#f1f5f9; color:#475569;" onclick="exportJSON()"><i class="fas fa-download"></i> Backup</button>
+      <button class="btn-full" style="background:#f1f5f9; color:#475569;" onclick="document.getElementById('restoreInput').click()"><i class="fas fa-upload"></i> Restore</button>
+      <hr style="margin:15px 0; border:none; border-top:1px solid #eee;">
+      <button class="btn-full" style="background:#fee2e2; color:#dc2626;" onclick="openClearModal()"><i class="fas fa-trash-alt"></i> ล้างข้อมูล</button>
       <button class="btn-full" style="margin-top:10px; background:transparent; color:#888;" onclick="closeModal('toolsModal')">ปิด</button>
+    </div>
+  </div>
+  
+  <!-- Clear Data Modal -->
+  <div class="modal" id="clearDataModal">
+    <div class="modal-card" style="max-width: 350px;">
+      <h3 style="margin-top:0;">ล้างข้อมูล</h3>
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">เลือกช่วงเวลาที่ต้องการล้างข้อมูล</p>
+      <select id="clearTarget" class="modern-input" style="margin-bottom:20px;">
+          <option value="all">ทั้งหมด (เริ่มต้นใหม่)</option>
+          <!-- Options populated by JS -->
+      </select>
+      <div style="display:flex; gap:10px;">
+          <button class="btn-full" style="background:#fee2e2; color:#dc2626; margin:0;" onclick="performClear()">ยืนยันล้าง</button>
+          <button class="btn-full" style="background:transparent; color:#888; margin:0;" onclick="closeModal('clearDataModal')">ยกเลิก</button>
+      </div>
     </div>
   </div>
 
@@ -589,7 +584,6 @@
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // --- YOUR FIREBASE CONFIG ---
     const YOUR_FIREBASE_CONFIG = {
       apiKey: "AIzaSyDUliKbJO1YyUNjZdBvkBULaWlEaBzmcAA",
       authDomain: "budget1-ed2f4.firebaseapp.com",
@@ -625,8 +619,8 @@
             };
 
             onAuthStateChanged(auth, (user) => {
-                const btnLogin = document.getElementById('sidebarBtnLogin');
-                const btnLogout = document.getElementById('sidebarBtnLogout');
+                const btnLogin = document.getElementById('btnLogin');
+                const btnLogout = document.getElementById('btnLogout');
                 const avatar = document.getElementById('mainAvatar');
                 const role = document.getElementById('userRole');
                 const syncBadge = document.getElementById('syncStatus');
@@ -663,13 +657,8 @@
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 if (data && data.monthlyData) {
-                    // Update global data but don't force full re-render if user is editing
-                    const isEditing = document.activeElement.tagName === 'INPUT';
                     window.monthlyData = data.monthlyData;
-                    if(!isEditing) {
-                        if(document.getElementById('view-home').classList.contains('active')) window.renderHome();
-                        else window.renderMonthDetail();
-                    }
+                    if(window.renderCards) window.renderCards();
                 }
             } else {
                 saveDataToCloud();
@@ -695,9 +684,14 @@
   <script>
     const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
     const categories = [
-        {icon: '🍔', label: 'อาหาร'}, {icon: '🚗', label: 'เดินทาง'}, {icon: '🏠', label: 'ที่พัก'},
-        {icon: '🛍️', label: 'ช้อปปิ้ง'}, {icon: '💊', label: 'สุขภาพ'}, {icon: '🎉', label: 'บันเทิง'},
-        {icon: '💡', label: 'บิลต่างๆ'}, {icon: '💸', label: 'ลงทุน'}
+        {icon: '🍔', label: 'อาหาร'},
+        {icon: '🚗', label: 'เดินทาง'},
+        {icon: '🏠', label: 'ที่พัก'},
+        {icon: '🛍️', label: 'ช้อปปิ้ง'},
+        {icon: '💊', label: 'สุขภาพ'},
+        {icon: '🎉', label: 'บันเทิง'},
+        {icon: '💡', label: 'บิลต่างๆ'},
+        {icon: '💸', label: 'ลงทุน'}
     ];
 
     // Data Init
@@ -730,7 +724,6 @@
     }
 
     function animateValue(obj, start, end, duration) {
-        if(!obj) return;
         let startTimestamp = null;
         const step = (timestamp) => {
             if (!startTimestamp) startTimestamp = timestamp;
@@ -741,11 +734,14 @@
         window.requestAnimationFrame(step);
     }
     
-    // Save function (Global)
+    // Global Save (Hoisted)
     window.saveData = function() {
         localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData));
-        // Add pending write flag or similar if needed for robustness, but simple logic:
         if(window.saveDataToCloud) window.saveDataToCloud();
+    }
+    
+    window.saveDataSilent = function() {
+        localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData));
     }
 
     // --- View: Home ---
@@ -862,16 +858,14 @@
     }
 
     // --- Actions (Scoped to Current Month) ---
-    // Optimization: Don't re-render entire view on input change, just save data
     window.updateCurrentMonthBase = (field, val) => {
         window.monthlyData[window.currentMonthIndex][field] = Number(val);
         window.saveData(); 
-        // Update stats locally for immediate feedback
+        // Partial Update for stats only to avoid input jump
         const stats = calculateStats(window.monthlyData[window.currentMonthIndex]);
         document.getElementById('monthGrandBalance').innerText = stats.balance.toLocaleString();
         document.getElementById('monthGrandIncome').innerText = stats.totalInc.toLocaleString();
         document.getElementById('monthGrandExpense').innerText = stats.totalExp.toLocaleString();
-        // Progress bar logic
         const progBar = document.getElementById('monthProgressBar');
         if(progBar) {
              progBar.style.width = Math.min(stats.progress, 100) + '%';
@@ -882,8 +876,7 @@
     window.updateDetailCurrent = (dIdx, field, val) => {
         const m = window.monthlyData[window.currentMonthIndex];
         m.details[dIdx][field] = field==='amount' ? Number(val) : val;
-        window.saveData();
-        // Optional: Update total stats here too if needed
+        window.saveDataSilent(); 
     }
     
     window.addDetailCurrent = (type) => {
@@ -975,7 +968,44 @@
     window.openToolsModal = () => document.getElementById('toolsModal').classList.add('show');
     window.openSettingsModal = () => document.getElementById('settingsModal').classList.add('show');
     window.closeModal = (id) => document.getElementById(id).classList.remove('show');
-    window.toggleMenu = () => { document.getElementById('sideMenu').classList.toggle('active'); document.getElementById('menuOverlay').classList.toggle('active'); }
+    
+    // Open Clear Modal
+    window.openClearModal = () => {
+        const sel = document.getElementById('clearTarget');
+        sel.innerHTML = '<option value="all">ทั้งหมด (เริ่มต้นใหม่)</option>';
+        months.forEach((m, i) => {
+            sel.innerHTML += `<option value="${i}">${m}</option>`;
+        });
+        document.getElementById('clearDataModal').classList.add('show');
+    }
+
+    // Perform Clear
+    window.performClear = () => {
+        const val = document.getElementById('clearTarget').value;
+        if (val === 'all') {
+            if(confirm('ยืนยันล้างข้อมูลทั้งหมด?')) {
+                window.monthlyData = months.map(() => ({ salary: 0, extra: 0, savings: 0, budget: 0, details: [] }));
+            }
+        } else {
+            const idx = parseInt(val);
+            window.monthlyData[idx] = { salary: 0, extra: 0, savings: 0, budget: 0, details: [] };
+        }
+        window.saveData();
+        
+        // Refresh views
+        if(document.getElementById('view-home').classList.contains('active')) window.renderHome();
+        else if(document.getElementById('view-month').classList.contains('active') && (val === 'all' || parseInt(val) === window.currentMonthIndex)) {
+            window.renderMonthDetail();
+        }
+        
+        window.closeModal('clearDataModal');
+        window.closeModal('toolsModal');
+    }
+    
+    // Scroll Logic
+    window.scrollContainer = (id, offset) => {
+        document.getElementById(id).scrollLeft += offset;
+    }
     
     // AI
     window.analyzeBudgetWithAI = async () => {
@@ -1041,13 +1071,6 @@
        });
        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
        a.download = "Budget_Yearly.csv"; document.body.appendChild(a); a.click(); a.remove();
-    }
-    
-    window.clearData = () => {
-        if(confirm('ลบข้อมูลทั้งหมด?')) {
-            window.monthlyData = months.map(() => ({ salary: 0, extra: 0, savings: 0, budget: 0, details: [] }));
-            saveData(); renderHome();
-        }
     }
 
     // Init
