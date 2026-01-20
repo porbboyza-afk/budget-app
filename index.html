@@ -32,10 +32,10 @@
       --bg-body: #f8f9fe;
       --bg-card: #ffffff;
       
-      --radius: 20px;
-      --radius-sm: 12px;
+      --radius: 24px;
+      --radius-sm: 14px;
       --shadow-soft: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
-      --bottom-nav-height: 70px;
+      --bottom-nav-height: 80px;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -47,8 +47,9 @@
       color: var(--text-main);
       background: var(--bg-body);
       background-size: cover; background-position: center; background-attachment: fixed;
-      padding-bottom: calc(var(--bottom-nav-height) + 20px);
+      padding-bottom: calc(var(--bottom-nav-height) + 10px);
       transition: background 0.3s, color 0.3s;
+      overflow-x: hidden;
     }
     
     body.night {
@@ -64,7 +65,14 @@
     /* Layout */
     .main-container {
         max-width: 600px; margin: 0 auto; width: 100%; padding: 20px;
+        min-height: 80vh;
     }
+    
+    .view-section {
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+    .view-section.active { display: block; }
 
     /* Dashboard */
     .dashboard {
@@ -108,26 +116,32 @@
     .stat-label { font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
     .stat-val { font-size: 1rem; font-weight: 600; white-space: nowrap; }
 
-    /* Month Cards */
-    .month-card {
-        background: var(--bg-card); border-radius: var(--radius); margin-bottom: 16px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s;
-        border: 1px solid rgba(0,0,0,0.05); overflow: hidden;
+    /* Month Summary Cards */
+    .month-summary-card {
+        background: var(--bg-card); border-radius: var(--radius); margin-bottom: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05);
+        padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
+        cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
     }
-    .month-card.open {
-        transform: scale(1.02); z-index: 10; border-color: var(--primary);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-    }
-    
-    .card-header { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-    .m-title { font-weight: 600; display: flex; align-items: center; gap: 12px; color: var(--text-main); font-size: 1.1rem; }
-    .m-icon-box { 
-        width: 40px; height: 40px; background: var(--primary-soft); border-radius: 12px; 
+    .month-summary-card:active { transform: scale(0.98); }
+    .m-left { display: flex; align-items: center; gap: 15px; }
+    .m-icon { 
+        width: 45px; height: 45px; background: var(--primary-soft); border-radius: 12px; 
         display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.2rem;
     }
-    
-    .card-body { display: none; padding: 20px; border-top: 1px solid rgba(0,0,0,0.05); background: var(--bg-card); }
-    .month-card.open .card-body { display: block; animation: fadeIn 0.3s; }
+    .m-info h4 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--text-main); }
+    .m-info span { font-size: 0.8rem; color: var(--text-muted); }
+    .m-right { text-align: right; }
+    .m-bal { font-weight: 700; font-size: 1rem; display: block; }
+
+    /* Nav Header */
+    .nav-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+    .btn-back {
+        width: 40px; height: 40px; border-radius: 12px; background: var(--bg-card);
+        border: none; box-shadow: var(--shadow-soft); display: flex; align-items: center; justify-content: center;
+        color: var(--text-main); cursor: pointer; font-size: 1rem;
+    }
+    .page-title { margin: 0; font-size: 1.5rem; color: var(--text-main); font-weight: 700; }
 
     /* Inputs */
     .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
@@ -138,6 +152,7 @@
     }
     .night .modern-input { border-color: #334155; }
     .modern-input:focus { border-color: var(--primary); outline: none; }
+    .modern-input-group label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; display: block; font-weight: 600;}
     
     /* Category Picker */
     .category-picker-container { position: relative; display: flex; align-items: center; margin-bottom: 15px; }
@@ -148,19 +163,16 @@
     .cat-item { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: none; width: 60px; cursor: pointer; }
     .cat-btn {
         width: 48px; height: 48px; border-radius: 50%; border: none;
-        background: var(--bg-body); display: flex; align-items: center; justify-content: center;
-        font-size: 1.4rem; transition: transform 0.1s, background 0.2s;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        background: var(--bg-card); display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem; transition: transform 0.1s; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
     .cat-item:active .cat-btn { transform: scale(0.9); background: var(--primary-soft); }
     .cat-label { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; text-align: center; }
     .night .cat-btn { background: #334155; }
     .cat-nav-btn {
-      background: var(--bg-body); border: 1px solid rgba(0,0,0,0.05); width: 24px; height: 24px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); font-size: 0.8rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); z-index: 2;
+      background: var(--bg-card); border: none; width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); font-size: 0.8rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 2;
     }
-    .cat-nav-btn:hover { color: var(--primary); }
-    .night .cat-nav-btn { background: #334155; }
 
     /* Action Buttons */
     .action-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
@@ -171,26 +183,29 @@
         font-size: 0.9rem; height: 60px;
     }
     .action-btn:active { transform: scale(0.95); }
-    .action-btn i { font-size: 1.2rem; }
-    
     .btn-inc { background: linear-gradient(135deg, #2dce89, #2dcecc); }
     .btn-exp { background: linear-gradient(135deg, #f5365c, #f56636); }
     .btn-scan { background: linear-gradient(135deg, #5e72e4, #825ee4); }
 
-    /* Detail Row */
+    /* Detail List */
+    .detail-container { margin-top: 20px; background: var(--bg-card); border-radius: var(--radius); padding: 15px; box-shadow: var(--shadow-soft); }
     .detail-row {
-        display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
-        background: var(--bg-body); padding: 8px; border-radius: var(--radius-sm);
-        border: 1px solid rgba(0,0,0,0.03);
+        display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding-bottom: 10px;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
     }
+    .detail-row:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+    
     .type-badge {
         width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
         font-size: 0.8rem; font-weight: bold; cursor: pointer; flex-shrink: 0;
     }
     .badge-inc { background: var(--success-soft); color: var(--success); }
     .badge-exp { background: var(--danger-soft); color: var(--danger); }
-    
-    /* Bottom Navigation */
+    .desc-input { flex: 1; min-width: 0; border: none; background: transparent; color: var(--text-main); font-size: 0.95rem; }
+    .amt-input { width: 70px; flex-shrink: 0; border: none; background: transparent; text-align: right; font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
+    .btn-del { width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%; border: none; background: var(--danger-soft); color: var(--danger); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+    /* Bottom Nav */
     .bottom-nav {
         position: fixed; bottom: 0; left: 0; width: 100%; height: var(--bottom-nav-height);
         background: var(--bg-card); 
@@ -209,55 +224,50 @@
     .nav-item.active { color: var(--primary); }
     .nav-item.active i { transform: translateY(-3px); }
 
-    /* Modals */
+    /* Modals, Utils, etc. */
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 2000; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.2s; }
     .modal.show { display: flex; }
-    .modal-card { 
-        background: var(--bg-card); width: 100%; max-width: 500px; border-radius: 24px; padding: 25px; 
-        max-height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
-    }
+    .modal-card { background: var(--bg-card); width: 100%; max-width: 500px; border-radius: 24px; padding: 25px; max-height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
     
-    /* Chart Buttons Grid */
-    .chart-btn-grid {
-        margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
-    }
-    
-    /* Settings Grid */
+    .chart-btn-grid { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
     .color-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px; }
     .color-swatch { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s; }
     .color-swatch.active { border-color: var(--text-main); transform: scale(1.1); }
     
-    .btn-mode {
-        flex: 1; padding: 10px; border-radius: 12px; border: 1px solid #eee;
-        background: transparent; color: var(--text-muted); cursor: pointer; font-weight: 500; font-size: 0.9rem;
-        transition: all 0.2s;
-    }
+    .btn-mode { flex: 1; padding: 10px; border-radius: 12px; border: 1px solid #eee; background: transparent; color: var(--text-muted); cursor: pointer; font-weight: 500; font-size: 0.9rem; transition: all 0.2s; }
     .night .btn-mode { border-color: #334155; }
     .btn-mode.active { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
 
-    /* Utility */
     .hidden { display: none !important; }
     .btn-full { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; }
-    .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(94, 114, 228, 0.3); }
-    .btn-outline { background: transparent; border: 2px solid var(--text-muted); color: var(--text-muted); }
+    .btn-sidebar { width: 100%; padding: 12px; border-radius: 12px; border: none; font-size: 1rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; transition: background 0.2s; }
     
-    /* Chart container wrapper */
-    .chart-container-wrapper {
-        position: relative; flex: 1; min-height: 0; height: 45vh; width: 100%;
-    }
+    .chart-container-wrapper { position: relative; flex: 1; min-height: 0; height: 45vh; width: 100%; }
     
+    /* Sidebar */
+    .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2999; display: none; opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(2px); }
+    .menu-overlay.active { display: block; opacity: 1; }
+    .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 280px; background: var(--bg-card); z-index: 3000; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 2px 0 15px rgba(0,0,0,0.1); padding: 25px; display: flex; flex-direction: column; }
+    .sidebar.active { transform: translateX(0); }
+    
+    /* Top Expenses */
+    .top-expenses-widget { margin-top: 20px; padding-top: 15px; border-top: 1px dashed rgba(0,0,0,0.1); }
+    .top-pill { display: inline-flex; align-items: center; gap: 6px; background: var(--danger-soft); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; color: var(--danger); margin-right: 5px; margin-bottom: 5px; font-weight: 500; }
+
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body id="mainBody">
 
-  <!-- Views Container -->
-  <div id="view-home" class="view-section">
+  <!-- ================= VIEW: HOME (YEARLY) ================= -->
+  <div id="view-home" class="view-section active">
       <div class="main-container">
-          <!-- Dashboard -->
+          <!-- Yearly Dashboard -->
           <div class="dashboard">
               <div class="dash-header">
                   <div class="user-profile-header">
+                      <i class="fas fa-bars" style="font-size:1.4rem; cursor:pointer;" onclick="toggleMenu()"></i>
                       <img id="mainAvatar" class="main-avatar" src="" alt="Me">
                       <div class="user-info">
                           <h2 style="margin:0; font-size:1.2rem;">การเงินของฉัน</h2>
@@ -288,10 +298,102 @@
                       <span class="stat-val" style="color:var(--info)" id="grandSavings">0</span>
                   </div>
               </div>
+              
+              <div class="top-expenses-widget">
+                  <div style="font-size:0.8rem; font-weight:600; color:var(--warning); margin-bottom:8px;"><i class="fas fa-trophy"></i> รายจ่ายสูงสุดปีนี้</div>
+                  <div id="yearTopExpList" style="white-space: nowrap; overflow-x: auto; padding-bottom: 5px;"></div>
+              </div>
           </div>
 
-          <!-- Cards -->
-          <div id="cardsContainer"></div>
+          <!-- Month List (Cards) -->
+          <div id="homeMonthList"></div>
+      </div>
+  </div>
+
+  <!-- ================= VIEW: MONTH DETAIL ================= -->
+  <div id="view-month" class="view-section">
+      <div class="main-container">
+          
+          <!-- Month Header -->
+          <div class="nav-header">
+              <button class="btn-back" onclick="switchView('home')"><i class="fas fa-chevron-left"></i></button>
+              <h2 class="page-title" id="detailMonthName">มกราคม</h2>
+          </div>
+
+          <!-- Month Dashboard -->
+          <div class="dashboard">
+              <div class="balance-container" style="margin-bottom:15px; padding:0;">
+                  <div class="balance-label">คงเหลือเดือนนี้</div>
+                  <div class="balance-amount" id="monthGrandBalance">0</div>
+                  <div style="width:100%; height:6px; background:#f1f5f9; border-radius:3px; margin-top:10px; overflow:hidden;">
+                      <div id="monthProgressBar" style="height:100%; width:0%; background:var(--success); transition:width 0.5s;"></div>
+                  </div>
+                  <div id="monthProgressText" style="font-size:0.8rem; color:var(--text-muted); margin-top:5px;"></div>
+              </div>
+              
+              <div class="stats-row">
+                  <div class="stat-item">
+                      <span class="stat-label">รายรับ</span>
+                      <span class="stat-val" style="color:var(--success)" id="monthGrandIncome">0</span>
+                  </div>
+                  <div class="stat-item">
+                      <span class="stat-label">รายจ่าย</span>
+                      <span class="stat-val" style="color:var(--danger)" id="monthGrandExpense">0</span>
+                  </div>
+                  <div class="stat-item" style="border-left:1px solid rgba(0,0,0,0.1)">
+                      <span class="stat-label">เงินออม</span>
+                      <span class="stat-val" style="color:var(--info)" id="monthGrandSavings">0</span>
+                  </div>
+              </div>
+          </div>
+
+          <!-- Inputs Section -->
+          <div style="background:var(--bg-card); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-soft); margin-bottom:20px;">
+              <h4 style="margin:0 0 15px 0; color:var(--text-main);">ตั้งค่ารายรับ & งบประมาณ</h4>
+              <div class="input-row">
+                  <div class="modern-input-group"><label>เงินเดือน</label><input class="modern-input" type="number" id="inpSalary" placeholder="0" oninput="updateCurrentMonthBase('salary', this.value)"></div>
+                  <div class="modern-input-group"><label>รายได้พิเศษ</label><input class="modern-input" type="number" id="inpExtra" placeholder="0" oninput="updateCurrentMonthBase('extra', this.value)"></div>
+              </div>
+              <div class="input-row">
+                  <div class="modern-input-group"><label>เป้าหมาย (Budget)</label><input class="modern-input" style="border-color:var(--warning);" type="number" id="inpBudget" placeholder="0" oninput="updateCurrentMonthBase('budget', this.value)"></div>
+                  <div class="modern-input-group"><label>เงินออม</label><input class="modern-input" style="border-color:var(--info);" type="number" id="inpSavings" placeholder="0" oninput="updateCurrentMonthBase('savings', this.value)"></div>
+              </div>
+              <div id="copyPrevBtnContainer" style="margin-top:10px;"></div>
+          </div>
+
+          <!-- Transactions -->
+          <div style="margin-bottom:20px;">
+              <h4 style="margin:0 0 10px 0; color:var(--text-main); display:flex; justify-content:space-between;">
+                  รายการใช้จ่าย
+                  <span style="font-size:0.8rem; color:var(--text-muted); font-weight:400;">ล่าสุด</span>
+              </h4>
+              
+              <!-- Quick Add -->
+              <div class="category-picker-container">
+                  <div class="cat-nav-btn" onclick="document.getElementById('cat-scroll').scrollLeft -= 50"><i class="fas fa-chevron-left"></i></div>
+                  <div id="cat-scroll" class="category-scroll"></div> <!-- Injected by JS -->
+                  <div class="cat-nav-btn" onclick="document.getElementById('cat-scroll').scrollLeft += 50"><i class="fas fa-chevron-right"></i></div>
+              </div>
+
+              <!-- List -->
+              <div class="detail-container" id="monthDetailList">
+                  <!-- Items injected here -->
+              </div>
+          </div>
+          
+          <!-- Floating Action Buttons -->
+          <div class="action-row" style="margin-bottom:20px;">
+            <button class="action-btn btn-inc" onclick="addDetailCurrent('income')">
+                <i class="fas fa-plus"></i> <span>รับ</span>
+            </button>
+            <button class="action-btn btn-exp" onclick="addDetailCurrent('expense')">
+                <i class="fas fa-minus"></i> <span>จ่าย</span>
+            </button>
+            <button class="action-btn btn-scan" onclick="triggerScanCurrent()">
+                <i class="fas fa-camera"></i> <span>สแกน</span>
+            </button>
+          </div>
+
       </div>
   </div>
 
@@ -319,19 +421,72 @@
       </div>
   </div>
 
+  <!-- Sidebar & Overlay -->
+  <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+  <div class="sidebar" id="sideMenu">
+      <div class="sidebar-header">
+          <div class="sidebar-title"><i class="fas fa-bars"></i> เมนูหลัก</div>
+          <i class="fas fa-times" onclick="toggleMenu()" style="cursor:pointer; font-size:1.2rem; color:var(--text-muted);"></i>
+      </div>
+      
+      <div class="sidebar-content">
+          <!-- User Info (Hidden by default) -->
+          <div id="sidebarUserInfo" class="sidebar-user" style="display:none;">
+               <img id="sidebarAvatar" src="" class="sidebar-avatar" alt="Avatar">
+               <div id="sidebarName" style="font-weight:700; font-size:1.1rem; margin-bottom:5px;">User</div>
+               <div style="font-size:0.8rem; color:var(--text-muted);">Logged in via Google</div>
+          </div>
+
+          <!-- Auth Buttons -->
+          <button id="sidebarBtnLogin" class="btn-sidebar btn-google" onclick="loginGoogle()">
+              <i class="fab fa-google"></i> เข้าสู่ระบบ
+          </button>
+          
+          <button id="sidebarBtnLogout" class="btn-sidebar btn-logout" onclick="logout()" style="display:none;">
+              <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+          </button>
+
+          <!-- Data Management -->
+          <div style="margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px;">
+              <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px; font-weight:600;">จัดการข้อมูล</div>
+              
+              <button class="btn-sidebar" onclick="exportToExcel()" style="background:#d1fae5; color:#065f46;">
+                  <i class="fas fa-file-excel"></i> ส่งออก Excel
+              </button>
+              
+              <button class="btn-sidebar" onclick="exportJSON()" style="background:#f1f5f9; color:#475569;">
+                  <i class="fas fa-download"></i> สำรองข้อมูล (Backup)
+              </button>
+              
+              <button class="btn-sidebar" onclick="document.getElementById('restoreInput').click()" style="background:#f1f5f9; color:#475569;">
+                  <i class="fas fa-upload"></i> กู้คืนข้อมูล (Restore)
+              </button>
+          </div>
+      </div>
+      
+      <div style="margin-top:auto; text-align:center; font-size:0.75rem; color:var(--text-muted);">
+          v 2.3 (Navigation)
+      </div>
+  </div>
+
+  <!-- Inputs -->
+  <input type="file" id="receiptInput" accept="image/*" style="display: none;">
+  <input type="file" id="restoreInput" accept="application/json" style="display: none;" onchange="importJSON(this)">
+  <input type="file" id="bgInput" accept="image/*" style="display: none;" onchange="handleBgChange(this)">
+
+  <div class="loading" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p style="margin-top:15px; font-weight:600;">AI กำลังทำงาน...</p>
+  </div>
+
   <!-- Modals -->
-  
-  <!-- 1. Chart Modal -->
   <div class="modal" id="chartModal">
     <div class="modal-card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <h3 style="margin:0;">สถิติภาพรวม</h3>
         <i class="fas fa-times" style="cursor:pointer; font-size:1.2rem;" onclick="closeModal('chartModal')"></i>
       </div>
-      <div class="chart-container-wrapper">
-        <canvas id="chart"></canvas>
-      </div>
-      <!-- 3 Buttons Grid -->
+      <div class="chart-container-wrapper"><canvas id="chart"></canvas></div>
       <div class="chart-btn-grid">
           <button class="btn-full" style="background:var(--primary-soft); color:var(--primary); margin:0;" onclick="renderChart('bar')">แท่ง</button>
           <button class="btn-full" style="background:var(--info-soft); color:var(--info); margin:0;" onclick="renderChart('line')">เงินออม</button>
@@ -340,7 +495,6 @@
     </div>
   </div>
 
-  <!-- 2. AI Modal -->
   <div class="modal" id="aiModal">
     <div class="modal-card" style="max-height:80vh; overflow-x: hidden;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -351,28 +505,15 @@
     </div>
   </div>
 
-  <!-- 3. Tools Modal (Backup/Excel) -->
   <div class="modal" id="toolsModal">
     <div class="modal-card" style="max-width:400px;">
-      <h3 style="margin-top:0;">เครื่องมือจัดการข้อมูล</h3>
-      <button class="btn-full" style="background:#d1fae5; color:#065f46;" onclick="exportToExcel()">
-          <i class="fas fa-file-excel"></i> ส่งออก Excel
-      </button>
-      <button class="btn-full" style="background:#f1f5f9; color:#475569;" onclick="exportJSON()">
-          <i class="fas fa-download"></i> สำรองข้อมูล (Backup)
-      </button>
-      <button class="btn-full" style="background:#f1f5f9; color:#475569;" onclick="document.getElementById('restoreInput').click()">
-          <i class="fas fa-upload"></i> กู้คืนข้อมูล (Restore)
-      </button>
-      <hr style="margin:15px 0; border:none; border-top:1px solid #eee;">
-      <button class="btn-full" style="background:#fee2e2; color:#dc2626;" onclick="clearData()">
-          <i class="fas fa-trash-alt"></i> ล้างข้อมูลทั้งหมด
-      </button>
+      <h3 style="margin-top:0;">เครื่องมือ</h3>
+      <button class="btn-full" style="background:#d1fae5; color:#065f46;" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+      <button class="btn-full" style="background:#fee2e2; color:#dc2626;" onclick="clearData()"><i class="fas fa-trash-alt"></i> ล้างข้อมูล</button>
       <button class="btn-full" style="margin-top:10px; background:transparent; color:#888;" onclick="closeModal('toolsModal')">ปิด</button>
     </div>
   </div>
 
-  <!-- 4. Settings Modal -->
   <div class="modal" id="settingsModal">
     <div class="modal-card" style="max-width:400px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -380,7 +521,6 @@
             <i class="fas fa-times" style="cursor:pointer;" onclick="closeModal('settingsModal')"></i>
         </div>
         
-        <!-- Auth Section -->
         <div id="authSection" style="margin-bottom:20px; padding-bottom:10px; border-bottom:1px solid #eee;">
             <button id="btnLogin" class="btn-full" style="background:var(--bg-body); border:1px solid #ddd; color:var(--text-main);" onclick="loginGoogle()">
                 <i class="fab fa-google"></i> เข้าสู่ระบบด้วย Google
@@ -390,7 +530,6 @@
             </button>
         </div>
         
-        <!-- API Key Input -->
         <div style="margin-bottom:20px;">
             <h4 style="margin:0 0 5px 0; font-size:0.9rem; color:var(--text-muted);">Gemini API Key</h4>
             <div style="display:flex; gap:10px;">
@@ -400,23 +539,15 @@
             <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size:0.75rem; color:var(--primary); text-decoration:none;">👉 สมัครขอคีย์ฟรีที่นี่</a>
         </div>
 
-        <!-- Mode Toggle -->
         <div style="margin-bottom:20px;">
             <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--text-muted);">โหมดแสดงผล</h4>
             <div style="display:flex; gap:10px;">
-                <button class="btn-mode" onclick="setDisplayMode('light')" id="btn-mode-light">
-                    <i class="fas fa-sun"></i> สว่าง
-                </button>
-                <button class="btn-mode" onclick="setDisplayMode('night')" id="btn-mode-night">
-                    <i class="fas fa-moon"></i> มืด
-                </button>
-                <button class="btn-mode" onclick="setDisplayMode('auto')" id="btn-mode-auto">
-                    <i class="fas fa-magic"></i> อัตโนมัติ
-                </button>
+                <button class="btn-mode" onclick="setDisplayMode('light')" id="btn-mode-light"><i class="fas fa-sun"></i> สว่าง</button>
+                <button class="btn-mode" onclick="setDisplayMode('night')" id="btn-mode-night"><i class="fas fa-moon"></i> มืด</button>
+                <button class="btn-mode" onclick="setDisplayMode('auto')" id="btn-mode-auto"><i class="fas fa-magic"></i> อัตโนมัติ</button>
             </div>
         </div>
 
-        <!-- Theme Color -->
         <div style="margin-bottom:20px;">
             <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--text-muted);">สีธีมแอป</h4>
             <div class="color-grid">
@@ -428,7 +559,6 @@
             </div>
         </div>
 
-        <!-- Background Image -->
         <div>
             <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--text-muted);">พื้นหลัง</h4>
             <button class="btn-full" style="background:var(--primary-soft); color:var(--primary); margin-bottom:5px;" onclick="document.getElementById('bgInput').click()">
@@ -441,25 +571,12 @@
     </div>
   </div>
 
-  <!-- Loading Overlay -->
-  <div style="position:fixed; inset:0; background:rgba(255,255,255,0.9); z-index:9999; display:none; flex-direction:column; align-items:center; justify-content:center;" id="loadingOverlay">
-      <div style="width:40px; height:40px; border:4px solid var(--primary); border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite;"></div>
-      <p style="margin-top:15px; font-weight:600;">กำลังทำงาน...</p>
-  </div>
-  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-
-  <!-- Hidden Inputs -->
-  <input type="file" id="receiptInput" accept="image/*" style="display:none;" onchange="handleReceiptScan(this)">
-  <input type="file" id="restoreInput" accept="application/json" style="display:none;" onchange="importJSON(this)">
-  <input type="file" id="bgInput" accept="image/*" style="display:none;" onchange="handleBgChange(this)">
-
   <!-- Firebase Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // --- YOUR FIREBASE CONFIG ---
     const YOUR_FIREBASE_CONFIG = {
       apiKey: "AIzaSyDUliKbJO1YyUNjZdBvkBULaWlEaBzmcAA",
       authDomain: "budget1-ed2f4.firebaseapp.com",
@@ -481,7 +598,6 @@
             db = getFirestore(app);
             appId = 'budget-app';
 
-            // Global Auth Functions
             window.loginGoogle = async () => {
                 try {
                     const provider = new GoogleAuthProvider();
@@ -496,32 +612,53 @@
             };
 
             onAuthStateChanged(auth, (user) => {
-                const btnLogin = document.getElementById('btnLogin');
-                const btnLogout = document.getElementById('btnLogout');
+                const btnLogin = document.getElementById('sidebarBtnLogin');
+                const btnLogin2 = document.getElementById('btnLogin');
+                const btnLogout = document.getElementById('sidebarBtnLogout');
+                const btnLogout2 = document.getElementById('btnLogout');
                 const avatar = document.getElementById('mainAvatar');
+                const sideAvatar = document.getElementById('sidebarAvatar');
                 const role = document.getElementById('userRole');
+                const sideName = document.getElementById('sidebarName');
+                const sideInfo = document.getElementById('sidebarUserInfo');
                 const syncBadge = document.getElementById('syncStatus');
+
+                // Helper to safe toggle display
+                const toggle = (el, show, style='flex') => { if(el) el.style.display = show ? style : 'none'; };
+                const toggleClass = (el, cls, add) => { if(el) add ? el.classList.add(cls) : el.classList.remove(cls); };
 
                 if (user) {
                     userId = user.uid;
                     useCloud = !user.isAnonymous;
                     
                     if (!user.isAnonymous) {
-                        syncBadge.innerHTML = '<i class="fas fa-cloud"></i> Online';
-                        syncBadge.style.background = '#dcfce7'; syncBadge.style.color = '#166534';
-                        btnLogin.classList.add('hidden');
-                        btnLogout.classList.remove('hidden');
-                        if(user.photoURL) { avatar.src = user.photoURL; avatar.style.display = 'block'; }
-                        role.innerText = user.displayName || "User";
+                        if(syncBadge) { syncBadge.innerHTML = '<i class="fas fa-cloud"></i> Online'; syncBadge.style.background = '#dcfce7'; syncBadge.style.color = '#166534'; }
+                        
+                        toggle(btnLogin, false); toggle(btnLogin2, false); // Hide Login
+                        toggle(btnLogout, true); toggleClass(btnLogout2, 'hidden', false); // Show Logout
+                        toggle(sideInfo, true, 'block');
+
+                        if(user.photoURL) { 
+                            if(avatar) { avatar.src = user.photoURL; avatar.style.display = 'block'; }
+                            if(sideAvatar) sideAvatar.src = user.photoURL;
+                        }
+                        if(role) role.innerText = user.displayName || "User";
+                        if(sideName) sideName.innerText = user.displayName || "User";
+                        
                         startDataListener();
+                    } else {
+                        if(syncBadge) syncBadge.innerHTML = '<i class="fas fa-wifi"></i> Offline';
                     }
                 } else {
                     useCloud = false;
-                    syncBadge.innerHTML = '<i class="fas fa-wifi"></i> Offline';
-                    btnLogin.classList.remove('hidden');
-                    btnLogout.classList.add('hidden');
-                    avatar.style.display = 'none';
-                    role.innerText = "Personal Wallet";
+                    if(syncBadge) { syncBadge.innerHTML = '<i class="fas fa-wifi"></i> Offline'; syncBadge.style.background = '#e2e8f0'; syncBadge.style.color = '#64748b'; }
+                    
+                    toggle(btnLogin, true); toggle(btnLogin2, true); // Show Login
+                    toggle(btnLogout, false); toggleClass(btnLogout2, 'hidden', true); // Hide Logout
+                    toggle(sideInfo, false);
+                    
+                    if(avatar) avatar.style.display = 'none';
+                    if(role) role.innerText = "Personal Wallet";
                 }
             });
         } catch (e) { console.log("Offline Mode"); }
@@ -535,7 +672,8 @@
                 const data = docSnap.data();
                 if (data && data.monthlyData) {
                     window.monthlyData = data.monthlyData;
-                    if(window.renderCards) window.renderCards();
+                    if(window.renderHome && document.getElementById('view-home').classList.contains('active')) window.renderHome();
+                    else if(window.renderMonthDetail) window.renderMonthDetail();
                 }
             } else {
                 saveDataToCloud();
@@ -561,70 +699,28 @@
   <script>
     const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
     const categories = [
-        {icon: '🍔', label: 'อาหาร'},
-        {icon: '🚗', label: 'เดินทาง'},
-        {icon: '🏠', label: 'ที่พัก'},
-        {icon: '🛍️', label: 'ช้อปปิ้ง'},
-        {icon: '💊', label: 'สุขภาพ'},
-        {icon: '🎉', label: 'บันเทิง'},
-        {icon: '💡', label: 'บิลต่างๆ'},
-        {icon: '💸', label: 'ลงทุน'}
+        {icon: '🍔', label: 'อาหาร'}, {icon: '🚗', label: 'เดินทาง'}, {icon: '🏠', label: 'ที่พัก'},
+        {icon: '🛍️', label: 'ช้อปปิ้ง'}, {icon: '💊', label: 'สุขภาพ'}, {icon: '🎉', label: 'บันเทิง'},
+        {icon: '💡', label: 'บิลต่างๆ'}, {icon: '💸', label: 'ลงทุน'}
     ];
 
     // Data Init
     window.monthlyData = JSON.parse(localStorage.getItem('yearlyBudget_v1')) || months.map(() => ({ salary: 0, extra: 0, savings: 0, budget: 0, details: [] }));
     window.monthlyData = window.monthlyData.map(m => ({ ...m, savings: m.savings || 0, budget: m.budget || 0 }));
+    
+    // State
+    window.currentMonthIndex = 0;
 
-    // Init Theme & Mode
+    // --- Init ---
     const savedTheme = localStorage.getItem('app_theme');
     if(savedTheme) document.documentElement.style.setProperty('--primary', savedTheme);
     const savedBg = localStorage.getItem('custom_bg');
     if(savedBg) document.body.style.backgroundImage = `url(${savedBg})`;
-
-    // Load API Key
-    const storedKey = localStorage.getItem('gemini_api_key');
-    if(storedKey) document.getElementById('apiKeyInput').value = storedKey;
-
-    function saveApiKey() {
-        const key = document.getElementById('apiKeyInput').value;
-        localStorage.setItem('gemini_api_key', key);
-        alert("บันทึก API Key เรียบร้อย");
-    }
-
-    function setDisplayMode(mode) {
-        localStorage.setItem('display_mode', mode);
-        applyThemeMode();
-        updateModeButtons(mode);
-    }
-
-    function applyThemeMode() {
-        const mode = localStorage.getItem('display_mode') || 'auto';
-        if (mode === 'auto') {
-            const hour = new Date().getHours();
-            const isNight = hour >= 18 || hour < 6;
-            document.body.classList.toggle('night', isNight);
-        } else if (mode === 'night') {
-            document.body.classList.add('night');
-        } else {
-            document.body.classList.remove('night');
-        }
-    }
     
-    function updateModeButtons(mode) {
-        ['light', 'night', 'auto'].forEach(m => {
-            const btn = document.getElementById(`btn-mode-${m}`);
-            if(btn) {
-                if(m === mode) btn.classList.add('active');
-                else btn.classList.remove('active');
-            }
-        });
-    }
+    const storedKey = localStorage.getItem('gemini_api_key') || "AIzaSyD-wO4EzjPsLNrXC0v8J4jqTunMKWMJRjw"; // Default Key
+    if(document.getElementById('apiKeyInput')) document.getElementById('apiKeyInput').value = storedKey;
 
-    const currentMode = localStorage.getItem('display_mode') || 'auto';
-    applyThemeMode();
-    updateModeButtons(currentMode);
-
-    // Core Logic
+    // --- Core Logic ---
     function calculateStats(m) {
         const dInc = m.details.filter(d => d.type === 'income').reduce((s, d) => s + (Number(d.amount)||0), 0);
         const dExp = m.details.filter(d => d.type === 'expense').reduce((s, d) => s + (Number(d.amount)||0), 0);
@@ -637,8 +733,8 @@
         return { totalInc, totalExp, balance, freeBalance, progress };
     }
 
-    // Animation Utility
     function animateValue(obj, start, end, duration) {
+        if(!obj) return;
         let startTimestamp = null;
         const step = (timestamp) => {
             if (!startTimestamp) startTimestamp = timestamp;
@@ -648,157 +744,161 @@
         };
         window.requestAnimationFrame(step);
     }
+    
+    function saveData() {
+        localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData));
+        if(window.saveDataToCloud) window.saveDataToCloud();
+    }
 
-    // Render Main
-    window.renderCards = function() {
-        const container = document.getElementById('cardsContainer');
-        const openStates = Array.from(document.querySelectorAll('.month-card')).map(c => c.classList.contains('open'));
+    // --- View: Home ---
+    window.renderHome = function() {
+        const list = document.getElementById('homeMonthList');
+        if(!list) return;
         let html = '';
         let gInc = 0, gExp = 0, gSave = 0;
+        const yearlyExpMap = {};
 
         window.monthlyData.forEach((m, idx) => {
             const stats = calculateStats(m);
             gInc += stats.totalInc; gExp += stats.totalExp; gSave += (Number(m.savings)||0);
             
-            // Generate Details
-            let detailsHtml = '';
-            m.details.forEach((d, dIdx) => {
-                const isInc = d.type === 'income';
-                detailsHtml += `
-                  <div class="detail-row">
-                    <div class="type-badge ${isInc?'badge-inc':'badge-exp'}" onclick="toggleDetailType(${idx}, ${dIdx})">
-                        ${isInc?'+':'-'}
-                    </div>
-                    <input class="desc-input" type="text" placeholder="รายการ..." value="${d.desc}" oninput="updateDetail(${idx}, ${dIdx}, 'desc', this.value)">
-                    <input class="amt-input" type="number" placeholder="0" value="${d.amount}" oninput="updateDetail(${idx}, ${dIdx}, 'amount', this.value)">
-                    <i class="fas fa-times" style="color:#e2e8f0; cursor:pointer;" onclick="removeDetail(${idx}, ${dIdx})"></i>
-                  </div>
-                `;
+            // Collect Top Expenses
+            m.details.filter(d=>d.type==='expense').forEach(d => {
+                let k = d.desc.trim() || 'อื่นๆ';
+                yearlyExpMap[k] = (yearlyExpMap[k]||0) + Number(d.amount);
             });
 
-            // Quick Category Picker
-            const catPickerHtml = categories.map(c => 
-                `<div class="cat-item" onclick="addWithIcon(${idx}, '${c.icon} ${c.label}')">
-                    <button class="cat-btn">${c.icon}</button>
-                    <span class="cat-label">${c.label}</span>
-                </div>`
-            ).join('');
-
-            // Copy Prev Button (Only for Feb onwards)
-            const copyBtn = idx > 0 && m.details.length === 0 
-                ? `<button class="btn-full" style="background:#f1f5f9; color:var(--primary); font-size:0.9rem;" onclick="copyFromPrev(${idx})"><i class="fas fa-copy"></i> คัดลอกรายการเดือนก่อน</button>` 
-                : '';
-
             html += `
-              <div class="month-card ${openStates[idx] ? 'open' : ''}" id="card-${idx}">
-                <div class="card-header" onclick="toggleCard(${idx})">
-                  <div class="m-title">
-                    <div class="m-icon-box"><i class="far fa-calendar-alt"></i></div>
-                    <div>${months[idx]}</div>
-                  </div>
-                  <div class="m-stat">
-                    <span class="balance-amount" style="font-size:1.1rem; color:${stats.balance>=0?'var(--primary)':'var(--danger)'}">${stats.balance.toLocaleString()}</span>
-                    <div style="width:80px; height:4px; background:#f1f5f9; border-radius:2px; margin-top:5px; overflow:hidden;">
-                        <div style="height:100%; width:${Math.min(stats.progress, 100)}%; background:${stats.progress > 100 ? 'var(--danger)' : 'var(--success)'}"></div>
+                <div class="month-summary-card" onclick="openMonth(${idx})">
+                    <div class="m-left">
+                        <div class="m-icon">${idx+1}</div>
+                        <div class="m-info">
+                            <h4>${months[idx]}</h4>
+                            <span>คงเหลือ: ${stats.freeBalance.toLocaleString()}</span>
+                        </div>
                     </div>
-                  </div>
-                </div>
-
-                <div class="card-body">
-                  <div style="margin-bottom:15px;">
-                    <div class="input-row">
-                        <div class="modern-input-group"><label>เงินเดือน</label><input class="modern-input" type="number" value="${m.salary||''}" placeholder="0" oninput="updateBase(${idx}, 'salary', this.value)"></div>
-                        <div class="modern-input-group"><label>รายได้พิเศษ</label><input class="modern-input" type="number" value="${m.extra||''}" placeholder="0" oninput="updateBase(${idx}, 'extra', this.value)"></div>
+                    <div class="m-right">
+                        <span class="m-bal" style="color:${stats.balance>=0?'var(--primary)':'var(--danger)'}">${stats.balance.toLocaleString()}</span>
+                        <div style="width:60px; height:4px; background:#f1f5f9; border-radius:2px; margin-top:5px; margin-left:auto; overflow:hidden;">
+                             <div style="height:100%; width:${Math.min(stats.progress, 100)}%; background:${stats.progress > 100 ? 'var(--danger)' : 'var(--success)'}"></div>
+                        </div>
                     </div>
-                    <div class="modern-input-group" style="margin-top:10px;"><label>เป้าหมายงบประมาณ (Budget)</label><input class="modern-input" style="border-color:var(--warning);" type="number" value="${m.budget||''}" placeholder="ตั้งงบเดือนนี้..." oninput="updateBase(${idx}, 'budget', this.value)"></div>
-                  </div>
-
-                  ${copyBtn}
-                  <div class="detail-container">${detailsHtml}</div>
-                  
-                  <div style="margin-top:15px;">
-                      <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:5px;">เพิ่มรายการด่วน:</div>
-                      <div class="category-picker-container">
-                          <div class="cat-nav-btn" onclick="document.getElementById('cat-scroll-${idx}').scrollLeft -= 50"><i class="fas fa-chevron-left"></i></div>
-                          <div id="cat-scroll-${idx}" class="category-scroll">${catPickerHtml}</div>
-                          <div class="cat-nav-btn" onclick="document.getElementById('cat-scroll-${idx}').scrollLeft += 50"><i class="fas fa-chevron-right"></i></div>
-                      </div>
-                  </div>
-                  
-                  <div class="action-row">
-                    <button class="action-btn btn-inc" onclick="addDetail(${idx}, 'income')">
-                        <i class="fas fa-plus"></i>
-                        <span>รับ</span>
-                    </button>
-                    <button class="action-btn btn-exp" onclick="addDetail(${idx}, 'expense')">
-                        <i class="fas fa-minus"></i>
-                        <span>จ่าย</span>
-                    </button>
-                    <button class="action-btn btn-scan" onclick="triggerScan(${idx})">
-                        <i class="fas fa-camera"></i>
-                        <span>สแกน</span>
-                    </button>
-                  </div>
-
-                  <div style="margin-top:20px; padding-top:15px; border-top:1px dashed #eee;">
-                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                          <div style="font-size:0.9rem; font-weight:600; color:var(--info);"><i class="fas fa-piggy-bank"></i> เงินออม</div>
-                          <input class="modern-input" style="width:100px; padding:8px; text-align:right;" type="number" value="${m.savings||''}" placeholder="0" oninput="updateBase(${idx}, 'savings', this.value)">
-                      </div>
-                      <div style="text-align:right; font-size:0.85rem; color:var(--text-muted);">คงเหลือใช้จริง: <b>${stats.freeBalance.toLocaleString()}</b></div>
-                  </div>
                 </div>
-              </div>
             `;
         });
-
-        container.innerHTML = html;
         
-        // Rolling Numbers
+        list.innerHTML = html;
         animateValue(document.getElementById('grandBalance'), 0, gInc - gExp, 800);
         document.getElementById('grandIncome').innerText = gInc.toLocaleString();
         document.getElementById('grandExpense').innerText = gExp.toLocaleString();
         document.getElementById('grandSavings').innerText = gSave.toLocaleString();
+        
+        // Render Top 5
+        const top5 = Object.entries(yearlyExpMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+        document.getElementById('yearTopExpList').innerHTML = top5.length ? top5.map(i=>`<span class="top-pill">${i[0]} ${i[1].toLocaleString()}</span>`).join('') : '<span style="color:#aaa; font-size:0.8rem;">ไม่มีข้อมูล</span>';
     }
 
-    // Logic Functions
-    window.toggleCard = (idx) => document.getElementById(`card-${idx}`).classList.toggle('open');
-    window.switchView = (view) => {
-        document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        window.scrollTo({top:0, behavior:'smooth'});
+    // --- View: Month Detail ---
+    window.openMonth = function(idx) {
+        window.currentMonthIndex = idx;
+        switchView('month');
+        renderMonthDetail();
     }
 
-    window.updateBase = (idx, field, val) => {
-        window.monthlyData[idx][field] = Number(val);
-        saveData();
+    window.renderMonthDetail = function() {
+        const idx = window.currentMonthIndex;
+        const m = window.monthlyData[idx];
+        const stats = calculateStats(m);
+
+        document.getElementById('detailMonthName').innerText = months[idx];
+        document.getElementById('monthGrandBalance').innerText = stats.balance.toLocaleString();
+        document.getElementById('monthGrandIncome').innerText = stats.totalInc.toLocaleString();
+        document.getElementById('monthGrandExpense').innerText = stats.totalExp.toLocaleString();
+        document.getElementById('monthGrandSavings').innerText = (Number(m.savings)||0).toLocaleString();
+        
+        // Progress Bar
+        const progBar = document.getElementById('monthProgressBar');
+        progBar.style.width = Math.min(stats.progress, 100) + '%';
+        progBar.style.background = stats.progress > 100 ? 'var(--danger)' : 'var(--success)';
+        document.getElementById('monthProgressText').innerText = m.budget > 0 ? `ใช้ไป ${Math.round(stats.progress)}% ของงบ ${Number(m.budget).toLocaleString()}` : 'ยังไม่ได้ตั้งงบประมาณ';
+
+        // Inputs (Set value)
+        document.getElementById('inpSalary').value = m.salary || '';
+        document.getElementById('inpExtra').value = m.extra || '';
+        document.getElementById('inpBudget').value = m.budget || '';
+        document.getElementById('inpSavings').value = m.savings || '';
+
+        // Copy Button logic
+        const copyContainer = document.getElementById('copyPrevBtnContainer');
+        if (idx > 0 && m.details.length === 0) {
+            copyContainer.innerHTML = `<button class="btn-full" style="background:#f1f5f9; color:var(--primary); font-size:0.9rem;" onclick="copyFromPrev(${idx})"><i class="fas fa-copy"></i> คัดลอกรายการเดือนก่อน</button>`;
+        } else {
+            copyContainer.innerHTML = '';
+        }
+
+        // Category Picker
+        const catScroll = document.getElementById('cat-scroll');
+        catScroll.innerHTML = categories.map(c => 
+            `<div class="cat-item" onclick="addWithIconCurrent('${c.icon} ${c.label}')">
+                <button class="cat-btn">${c.icon}</button>
+                <span class="cat-label">${c.label}</span>
+            </div>`
+        ).join('');
+
+        // Details List
+        const list = document.getElementById('monthDetailList');
+        list.innerHTML = m.details.map((d, dIdx) => {
+            const isInc = d.type === 'income';
+            return `
+              <div class="detail-row">
+                <div class="type-badge ${isInc?'badge-inc':'badge-exp'}" onclick="toggleDetailTypeCurrent(${dIdx})">
+                    ${isInc?'+':'-'}
+                </div>
+                <input class="desc-input" type="text" placeholder="รายการ..." value="${d.desc}" oninput="updateDetailCurrent(${dIdx}, 'desc', this.value)">
+                <input class="amt-input" type="number" placeholder="0" value="${d.amount}" oninput="updateDetailCurrent(${dIdx}, 'amount', this.value)">
+                <i class="fas fa-times" style="color:#e2e8f0; cursor:pointer;" onclick="removeDetailCurrent(${dIdx})"></i>
+              </div>
+            `;
+        }).join('');
     }
 
-    window.updateDetail = (mIdx, dIdx, field, val) => {
-        window.monthlyData[mIdx].details[dIdx][field] = field==='amount' ? Number(val) : val;
-        saveDataSilent(); 
-    }
-
-    window.toggleDetailType = (mIdx, dIdx) => {
-        const current = window.monthlyData[mIdx].details[dIdx].type;
-        window.monthlyData[mIdx].details[dIdx].type = current === 'income' ? 'expense' : 'income';
-        saveData();
-        renderCards();
-    }
-
-    window.addDetail = (idx, type) => {
-        window.monthlyData[idx].details.push({ type, desc: '', amount: '' });
-        saveData(); renderCards();
+    // --- Actions (Scoped to Current Month) ---
+    window.updateCurrentMonthBase = (field, val) => {
+        window.monthlyData[window.currentMonthIndex][field] = Number(val);
+        saveData(); 
+        const stats = calculateStats(window.monthlyData[window.currentMonthIndex]);
+        document.getElementById('monthGrandBalance').innerText = stats.balance.toLocaleString();
+        document.getElementById('monthGrandIncome').innerText = stats.totalInc.toLocaleString();
+        document.getElementById('monthGrandExpense').innerText = stats.totalExp.toLocaleString();
+        const progBar = document.getElementById('monthProgressBar');
+        progBar.style.width = Math.min(stats.progress, 100) + '%';
     }
     
-    window.addWithIcon = (idx, icon) => {
-        window.monthlyData[idx].details.push({ type: 'expense', desc: icon + ' ', amount: '' });
-        saveData(); renderCards();
+    window.updateDetailCurrent = (dIdx, field, val) => {
+        const m = window.monthlyData[window.currentMonthIndex];
+        m.details[dIdx][field] = field==='amount' ? Number(val) : val;
+        saveData();
+    }
+    
+    window.addDetailCurrent = (type) => {
+        window.monthlyData[window.currentMonthIndex].details.push({ type, desc: '', amount: '' });
+        saveData(); renderMonthDetail();
+    }
+    
+    window.addWithIconCurrent = (icon) => {
+        window.monthlyData[window.currentMonthIndex].details.push({ type: 'expense', desc: icon + ' ', amount: '' });
+        saveData(); renderMonthDetail();
     }
 
-    window.removeDetail = (m, d) => {
-        window.monthlyData[m].details.splice(d, 1);
-        saveData(); renderCards();
+    window.toggleDetailTypeCurrent = (dIdx) => {
+        const d = window.monthlyData[window.currentMonthIndex].details[dIdx];
+        d.type = d.type === 'income' ? 'expense' : 'income';
+        saveData(); renderMonthDetail();
+    }
+
+    window.removeDetailCurrent = (dIdx) => {
+        window.monthlyData[window.currentMonthIndex].details.splice(dIdx, 1);
+        saveData(); renderMonthDetail();
     }
 
     window.copyFromPrev = (idx) => {
@@ -806,138 +906,32 @@
         if(prev && prev.details.length > 0) {
             const newDetails = prev.details.map(d => ({...d}));
             window.monthlyData[idx].details = [...window.monthlyData[idx].details, ...newDetails];
-            saveData(); renderCards();
+            saveData(); renderMonthDetail();
         }
-    }
-
-    function saveData() {
-        localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData));
-        if(window.saveDataToCloud) window.saveDataToCloud();
-    }
-    function saveDataSilent() {
-        localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData));
-    }
-
-    // Modal Helpers
-    window.openChartModal = () => { document.getElementById('chartModal').classList.add('show'); renderChart('bar'); }
-    window.openToolsModal = () => document.getElementById('toolsModal').classList.add('show');
-    window.openSettingsModal = () => document.getElementById('settingsModal').classList.add('show');
-    window.closeModal = (id) => document.getElementById(id).classList.remove('show');
-
-    // Chart
-    let myChart = null;
-    window.renderChart = (type) => {
-        const ctx = document.getElementById('chart').getContext('2d');
-        if(myChart) myChart.destroy();
-        
-        const labels = months;
-        let chartData = {};
-        
-        if (type === 'pie') {
-            // Aggregate expenses by category for pie chart
-            const expMap = {};
-            window.monthlyData.forEach(m => {
-                 m.details.filter(d => d.type === 'expense').forEach(d => {
-                     let key = d.desc.trim() || 'อื่นๆ';
-                     expMap[key] = (expMap[key] || 0) + (Number(d.amount)||0);
-                 });
-            });
-            const sorted = Object.entries(expMap).sort((a,b) => b[1] - a[1]);
-            let pLabels = [], pData = [], others = 0;
-            sorted.forEach((item, index) => {
-                if (index < 8) { pLabels.push(item[0]); pData.push(item[1]); }
-                else others += item[1];
-            });
-            if (others > 0) { pLabels.push('อื่นๆ'); pData.push(others); }
-            
-            const colors = ['#f5365c', '#fb6340', '#ffd600', '#2dce89', '#11cdef', '#5e72e4', '#8965e0', '#32325d', '#adb5bd'];
-            chartData = {
-                labels: pLabels,
-                datasets: [{ data: pData, backgroundColor: colors.slice(0, pData.length), borderWidth: 0 }]
-            };
-        } else {
-            // Bar or Line chart data
-            let datasets = [];
-            if (type === 'bar') {
-                const dInc = window.monthlyData.map(m=>calculateStats(m).totalInc);
-                const dExp = window.monthlyData.map(m=>calculateStats(m).totalExp);
-                datasets = [
-                    { label: 'รับ', data: dInc, backgroundColor: '#2dce89', borderRadius:4 },
-                    { label: 'จ่าย', data: dExp, backgroundColor: '#f5365c', borderRadius:4 }
-                ];
-            } else {
-                const dSave = window.monthlyData.map(m=>Number(m.savings)||0);
-                const dFree = window.monthlyData.map(m=>calculateStats(m).freeBalance);
-                datasets = [
-                    { label: 'ออม', data: dSave, borderColor: '#11cdef', backgroundColor: 'rgba(17,205,239,0.2)', fill:true, tension:0.4 },
-                    { label: 'เหลือใช้', data: dFree, borderColor: '#2dce89', borderDash:[5,5], borderWidth:2, tension:0.4 }
-                ];
-            }
-            chartData = { labels: labels, datasets: datasets };
-        }
-
-        myChart = new Chart(ctx, {
-            type: type === 'line' ? 'line' : (type === 'pie' ? 'doughnut' : 'bar'),
-            data: chartData,
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                scales: type === 'pie' ? {} : { x: { grid: { display:false } }, y: { grid: { borderDash: [4, 4] }, beginAtZero: true } },
-                plugins: { legend: { position: 'bottom' }, title: { display: type==='pie', text: 'สัดส่วนรายจ่ายปีนี้' } }
-            }
-        });
-    }
-
-    // Theme Customizer
-    window.setTheme = (color) => {
-        document.documentElement.style.setProperty('--primary', color);
-        document.documentElement.style.setProperty('--primary-soft', color + '20'); 
-        localStorage.setItem('app_theme', color);
     }
     
-    // Background Handlers
-    window.handleBgChange = (input) => {
-        if(input.files[0]) {
-            const r = new FileReader();
-            r.onload = (e) => {
-                localStorage.setItem('custom_bg', e.target.result);
-                document.body.style.backgroundImage = `url(${e.target.result})`;
-                window.closeModal('settingsModal');
-            };
-            r.readAsDataURL(input.files[0]);
+    window.triggerScanCurrent = () => { document.getElementById('receiptInput').click(); }
+
+    // --- Nav ---
+    window.switchView = (viewName) => {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        
+        if (viewName === 'home') {
+            document.getElementById('view-home').classList.add('active');
+            document.querySelector('.nav-item:nth-child(1)').classList.add('active');
+            renderHome();
+        } else if (viewName === 'month') {
+            document.getElementById('view-month').classList.add('active');
         }
-    }
-    window.resetBackground = () => {
-        localStorage.removeItem('custom_bg');
-        document.body.style.backgroundImage = 'none';
-        window.closeModal('settingsModal');
+        window.scrollTo({top:0, behavior:'smooth'});
     }
 
-    // AI & Gemini
-    const apiKey = "AIzaSyD-wO4EzjPsLNrXC0v8J4jqTunMKWMJRjw"; // ใส่คีย์ให้แล้วครับ
-    window.analyzeBudgetWithAI = async () => {
-        const key = localStorage.getItem('gemini_api_key') || apiKey;
-        
-        document.getElementById('loadingOverlay').style.display='flex';
-        try {
-            const sum = window.monthlyData.map((m,i)=>`${months[i]}: In=${calculateStats(m).totalInc}, Out=${calculateStats(m).totalExp}`).join('\n');
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
-                method:'POST', headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({contents:[{parts:[{text:`Analyze this budget:\n${sum}\nGive 3 quick tips in Thai markdown.`}]}]})
-            });
-            const d = await res.json();
-            document.getElementById('aiContent').innerHTML = marked.parse(d.candidates[0].content.parts[0].text);
-            document.getElementById('aiModal').classList.add('show');
-        } catch(e) { alert("API Error: " + e.message); }
-        finally { document.getElementById('loadingOverlay').style.display='none'; }
-    }
-    
-    // Slip Scan
-    window.triggerScan = (idx) => { window.scanIdx = idx; document.getElementById('receiptInput').click(); }
+    // --- Handlers & Utils ---
     window.handleReceiptScan = async (input) => {
-        const key = localStorage.getItem('gemini_api_key') || apiKey;
-
+        const key = localStorage.getItem('gemini_api_key') || "AIzaSyD-wO4EzjPsLNrXC0v8J4jqTunMKWMJRjw";
         if(!input.files[0]) return;
+        
         document.getElementById('loadingOverlay').style.display='flex';
         const r = new FileReader();
         r.onload = async (e) => {
@@ -950,13 +944,74 @@
                 const d = await res.json();
                 const json = JSON.parse(d.candidates[0].content.parts[0].text.replace(/```json/g,'').replace(/```/g,'').trim());
                 if(json.amount) {
-                    window.monthlyData[window.scanIdx].details.push({type:json.type, desc:json.desc, amount:json.amount});
-                    saveData(); renderCards();
+                    window.monthlyData[window.currentMonthIndex].details.push({type:json.type, desc:json.desc, amount:json.amount});
+                    saveData(); renderMonthDetail();
                 }
             } catch(e) { alert("Scan Failed"); }
             finally { document.getElementById('loadingOverlay').style.display='none'; input.value=''; }
         };
         r.readAsDataURL(input.files[0]);
+    }
+    
+    // Theme & Mode
+    function saveApiKey() { localStorage.setItem('gemini_api_key', document.getElementById('apiKeyInput').value); alert("Saved"); }
+    function setDisplayMode(mode) { localStorage.setItem('display_mode', mode); applyThemeMode(); }
+    function applyThemeMode() {
+        const mode = localStorage.getItem('display_mode') || 'auto';
+        const isNight = mode === 'auto' ? (new Date().getHours()>=18 || new Date().getHours()<6) : mode==='night';
+        document.body.classList.toggle('night', isNight);
+    }
+    applyThemeMode();
+    function setTheme(c) { document.documentElement.style.setProperty('--primary', c); document.documentElement.style.setProperty('--primary-soft', c+'20'); }
+
+    // Modals
+    window.openChartModal = () => { document.getElementById('chartModal').classList.add('show'); renderChart('bar'); }
+    window.openToolsModal = () => document.getElementById('toolsModal').classList.add('show');
+    window.openSettingsModal = () => document.getElementById('settingsModal').classList.add('show');
+    window.closeModal = (id) => document.getElementById(id).classList.remove('show');
+    window.toggleMenu = () => { document.getElementById('sideMenu').classList.toggle('active'); document.getElementById('menuOverlay').classList.toggle('active'); }
+    
+    // AI
+    window.analyzeBudgetWithAI = async () => {
+        const key = localStorage.getItem('gemini_api_key') || "AIzaSyD-wO4EzjPsLNrXC0v8J4jqTunMKWMJRjw";
+        document.getElementById('loadingOverlay').style.display='flex';
+        try {
+            const sum = window.monthlyData.map((m,i)=>`${months[i]}: In=${calculateStats(m).totalInc}, Out=${calculateStats(m).totalExp}`).join('\n');
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({contents:[{parts:[{text:`Analyze: \n${sum}\nGive 3 quick tips in Thai markdown.`}]}]})
+            });
+            const d = await res.json();
+            document.getElementById('aiContent').innerHTML = marked.parse(d.candidates[0].content.parts[0].text);
+            document.getElementById('aiModal').classList.add('show');
+        } catch(e) { alert("API Error"); }
+        finally { document.getElementById('loadingOverlay').style.display='none'; }
+    }
+
+    // Chart
+    let myChart = null;
+    window.renderChart = (type) => {
+        const ctx = document.getElementById('chart').getContext('2d');
+        if(myChart) myChart.destroy();
+        const labels = months;
+        let datasets = [];
+        if (type === 'pie') {
+            const expMap = {};
+            window.monthlyData.forEach(m => m.details.filter(d=>d.type==='expense').forEach(d => { let k=d.desc.trim()||'อื่นๆ'; expMap[k]=(expMap[k]||0)+Number(d.amount); }));
+            const sorted = Object.entries(expMap).sort((a,b)=>b[1]-a[1]);
+            const pLabels = [], pData = [];
+            sorted.forEach((item,i) => { if(i<8){pLabels.push(item[0]); pData.push(item[1])} });
+            myChart = new Chart(ctx, { type: 'doughnut', data: { labels: pLabels, datasets: [{ data: pData, borderWidth: 0, backgroundColor: ['#f5365c', '#fb6340', '#ffd600', '#2dce89', '#11cdef', '#5e72e4'] }] }, options: { responsive:true, maintainAspectRatio:false } });
+        } else {
+            const dInc = window.monthlyData.map(m=>calculateStats(m).totalInc);
+            const dExp = window.monthlyData.map(m=>calculateStats(m).totalExp);
+            const dSave = window.monthlyData.map(m=>Number(m.savings)||0);
+            if(type === 'line') {
+                myChart = new Chart(ctx, { type: 'line', data: { labels, datasets: [{label:'เงินออม', data:dSave, borderColor:'#11cdef', backgroundColor:'rgba(17,205,239,0.2)', fill:true}] }, options: { responsive:true, maintainAspectRatio:false } });
+            } else {
+                myChart = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{label:'รับ', data:dInc, backgroundColor:'#2dce89'},{label:'จ่าย', data:dExp, backgroundColor:'#f5365c'}] }, options: { responsive:true, maintainAspectRatio:false, scales:{x:{grid:{display:false}}} } });
+            }
+        }
     }
 
     // JSON/Excel
@@ -967,12 +1022,30 @@
     }
     window.importJSON = (input) => {
         const r = new FileReader();
-        r.onload = (e) => { window.monthlyData = JSON.parse(e.target.result); saveData(); renderCards(); alert("Restore Success"); };
+        r.onload = (e) => { window.monthlyData = JSON.parse(e.target.result); saveData(); renderHome(); alert("Restore Success"); };
         r.readAsText(input.files[0]);
     }
+    window.exportToExcel = () => {
+       let csv = "\uFEFFเดือน,ประเภท,รายการ,จำนวนเงิน\n";
+       window.monthlyData.forEach((m, idx) => {
+         if(m.salary) csv += `${months[idx]},รายรับ,เงินเดือน,${m.salary}\n`;
+         if(m.extra) csv += `${months[idx]},รายรับ,พิเศษ,${m.extra}\n`;
+         if(m.savings) csv += `${months[idx]},เงินออม,จัดสรรเงินออม,${m.savings}\n`;
+         m.details.forEach(d => csv += `${months[idx]},${d.type==='income'?'รายรับ':'รายจ่าย'},${d.desc},${d.amount}\n`);
+       });
+       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+       a.download = "Budget_Yearly.csv"; document.body.appendChild(a); a.click(); a.remove();
+    }
+    
+    window.clearData = () => {
+        if(confirm('ลบข้อมูลทั้งหมด?')) {
+            window.monthlyData = months.map(() => ({ salary: 0, extra: 0, savings: 0, budget: 0, details: [] }));
+            saveData(); renderHome();
+        }
+    }
 
-    // Start
-    renderCards();
+    // Init
+    renderHome();
   </script>
 </body>
 </html>
