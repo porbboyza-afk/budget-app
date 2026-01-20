@@ -2,307 +2,306 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Budget Mobile</title>
-
-<link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Budget%20Mobile%22,%22short_name%22:%22Budget%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22theme_color%22:%22%234f7cff%22}">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-/* ================= BASE ================= */
-* { box-sizing: border-box; max-width:100%; }
+* { box-sizing: border-box; }
 
-html, body {
-  margin:0;
-  padding:0;
-  background:#0f172a;
-  font-family: system-ui, -apple-system, sans-serif;
-  color:#111;
-  overflow-x:hidden;
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: linear-gradient(180deg,#0f172a,#020617);
+  color: #111;
 }
 
 .container {
-  max-width: 1000px;
-  margin:auto;
-  padding:16px;
+  max-width: 420px;
+  margin: auto;
+  padding: 14px;
 }
 
-/* ================= HEADER ================= */
 .header {
   background:#1e293b;
-  border-radius:18px;
-  padding:12px 16px;
+  color:white;
+  border-radius:16px;
+  padding:12px;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  color:white;
 }
 
-.badge {
-  background:#22c55e;
-  padding:4px 12px;
-  border-radius:999px;
-  font-size:12px;
-}
-
-/* ================= SUMMARY ================= */
 .summary {
   background:white;
   margin-top:12px;
-  border-radius:16px;
-  display:flex;
-  justify-content:space-around;
   padding:12px;
+  border-radius:14px;
+  display:flex;
+  justify-content:space-between;
+  text-align:center;
   font-weight:600;
+}
+
+.summary div span {
+  display:block;
+  font-size:18px;
 }
 
 .green { color:#16a34a; }
 .red { color:#dc2626; }
 .blue { color:#2563eb; }
 
-/* ================= BUTTONS ================= */
 .buttons {
   display:flex;
   gap:10px;
-  margin:14px 0;
+  margin:12px 0;
 }
 
 button {
   flex:1;
   border:none;
   border-radius:999px;
-  padding:12px;
-  font-size:15px;
+  padding:10px;
   font-weight:600;
   color:white;
+  cursor:pointer;
 }
 
-.btn-graph { background:#f59e0b; }
+.btn-chart { background:#f59e0b; }
 .btn-backup { background:#22c55e; }
 .btn-import { background:#3b82f6; }
 
-/* ================= MONTH CARD ================= */
 .month {
   background:white;
-  border-radius:16px;
-  padding:12px;
-  margin-bottom:12px;
+  border-radius:14px;
+  margin-bottom:10px;
+  padding:10px;
 }
 
 .month-header {
   display:flex;
   justify-content:space-between;
-  align-items:center;
   font-weight:700;
+  cursor:pointer;
 }
 
-.month-body {
+.detail {
   display:none;
   margin-top:10px;
 }
 
 .row {
   display:flex;
-  gap:8px;
+  gap:6px;
   margin-bottom:6px;
 }
 
-input, select {
+.row input, .row select {
   flex:1;
-  padding:8px;
-  border-radius:10px;
+  padding:6px;
+  border-radius:8px;
   border:1px solid #ddd;
 }
 
+.row button {
+  flex:0.3;
+  background:#ef4444;
+}
+
 .add-btn {
-  background:#16a34a;
+  background:#22c55e;
+  margin-top:6px;
 }
 
-.remove-btn {
-  background:#dc2626;
-}
-
-/* ================= CHART ================= */
 canvas {
   background:white;
-  border-radius:16px;
+  border-radius:12px;
   padding:10px;
-  margin-top:20px;
-}
-
-/* ================= MOBILE FIX ================= */
-@media (max-width: 600px) {
-  .summary { font-size:14px; }
-  button { font-size:14px; padding:10px; }
+  margin-top:10px;
+  display:none;
 }
 </style>
 </head>
-<body>
 
+<body>
 <div class="container">
 
-  <div class="header">
-    <div>📊 Budget Mobile</div>
-    <div class="badge">Online</div>
-  </div>
+<div class="header">
+  <div>📊 Budget Mobile</div>
+  <div style="color:#22c55e;">● Online</div>
+</div>
 
-  <div class="summary">
-    <div>รายรับ<br><span id="totalIncome" class="green">0</span></div>
-    <div>รายจ่าย<br><span id="totalExpense" class="red">0</span></div>
-    <div>คงเหลือ<br><span id="totalBalance" class="blue">0</span></div>
-  </div>
+<div class="summary">
+  <div>รายรับ<span id="totalIncome" class="green">0</span></div>
+  <div>รายจ่าย<span id="totalExpense" class="red">0</span></div>
+  <div>คงเหลือ<span id="totalBalance" class="blue">0</span></div>
+</div>
 
-  <div class="buttons">
-    <button class="btn-graph" onclick="toggleChart()">กราฟ</button>
-    <button class="btn-backup" onclick="backupData()">Backup</button>
-    <button class="btn-import" onclick="importData()">Import</button>
-  </div>
+<div class="buttons">
+  <button class="btn-chart" onclick="toggleChart()">กราฟ</button>
+  <button class="btn-backup" onclick="backup()">Backup</button>
+  <button class="btn-import" onclick="importData()">Import</button>
+</div>
 
-  <div id="months"></div>
+<canvas id="chart"></canvas>
 
-  <canvas id="chart" height="180" style="display:none;"></canvas>
+<div id="months"></div>
+
+<input type="file" id="fileInput" hidden />
 
 </div>
 
 <script>
-/* ================= DATA ================= */
-const monthNames = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-let data = JSON.parse(localStorage.getItem("budgetData") || "[]");
-if (data.length === 0) {
-  data = monthNames.map(()=>({ salary:0, extra:0, items:[] }));
-}
+const months = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+let data = JSON.parse(localStorage.getItem("budget-data")) || {};
+let chart;
 
 const monthsDiv = document.getElementById("months");
 
-/* ================= RENDER ================= */
-function render() {
-  monthsDiv.innerHTML = "";
-  let totalIncome = 0;
-  let totalExpense = 0;
+months.forEach((m,i)=>{
+  if(!data[i]) data[i] = [];
 
-  data.forEach((m, i) => {
-    let income = m.salary + m.extra;
-    let expense = 0;
+  const div = document.createElement("div");
+  div.className = "month";
 
-    m.items.forEach(it=>{
-      if(it.type==="income") income += it.amount;
-      else expense += it.amount;
-    });
+  div.innerHTML = `
+    <div class="month-header" onclick="toggleDetail(${i})">
+      <div>${m}</div>
+      <div id="sum-${i}">0</div>
+    </div>
+    <div class="detail" id="detail-${i}">
+      <div id="rows-${i}"></div>
+      <button class="add-btn" onclick="addRow(${i})">+ เพิ่มรายการ</button>
+    </div>
+  `;
+  monthsDiv.appendChild(div);
+  renderRows(i);
+});
 
-    totalIncome += income;
-    totalExpense += expense;
+function toggleDetail(i){
+  const el = document.getElementById("detail-"+i);
+  el.style.display = el.style.display === "block" ? "none" : "block";
+}
 
-    const div = document.createElement("div");
-    div.className = "month";
-    div.innerHTML = `
-      <div class="month-header" onclick="toggleMonth(${i})">
-        <div>${monthNames[i]}</div>
-        <div>${income-expense}</div>
-      </div>
+function addRow(i){
+  data[i].push({ type:"income", text:"", amount:0 });
+  save();
+  renderRows(i);
+}
 
-      <div class="month-body" id="body-${i}">
-        <div class="row">
-          <input type="number" value="${m.salary}" placeholder="เงินเดือน" 
-            oninput="data[${i}].salary=this.valueAsNumber||0;save();">
-          <input type="number" value="${m.extra}" placeholder="รายได้พิเศษ" 
-            oninput="data[${i}].extra=this.valueAsNumber||0;save();">
-        </div>
-
-        ${m.items.map((it,idx)=>`
-          <div class="row">
-            <select onchange="data[${i}].items[${idx}].type=this.value;save();">
-              <option ${it.type==="income"?"selected":""}>income</option>
-              <option ${it.type==="expense"?"selected":""}>expense</option>
-            </select>
-            <input value="${it.name}" placeholder="รายการ"
-              oninput="data[${i}].items[${idx}].name=this.value;save();">
-            <input type="number" value="${it.amount}" 
-              oninput="data[${i}].items[${idx}].amount=this.valueAsNumber||0;save();">
-            <button class="remove-btn" onclick="data[${i}].items.splice(${idx},1);save();">✕</button>
-          </div>
-        `).join("")}
-
-        <button class="add-btn" onclick="data[${i}].items.push({type:'expense',name:'',amount:0});save();">
-          ➕ เพิ่มรายการ
-        </button>
-      </div>
+function renderRows(i){
+  const box = document.getElementById("rows-"+i);
+  box.innerHTML = "";
+  data[i].forEach((r,index)=>{
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `
+      <select onchange="updateRow(${i},${index},'type',this.value)">
+        <option value="income" ${r.type==="income"?"selected":""}>รับ</option>
+        <option value="expense" ${r.type==="expense"?"selected":""}>จ่าย</option>
+      </select>
+      <input placeholder="รายการ" value="${r.text}" 
+        oninput="updateRow(${i},${index},'text',this.value)">
+      <input type="number" value="${r.amount}" 
+        oninput="updateRow(${i},${index},'amount',this.value)">
+      <button onclick="removeRow(${i},${index})">✕</button>
     `;
-    monthsDiv.appendChild(div);
+    box.appendChild(row);
+  });
+  calculate();
+}
+
+function updateRow(i,index,key,value){
+  data[i][index][key] = key==="amount" ? Number(value) : value;
+  save();
+  calculate();
+}
+
+function removeRow(i,index){
+  data[i].splice(index,1);
+  save();
+  renderRows(i);
+}
+
+function calculate(){
+  let totalIncome=0,totalExpense=0;
+  const incomes=[], expenses=[];
+
+  months.forEach((_,i)=>{
+    let inc=0, exp=0;
+    data[i].forEach(r=>{
+      if(r.type==="income") inc+=r.amount;
+      else exp+=r.amount;
+    });
+    document.getElementById("sum-"+i).innerText = inc-exp;
+    totalIncome+=inc;
+    totalExpense+=exp;
+    incomes.push(inc);
+    expenses.push(exp);
   });
 
   document.getElementById("totalIncome").innerText = totalIncome;
   document.getElementById("totalExpense").innerText = totalExpense;
   document.getElementById("totalBalance").innerText = totalIncome-totalExpense;
 
-  drawChart();
+  drawChart(incomes,expenses);
 }
 
-/* ================= UI ================= */
-function toggleMonth(i) {
-  const el = document.getElementById("body-"+i);
-  el.style.display = el.styleுள்ளனர் === "block" ? "none" : "block";
+function save(){
+  localStorage.setItem("budget-data",JSON.stringify(data));
 }
 
-/* ================= STORAGE ================= */
-function save() {
-  localStorage.setItem("budgetData", JSON.stringify(data));
-  render();
-}
-
-function backupData() {
-  const blob = new Blob([JSON.stringify(data)], {type:"application/json"});
+function backup(){
+  const blob = new Blob([JSON.stringify(data)],{type:"application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "budget_backup.json";
+  a.download = "budget-backup.json";
   a.click();
 }
 
-function importData() {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = ".json";
-  input.onchange = e => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = () => {
-      data = JSON.parse(reader.result);
-      save();
-    };
-    reader.readAsText(file);
-  };
-  input.click();
+function importData(){
+  document.getElementById("fileInput").click();
 }
 
-/* ================= CHART ================= */
-let chart;
+fileInput.onchange = e=>{
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    data = JSON.parse(reader.result);
+    save();
+    location.reload();
+  };
+  reader.readAsText(file);
+};
+
 function toggleChart(){
   const c = document.getElementById("chart");
-  c.style.display = c.style.display==="none" ? "block" : "none";
-  drawChart();
+  c.style.display = c.style.display==="block"?"none":"block";
 }
 
-function drawChart(){
+function drawChart(incomes,expenses){
   const ctx = document.getElementById("chart");
   if(chart) chart.destroy();
-
-  const incomes = data.map(m=>m.salary+m.extra+m.items.filter(i=>i.type==="income").reduce((s,a)=>s+a.amount,0));
-  const expenses = data.map(m=>m.items.filter(i=>i.type==="expense").reduce((s,a)=>s+a.amount,0));
-
   chart = new Chart(ctx,{
-    type:"line",
+    type:"scatter",
     data:{
-      labels:monthNames,
-      datasets:[
-        {label:"รายรับ", data:incomes},
-        {label:"รายจ่าย", data:expenses}
-      ]
+      datasets:[{
+        label:"รายรับ vs รายจ่าย",
+        data: incomes.map((v,i)=>({x:expenses[i],y:v}))
+      }]
+    },
+    options:{
+      scales:{
+        x:{title:{display:true,text:"รายจ่าย"}},
+        y:{title:{display:true,text:"รายรับ"}}
+      }
     }
   });
 }
 
-/* ================= INIT ================= */
-render();
+calculate();
 </script>
 </body>
 </html>
