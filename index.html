@@ -20,6 +20,8 @@
       --danger: #f5365c;
       --danger-soft: #fee6ea;
       --warning: #fb6340;
+      --info: #11cdef;
+      --info-soft: #e0f7fa;
       --text-main: #32325d;
       --text-muted: #8898aa;
       --bg-glass: rgba(255, 255, 255, 0.85);
@@ -41,9 +43,8 @@
       padding-bottom: 100px;
     }
 
-    /* Container สำหรับ Desktop ให้เนื้อหาไม่กว้างจนเกินไป */
     .main-container {
-        max-width: 600px; /* Default Mobile */
+        max-width: 600px;
         margin: 0 auto;
         width: 100%;
     }
@@ -72,9 +73,10 @@
         --primary-soft: rgba(94, 114, 228, 0.15);
         --success-soft: rgba(45, 206, 137, 0.15);
         --danger-soft: rgba(245, 54, 92, 0.15);
+        --info-soft: rgba(17, 205, 239, 0.15);
     }
 
-    /* ===== Dashboard Card ===== */
+    /* ===== Dashboard ===== */
     .dashboard {
       background: var(--bg-glass-strong);
       border-radius: var(--radius);
@@ -98,9 +100,7 @@
     }
     .dash-header h2 { margin: 0; font-size: 1.1rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
 
-    .balance-container {
-        text-align: center; margin-bottom: 25px;
-    }
+    .balance-container { text-align: center; margin-bottom: 25px; }
     .balance-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px; }
     .balance-amount { 
         font-size: 2.5rem; font-weight: 700; color: var(--text-main); 
@@ -109,17 +109,17 @@
     .balance-amount.positive { color: var(--primary); }
 
     .stats-row { 
-        display: flex; gap: 15px; 
+        display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
         background: rgba(0,0,0,0.02);
         padding: 15px; border-radius: var(--radius-sm);
     }
-    .stat-item { flex: 1; text-align: center; }
-    .stat-label { font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
-    .stat-val { font-size: 1.1rem; font-weight: 600; }
+    .stat-item { text-align: center; }
+    .stat-label { font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; white-space: nowrap; }
+    .stat-val { font-size: 1rem; font-weight: 600; }
     .val-inc { color: var(--success); }
     .val-exp { color: var(--danger); }
+    .val-save { color: var(--info); }
 
-    /* Top 5 Widget */
     .top-expenses-widget {
         margin-top: 20px; padding-top: 15px;
         border-top: 1px dashed rgba(0,0,0,0.1);
@@ -132,7 +132,7 @@
         font-weight: 500;
     }
 
-    /* ===== Floating Toolbar ===== */
+    /* ===== Toolbar ===== */
     .toolbar-container {
         position: sticky; top: 10px; z-index: 100;
         margin-bottom: 20px;
@@ -162,7 +162,6 @@
     }
     @keyframes shine { 0% { transform: translateX(-100%) rotate(45deg); } 100% { transform: translateX(100%) rotate(45deg); } }
 
-    /* ปรับปุ่มให้เข้มขึ้น (Solid Colors) */
     .btn-tool.graph { background: #fb6340; color: white; border: none; box-shadow: 0 4px 10px rgba(251, 99, 64, 0.3); }
     .btn-tool.excel { background: #2dce89; color: white; border: none; box-shadow: 0 4px 10px rgba(45, 206, 137, 0.3); }
     .btn-tool.clear { background: #f5365c; color: white; border: none; box-shadow: 0 4px 10px rgba(245, 54, 92, 0.3); }
@@ -170,7 +169,6 @@
     .btn-tool.graph:active, .btn-tool.graph:hover { background: #e65230; transform: translateY(1px); }
     .btn-tool.excel:active, .btn-tool.excel:hover { background: #24b073; transform: translateY(1px); }
     .btn-tool.clear:active, .btn-tool.clear:hover { background: #d62c4d; transform: translateY(1px); }
-
 
     /* ===== Month Cards ===== */
     .month-card {
@@ -185,7 +183,6 @@
     .month-card.open {
         background: var(--bg-glass-strong);
         box-shadow: var(--shadow-hover);
-        transform: scale(1.01);
         z-index: 10;
         border-color: var(--primary);
     }
@@ -233,29 +230,54 @@
     }
     .night .modern-input { background: #1e293b; border-color: #334155; }
 
-    /* Detail Items */
+    /* Savings Section */
+    .savings-section {
+        background: var(--info-soft); border: 1px dashed var(--info);
+        border-radius: var(--radius-sm); padding: 15px; margin-bottom: 20px;
+    }
+    .savings-header {
+        font-size: 0.85rem; font-weight: 600; color: #0b7285; margin-bottom: 10px;
+        display: flex; align-items: center; gap: 6px;
+    }
+    .night .savings-section { background: rgba(17, 205, 239, 0.1); border-color: rgba(17, 205, 239, 0.4); }
+    .night .savings-header { color: #67e8f9; }
+    .free-cash-display { text-align: right; font-size: 0.85rem; color: var(--text-muted); margin-top: 8px; }
+    .free-cash-val { font-weight: 700; color: var(--text-main); font-size: 1rem; }
+
+    /* Detail Items (Fixed Overflow) */
     .detail-container { margin-top: 15px; }
     .detail-row {
-        display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+        display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
         background: white; padding: 8px; border-radius: var(--radius-sm);
         box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        flex-wrap: nowrap; /* ป้องกันการขึ้นบรรทัดใหม่มั่ว */
     }
     .night .detail-row { background: #334155; }
     
-    .type-select { width: 80px; border:none; background: transparent; font-weight: 600; cursor: pointer; }
+    /* ปรับขนาด Input ในแถวให้ยืดหยุ่น */
+    .type-select { width: 75px; flex-shrink: 0; border:none; background: transparent; font-weight: 600; cursor: pointer; }
     .type-select.inc { color: var(--success); }
     .type-select.exp { color: var(--danger); }
     
-    .desc-input { flex: 1; border: none; background: transparent; font-size: 0.95rem; color: var(--text-main); }
-    .amt-input { width: 80px; border: none; background: transparent; text-align: right; font-weight: 600; color: var(--text-main); }
+    .desc-input { 
+        flex: 1; /* ยืดจนสุด */
+        min-width: 0; /* สำคัญ: ป้องกันการดันจนล้น */
+        border: none; background: transparent; font-size: 0.95rem; color: var(--text-main); 
+    }
+    
+    .amt-input { 
+        width: 70px; flex-shrink: 0; 
+        border: none; background: transparent; text-align: right; font-weight: 600; color: var(--text-main); 
+    }
     
     .btn-del {
-        width: 28px; height: 28px; border-radius: 50%; border: none;
+        width: 28px; height: 28px; flex-shrink: 0;
+        border-radius: 50%; border: none;
         background: var(--danger-soft); color: var(--danger); cursor: pointer;
         display: flex; align-items: center; justify-content: center; font-size: 0.8rem;
     }
 
-    /* Action Buttons */
+    /* Buttons */
     .scan-btn {
         width: 100%; padding: 12px; border-radius: var(--radius-sm); border: 2px solid var(--primary);
         background: white; color: var(--primary); font-weight: 700; cursor: pointer;
@@ -272,7 +294,6 @@
     }
     .btn-add-inc { background: #2dce89; }
     .btn-add-inc:active { background: #24b073; }
-    
     .btn-add-exp { background: #f5365c; }
     .btn-add-exp:active { background: #d62c4d; }
 
@@ -291,49 +312,43 @@
     .loader { width: 48px; height: 48px; border: 4px solid var(--primary); border-bottom-color: transparent; border-radius: 50%; animation: rotation 1s linear infinite; }
     @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* ===== DESKTOP RESPONSIVE (NEW) ===== */
+    /* ===== DESKTOP RESPONSIVE ===== */
     @media (min-width: 1024px) {
-        .main-container {
-            max-width: 1200px; /* ขยายความกว้างเมื่ออยู่บน PC */
-        }
+        .main-container { max-width: 1200px; }
         
-        /* Grid Layout สำหรับการ์ดเดือน */
         #cardsContainer {
             display: grid;
             grid-template-columns: repeat(3, 1fr); /* 3 คอลัมน์ */
             gap: 20px;
+            align-items: start; /* ป้องกันการ์ดยืดสูงเท่ากัน */
         }
         
         .month-card {
-            margin-bottom: 0; /* Grid จัดการระยะห่างเอง */
-            height: fit-content; /* ป้องกันการยืด */
+            margin-bottom: 0;
+            height: fit-content;
         }
 
-        /* Toolbar จัดกึ่งกลางบน PC */
-        .toolbar-container {
-            justify-content: center;
-            padding: 10px 0;
+        /* เมื่อการ์ดเปิดบน Desktop ให้ขยายเต็มแถว */
+        .month-card.open {
+            grid-column: 1 / -1; /* กินพื้นที่ตั้งแต่คอลัมน์แรกถึงสุดท้าย */
+            transform: scale(1.02); /* ขยายใหญ่ขึ้นเล็กน้อย */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
         }
-        
-        /* ปุ่มบน PC ให้ใหญ่ขึ้นนิดนึงและเปลี่ยน Cursor */
-        .btn-tool {
-            padding: 12px 24px;
-            font-size: 1rem;
-        }
-        .btn-tool:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(50, 50, 93, 0.15);
-        }
+
+        .toolbar-container { justify-content: center; padding: 10px 0; }
+        .btn-tool { padding: 12px 24px; font-size: 1rem; }
+        .btn-tool:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(50, 50, 93, 0.15); }
     }
 
-    /* Tablet (iPad) */
     @media (min-width: 768px) and (max-width: 1023px) {
         .main-container { max-width: 90%; }
         #cardsContainer {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2 คอลัมน์ */
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
+            align-items: start;
         }
+        .month-card.open { grid-column: 1 / -1; }
     }
 
   </style>
@@ -376,18 +391,19 @@
                 <span class="stat-label">รายรับรวม</span>
                 <span class="stat-val val-inc" id="grandIncome">0</span>
             </div>
-            <div style="width:1px; background:rgba(0,0,0,0.1);"></div>
             <div class="stat-item">
                 <span class="stat-label">รายจ่ายรวม</span>
                 <span class="stat-val val-exp" id="grandExpense">0</span>
+            </div>
+            <div class="stat-item" style="border-left:1px solid rgba(0,0,0,0.1);">
+                <span class="stat-label">เงินออมรวม</span>
+                <span class="stat-val val-save" id="grandSavings">0</span>
             </div>
         </div>
 
         <div class="top-expenses-widget">
             <div class="widget-title"><i class="fas fa-trophy"></i> รายจ่ายสูงสุดปีนี้</div>
-            <div id="yearTopExpList" style="white-space: nowrap; overflow-x: auto; padding-bottom: 5px;">
-                <!-- Pills will be here -->
-            </div>
+            <div id="yearTopExpList" style="white-space: nowrap; overflow-x: auto; padding-bottom: 5px;"></div>
         </div>
       </div>
 
@@ -452,9 +468,10 @@
 
     // --- Data ---
     const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-    let monthlyData = JSON.parse(localStorage.getItem('yearlyBudget_v1')) || months.map(() => ({ salary: 0, extra: 0, details: [] }));
+    
+    let monthlyData = JSON.parse(localStorage.getItem('yearlyBudget_v1')) || months.map(() => ({ salary: 0, extra: 0, savings: 0, details: [] }));
+    monthlyData = monthlyData.map(m => ({ ...m, savings: m.savings || 0 }));
 
-    // Init Render
     renderCards();
 
     // Helper Stats
@@ -463,7 +480,11 @@
         const dExp = m.details.filter(d => d.type === 'expense').reduce((s, d) => s + (Number(d.amount)||0), 0);
         const totalInc = (Number(m.salary)||0) + (Number(m.extra)||0) + dInc;
         const totalExp = dExp;
-        return { totalInc, totalExp, balance: totalInc - totalExp };
+        const saving = Number(m.savings)||0;
+        const balance = totalInc - totalExp;
+        const freeBalance = balance - saving;
+        
+        return { totalInc, totalExp, balance, saving, freeBalance };
     }
 
     function calculateYearlyTop5() {
@@ -482,17 +503,18 @@
 
     // Refresh Stats ONLY (No Re-render)
     function refreshStats() {
-        let gInc = 0, gExp = 0;
+        let gInc = 0, gExp = 0, gSave = 0;
         
         monthlyData.forEach((m, idx) => {
             const stats = calculateStats(m);
             gInc += stats.totalInc;
             gExp += stats.totalExp;
+            gSave += stats.saving;
 
-            // Update Month Elements by ID
             const balEl = document.getElementById(`m-bal-${idx}`);
             const incEl = document.getElementById(`m-inc-${idx}`);
             const expEl = document.getElementById(`m-exp-${idx}`);
+            const freeEl = document.getElementById(`m-free-${idx}`);
             
             if(balEl) {
                 balEl.innerText = stats.balance.toLocaleString();
@@ -500,17 +522,21 @@
             }
             if(incEl) incEl.innerText = stats.totalInc.toLocaleString();
             if(expEl) expEl.innerText = stats.totalExp.toLocaleString();
+            if(freeEl) {
+                freeEl.innerText = stats.freeBalance.toLocaleString();
+                freeEl.style.color = stats.freeBalance >= 0 ? 'var(--text-main)' : 'var(--danger)';
+            }
         });
 
-        // Update Grand Totals
         document.getElementById('grandIncome').innerText = gInc.toLocaleString();
         document.getElementById('grandExpense').innerText = gExp.toLocaleString();
+        document.getElementById('grandSavings').innerText = gSave.toLocaleString();
+        
         const gBal = gInc - gExp;
         const gBalEl = document.getElementById('grandBalance');
         gBalEl.innerText = gBal.toLocaleString();
         gBalEl.classList.toggle('positive', gBal >= 0);
 
-        // Update Top 5 List
         const top5 = calculateYearlyTop5();
         let topHtml = '';
         if (top5.length > 0) {
@@ -521,7 +547,6 @@
         document.getElementById('yearTopExpList').innerHTML = topHtml;
     }
 
-    // Save Logic split from Render
     function saveDataSilent() {
         localStorage.setItem('yearlyBudget_v1', JSON.stringify(monthlyData));
     }
@@ -531,7 +556,6 @@
         renderCards();
     }
 
-    // Main Render (Called only on init or structure change)
     function renderCards() {
       const container = document.getElementById('cardsContainer');
       const openStates = Array.from(document.querySelectorAll('.month-card')).map(c => c.classList.contains('open'));
@@ -542,7 +566,6 @@
         const stats = calculateStats(m);
         const isOpen = openStates[idx] ? 'open' : '';
 
-        // Details Logic
         let detailsHtml = '';
         m.details.forEach((d, dIdx) => {
           const isInc = d.type === 'income';
@@ -559,7 +582,6 @@
           `;
         });
 
-        // HTML Structure
         html += `
           <div class="month-card ${isOpen}" id="card-${idx}">
             <div class="card-header" onclick="toggleCard(${idx})">
@@ -582,6 +604,18 @@
                 <div class="modern-input-group">
                     <label>รายได้พิเศษ</label>
                     <input class="modern-input" type="number" value="${m.extra||''}" placeholder="0" oninput="updateBase(${idx}, 'extra', this.value)">
+                </div>
+              </div>
+
+              <div class="savings-section">
+                <div class="savings-header">
+                    <i class="fas fa-piggy-bank"></i> จัดสรรเงินออม
+                </div>
+                <div class="modern-input-group">
+                    <input class="modern-input" style="border-color:var(--info);" type="number" value="${m.savings||''}" placeholder="ระบุยอดออม..." oninput="updateBase(${idx}, 'savings', this.value)">
+                </div>
+                <div class="free-cash-display">
+                    คงเหลือใช้จริง: <span id="m-free-${idx}" class="free-cash-val">${stats.freeBalance.toLocaleString()}</span>
                 </div>
               </div>
 
@@ -610,16 +644,16 @@
       });
 
       container.innerHTML = html;
-      refreshStats(); // Initial stats update
+      refreshStats(); 
     }
 
-    // --- Actions ---
     function toggleCard(idx) {
         const card = document.getElementById(`card-${idx}`);
+        // For desktop, we can choose to close others or not. 
+        // Currently keeping behavior simple: toggle.
         card.classList.toggle('open');
     }
 
-    // Real-time updates without re-render
     function updateBase(idx, field, val) {
       monthlyData[idx][field] = Number(val);
       refreshStats();
@@ -629,7 +663,7 @@
     function updateDetail(mIdx, dIdx, field, val) {
       monthlyData[mIdx].details[dIdx][field] = (field === 'amount') ? Number(val) : val;
       if (field === 'type') {
-          saveDataAndRender(); // Type change needs color update, so re-render
+          saveDataAndRender();
       } else {
           refreshStats();
           saveDataSilent();
@@ -646,7 +680,7 @@
     }
     function clearData() {
       if(confirm('ต้องการลบข้อมูลทั้งหมดหรือไม่?')) {
-        monthlyData = months.map(() => ({ salary: 0, extra: 0, details: [] }));
+        monthlyData = months.map(() => ({ salary: 0, extra: 0, savings: 0, details: [] }));
         saveDataAndRender();
       }
     }
@@ -678,10 +712,11 @@
             const summary = monthlyData.map((m, i) => {
                 const inc = (m.salary||0) + (m.extra||0) + m.details.filter(d=>d.type==='income').reduce((s,d)=>s+(Number(d.amount)||0),0);
                 const exp = m.details.filter(d=>d.type==='expense').reduce((s,d)=>s+(Number(d.amount)||0),0);
-                return `${months[i]}: In=${inc}, Out=${exp}`;
+                const save = m.savings || 0;
+                return `${months[i]}: In=${inc}, Out=${exp}, Saved=${save}`;
             }).join('\n');
 
-            const prompt = `Act as a financial expert. Analyze this Thai Baht budget:\n${summary}\nGive 3 short, emoji-rich tips in Thai. Use markdown.`;
+            const prompt = `Act as a financial expert. Analyze this Thai Baht budget:\n${summary}\nGive 3 short, emoji-rich tips in Thai focusing on savings and expense control. Use markdown.`;
             const result = await callGemini(prompt);
             content.innerHTML = marked.parse(result);
             modal.classList.add('show');
@@ -721,14 +756,16 @@
         const labels = months;
         const dInc = monthlyData.map(m=>(m.salary||0)+(m.extra||0)+m.details.filter(d=>d.type==='income').reduce((s,d)=>s+(d.amount||0),0));
         const dExp = monthlyData.map(m=>m.details.filter(d=>d.type==='expense').reduce((s,d)=>s+(d.amount||0),0));
+        const dSave = monthlyData.map(m=>Number(m.savings)||0);
 
         myChart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'รับ', data: dInc, backgroundColor: '#2dce89', borderRadius: 6 },
-                    { label: 'จ่าย', data: dExp, backgroundColor: '#f5365c', borderRadius: 6 }
+                    { label: 'รับ', data: dInc, backgroundColor: '#2dce89', borderRadius: 4 },
+                    { label: 'จ่าย', data: dExp, backgroundColor: '#f5365c', borderRadius: 4 },
+                    { label: 'ออม', data: dSave, backgroundColor: '#11cdef', borderRadius: 4 }
                 ]
             },
             options: {
@@ -745,6 +782,7 @@
          const mm = months[idx];
          if(m.salary) csv += `${mm},รายรับ,เงินเดือน,${m.salary}\n`;
          if(m.extra) csv += `${mm},รายรับ,พิเศษ,${m.extra}\n`;
+         if(m.savings) csv += `${mm},เงินออม,จัดสรรเงินออม,${m.savings}\n`;
          m.details.forEach(d => csv += `${mm},${d.type==='income'?'รายรับ':'รายจ่าย'},${d.desc},${d.amount}\n`);
        });
        const link = document.createElement("a");
