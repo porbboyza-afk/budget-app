@@ -1,62 +1,297 @@
-/* ================= Mobile Overflow Fix ================= */
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget Mobile App</title>
 
-/* บังคับทุกอย่างไม่ให้ดันเกินจอ */
-* {
-  box-sizing: border-box;
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system;
+  background:#111827;
+  color:#111;
+  padding:12px;
 }
 
-table {
-  table-layout: fixed;
-  width: 100%;
+.header{
+  background:#1f2937;
+  color:white;
+  padding:14px;
+  border-radius:16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:12px;
 }
 
-/* cell ไม่ดันความกว้าง */
-td, th {
-  word-break: break-word;
-  overflow-wrap: break-word;
+.badge{
+  background:#22c55e;
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:12px;
 }
 
-/* input ไม่ล้น */
-input, select, button {
-  max-width: 100%;
+.card{
+  background:white;
+  border-radius:16px;
+  padding:14px;
+  margin-bottom:12px;
 }
 
-/* แถวปุ่ม + input ในรายละเอียด */
-.detail-box table td {
-  padding: 6px;
+.summary{
+  display:flex;
+  justify-content:space-between;
+  text-align:center;
+  font-weight:600;
 }
 
-/* แถว input ภายใน detail */
-.detail-table input {
-  width: 100%;
+.summary div{flex:1;}
+
+.green{color:#16a34a;}
+.red{color:#dc2626;}
+.blue{color:#2563eb;}
+
+.toolbar{
+  display:flex;
+  gap:10px;
+  margin:10px 0;
 }
 
-/* ปรับ layout บนจอเล็ก */
-@media (max-width: 600px) {
-
-  .detail-table thead {
-    display: none;   /* ซ่อนหัวตาราง */
-  }
-
-  .detail-table tr {
-    display: block;
-    margin-bottom: 10px;
-    background: #fff;
-    border-radius: 10px;
-    padding: 8px;
-  }
-
-  .detail-table td {
-    display: block;
-    width: 100%;
-    text-align: left;
-  }
-
-  .detail-table td:not(:last-child) {
-    margin-bottom: 6px;
-  }
-
-  .detail-table button {
-    width: 100%;
-  }
+button{
+  flex:1;
+  border:none;
+  border-radius:999px;
+  padding:12px;
+  font-weight:600;
+  color:white;
 }
+
+.btn-chart{background:#f59e0b;}
+.btn-save{background:#22c55e;}
+.btn-import{background:#3b82f6;}
+.btn-add{background:#16a34a;}
+.btn-del{background:#dc2626;}
+
+.month{
+  background:#f1f5f9;
+  border-radius:14px;
+  padding:12px;
+  margin-bottom:10px;
+}
+
+.month-header{
+  display:flex;
+  justify-content:space-between;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.month-body{display:none;margin-top:10px;}
+
+input,select{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ddd;
+}
+
+.row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+.row > *{flex:1;}
+
+.detail{
+  background:white;
+  padding:10px;
+  border-radius:10px;
+}
+
+canvas{
+  background:white;
+  border-radius:12px;
+  margin-top:10px;
+}
+
+@media(max-width:600px){
+  .row{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <b>📊 Budget Mobile</b>
+  <span class="badge">Online</span>
+</div>
+
+<div class="card summary">
+  <div>
+    รายรับ<br><span id="totalIncome" class="green">0</span>
+  </div>
+  <div>
+    รายจ่าย<br><span id="totalExpense" class="red">0</span>
+  </div>
+  <div>
+    คงเหลือ<br><span id="totalBalance" class="blue">0</span>
+  </div>
+</div>
+
+<div class="toolbar">
+  <button class="btn-chart" onclick="toggleChart()">กราฟ</button>
+  <button class="btn-save" onclick="backup()">Backup</button>
+  <button class="btn-import" onclick="importData()">Import</button>
+</div>
+
+<div id="months"></div>
+
+<canvas id="chart" height="200" style="display:none"></canvas>
+
+<input type="file" id="fileInput" hidden />
+
+<script>
+const months = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+let data = JSON.parse(localStorage.getItem("budgetData")) || 
+months.map(()=>({salary:0,extra:0,items:[]}));
+
+const container = document.getElementById("months");
+
+function render(){
+  container.innerHTML="";
+  let totalIncome=0,totalExpense=0;
+
+  data.forEach((m,i)=>{
+    let inc = Number(m.salary)+Number(m.extra);
+    let exp = 0;
+    m.items.forEach(it=>{
+      if(it.type==="income") inc+=Number(it.amount);
+      else exp+=Number(it.amount);
+    });
+
+    totalIncome+=inc;
+    totalExpense+=exp;
+
+    const div=document.createElement("div");
+    div.className="month";
+    div.innerHTML=`
+      <div class="month-header" onclick="toggleMonth(${i})">
+        <span>${months[i]}</span>
+        <span class="${inc-exp>=0?'green':'red'}">${inc-exp}</span>
+      </div>
+      <div class="month-body" id="body-${i}">
+        <div class="row">
+          <input type="number" placeholder="เงินเดือน" value="${m.salary}" oninput="update(${i},'salary',this.value)">
+          <input type="number" placeholder="รายได้พิเศษ" value="${m.extra}" oninput="update(${i},'extra',this.value)">
+        </div>
+
+        <div id="items-${i}"></div>
+
+        <div class="row">
+          <button class="btn-add" onclick="addItem(${i},'income')">+ รับ</button>
+          <button class="btn-del" onclick="addItem(${i},'expense')">- จ่าย</button>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+
+    const itemBox = document.getElementById(`items-${i}`);
+    m.items.forEach((it,idx)=>{
+      const r=document.createElement("div");
+      r.className="row detail";
+      r.innerHTML=`
+        <select onchange="changeItem(${i},${idx},'type',this.value)">
+          <option value="income" ${it.type==="income"?"selected":""}>รับ</option>
+          <option value="expense" ${it.type==="expense"?"selected":""}>จ่าย</option>
+        </select>
+        <input value="${it.desc}" placeholder="รายการ" oninput="changeItem(${i},${idx},'desc',this.value)">
+        <input type="number" value="${it.amount}" oninput="changeItem(${i},${idx},'amount',this.value)">
+        <button class="btn-del" onclick="removeItem(${i},${idx})">X</button>
+      `;
+      itemBox.appendChild(r);
+    });
+  });
+
+  document.getElementById("totalIncome").innerText = totalIncome;
+  document.getElementById("totalExpense").innerText = totalExpense;
+  document.getElementById("totalBalance").innerText = totalIncome-totalExpense;
+
+  localStorage.setItem("budgetData",JSON.stringify(data));
+  drawChart();
+}
+
+function toggleMonth(i){
+  const el=document.getElementById(`body-${i}`);
+  el.style.display = el.style.display==="block"?"none":"block";
+}
+
+function update(i,key,val){
+  data[i][key]=Number(val);
+  render();
+}
+
+function addItem(i,type){
+  data[i].items.push({type,desc:"",amount:0});
+  render();
+}
+
+function changeItem(i,idx,key,val){
+  data[i].items[idx][key]= key==="amount"?Number(val):val;
+  render();
+}
+
+function removeItem(i,idx){
+  data[i].items.splice(idx,1);
+  render();
+}
+
+let chart;
+function drawChart(){
+  const ctx=document.getElementById("chart");
+  if(chart) chart.destroy();
+
+  const inc=data.map(m=>Number(m.salary)+Number(m.extra)+m.items.filter(x=>x.type==="income").reduce((s,a)=>s+Number(a.amount),0));
+  const exp=data.map(m=>m.items.filter(x=>x.type==="expense").reduce((s,a)=>s+Number(a.amount),0));
+
+  chart=new Chart(ctx,{
+    type:"bar",
+    data:{
+      labels:months,
+      datasets:[
+        {label:"รายรับ",data:inc,backgroundColor:"#22c55e"},
+        {label:"รายจ่าย",data:exp,backgroundColor:"#ef4444"}
+      ]
+    },
+    options:{responsive:true}
+  });
+}
+
+function toggleChart(){
+  const c=document.getElementById("chart");
+  c.style.display = c.style.display==="none"?"block":"none";
+}
+
+function backup(){
+  const blob=new Blob([JSON.stringify(data)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="budget_backup.json";
+  a.click();
+}
+
+function importData(){
+  document.getElementById("fileInput").click();
+}
+
+document.getElementById("fileInput").addEventListener("change",e=>{
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{ data=JSON.parse(reader.result); render(); };
+  reader.readAsText(file);
+});
+
+render();
+</script>
+</body>
+</html>
