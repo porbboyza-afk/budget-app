@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>การเงินของฉัน</title>
   
+  <!-- PWA Manifest & iOS Support (NEW) -->
+  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B9%80%E0%B8%87%E0%B8%B4%E0%B8%99%E0%B8%82%E0%B8%AD%E0%B8%87%E0%B8%89%E0%B8%B1%E0%B8%99%22%2C%22short_name%22%3A%22MyBudget%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8f9fe%22%2C%22theme_color%22%3A%22%235e72e4%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fcdn-icons-png.flaticon.com%2F512%2F2344%2F2344147.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D" />
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MyBudget">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2344/2344147.png">
+  <meta name="theme-color" content="#5e72e4">
+
   <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -32,10 +41,10 @@
       --bg-body: #f8f9fe;
       --bg-card: #ffffff;
       
-      --radius: 24px;
-      --radius-sm: 14px;
+      --radius: 20px;
+      --radius-sm: 12px;
       --shadow-soft: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
-      --bottom-nav-height: 80px;
+      --bottom-nav-height: 70px;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -47,9 +56,10 @@
       color: var(--text-main);
       background: var(--bg-body);
       background-size: cover; background-position: center; background-attachment: fixed;
-      padding-bottom: calc(var(--bottom-nav-height) + 10px);
+      padding-bottom: calc(var(--bottom-nav-height) + 20px);
       transition: background 0.3s, color 0.3s;
-      overflow-x: hidden;
+      /* Prevent pull-to-refresh on mobile app feel */
+      overscroll-behavior-y: none;
     }
     
     body.night {
@@ -65,16 +75,9 @@
     /* Layout */
     .main-container {
         max-width: 600px; margin: 0 auto; width: 100%; padding: 20px;
-        min-height: 80vh;
     }
-    
-    .view-section {
-        display: none;
-        animation: fadeIn 0.3s ease;
-    }
-    .view-section.active { display: block; }
 
-    /* Dashboard (Convex Style) */
+    /* Dashboard */
     .dashboard {
       background: var(--bg-card);
       border-radius: var(--radius); padding: 24px;
@@ -116,32 +119,26 @@
     .stat-label { font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
     .stat-val { font-size: 1rem; font-weight: 600; white-space: nowrap; }
 
-    /* Month Summary Cards */
-    .month-summary-card {
-        background: var(--bg-card); border-radius: var(--radius); margin-bottom: 15px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05);
-        padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
-        cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    /* Month Cards */
+    .month-card {
+        background: var(--bg-card); border-radius: var(--radius); margin-bottom: 16px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid rgba(0,0,0,0.05); overflow: hidden;
     }
-    .month-summary-card:active { transform: scale(0.98); }
-    .m-left { display: flex; align-items: center; gap: 15px; }
-    .m-icon { 
-        width: 45px; height: 45px; background: var(--primary-soft); border-radius: 12px; 
+    .month-card.open {
+        transform: scale(1.02); z-index: 10; border-color: var(--primary);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+    
+    .card-header { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .m-title { font-weight: 600; display: flex; align-items: center; gap: 12px; color: var(--text-main); font-size: 1.1rem; }
+    .m-icon-box { 
+        width: 40px; height: 40px; background: var(--primary-soft); border-radius: 12px; 
         display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.2rem;
     }
-    .m-info h4 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--text-main); }
-    .m-info span { font-size: 0.8rem; color: var(--text-muted); }
-    .m-right { text-align: right; }
-    .m-bal { font-weight: 700; font-size: 1rem; display: block; }
-
-    /* Nav Header */
-    .nav-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-    .btn-back {
-        width: 40px; height: 40px; border-radius: 12px; background: var(--bg-card);
-        border: none; box-shadow: var(--shadow-soft); display: flex; align-items: center; justify-content: center;
-        color: var(--text-main); cursor: pointer; font-size: 1rem;
-    }
-    .page-title { margin: 0; font-size: 1.5rem; color: var(--text-main); font-weight: 700; }
+    
+    .card-body { display: none; padding: 20px; border-top: 1px solid rgba(0,0,0,0.05); background: var(--bg-card); }
+    .month-card.open .card-body { display: block; animation: fadeIn 0.3s; }
 
     /* Inputs */
     .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
@@ -152,7 +149,6 @@
     }
     .night .modern-input { border-color: #334155; }
     .modern-input:focus { border-color: var(--primary); outline: none; }
-    .modern-input-group label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; display: block; font-weight: 600;}
     
     /* Category Picker */
     .category-picker-container { position: relative; display: flex; align-items: center; margin-bottom: 15px; }
