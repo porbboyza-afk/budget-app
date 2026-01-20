@@ -1,307 +1,413 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Budget Mobile</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>รายรับจ่ายรายปี (Mobile)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4f7cff;
+      --success: #2ecc71;
+      --danger: #e74c3c;
+      --bg-blur: 3px;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --text-color: #1f2933;
+    }
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-<style>
-* { box-sizing: border-box; }
+    body {
+      font-family: 'Sarabun', -apple-system, sans-serif;
+      margin: 0; padding: 15px;
+      min-height: 100vh;
+      color: var(--text-color);
+      padding-bottom: 80px; /* เผื่อที่ด้านล่าง */
+    }
 
-body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
-  background: linear-gradient(180deg,#0f172a,#020617);
-  color: #111;
-}
+    /* ===== Background ===== */
+    .bg-layer { position: fixed; inset: 0; z-index: -2; overflow: hidden; }
+    .bg {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      filter: blur(var(--bg-blur)); transform: scale(1.05);
+      transition: opacity 2s ease; opacity: 0;
+    }
+    .bg.active { opacity: 1; }
+    .bg-overlay { position: fixed; inset: 0; z-index: -1; transition: background 1s; }
+    .day { background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(240,248,255,0.9)); }
+    .night { background: linear-gradient(180deg, rgba(20,25,40,0.8), rgba(10,15,30,0.9)); color: #eee; --card-bg: rgba(30, 40, 60, 0.95); --text-color: #eee; }
 
-.container {
-  max-width: 420px;
-  margin: auto;
-  padding: 14px;
-}
+    /* ===== Dashboard (Top Summary) ===== */
+    .dashboard {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+    .dashboard h2 { margin: 0 0 15px 0; font-size: 1.2rem; }
+    .summary-grid { display: flex; justify-content: space-between; gap: 10px; }
+    .sum-item { flex: 1; }
+    .sum-label { font-size: 0.8rem; opacity: 0.7; }
+    .sum-val { font-size: 1.1rem; font-weight: bold; margin-top: 5px; }
+    
+    .val-inc { color: var(--success); }
+    .val-exp { color: var(--danger); }
+    .val-bal { color: var(--primary); }
 
-.header {
-  background:#1e293b;
-  color:white;
-  border-radius:16px;
-  padding:12px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-}
+    /* ===== Tool Bar ===== */
+    .toolbar { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+    .btn {
+      flex: 1; white-space: nowrap; padding: 10px 15px;
+      border: none; border-radius: 50px; color: white;
+      font-size: 0.9rem; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .btn-exp { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+    .btn-clr { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+    .btn-chart { background: linear-gradient(135deg, #f39c12, #d35400); }
 
-.summary {
-  background:white;
-  margin-top:12px;
-  padding:12px;
-  border-radius:14px;
-  display:flex;
-  justify-content:space-between;
-  text-align:center;
-  font-weight:600;
-}
+    /* ===== Month Card (Accordion) ===== */
+    .month-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    /* Header (Always Visible) */
+    .card-header {
+      padding: 15px;
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer;
+      background: rgba(0,0,0,0.02);
+    }
+    .m-name { font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+    .m-balance { font-weight: bold; font-size: 1rem; }
+    .chevron { transition: transform 0.3s; font-size: 0.8rem; opacity: 0.5; margin-left: 8px; }
+    
+    /* Body (Collapsible) */
+    .card-body {
+      display: none;
+      padding: 15px;
+      border-top: 1px solid rgba(0,0,0,0.05);
+      animation: slideDown 0.3s ease;
+    }
+    .month-card.open .card-body { display: block; }
+    .month-card.open .chevron { transform: rotate(180deg); }
+    .month-card.open .card-header { background: rgba(79, 124, 255, 0.1); }
 
-.summary div span {
-  display:block;
-  font-size:18px;
-}
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-.green { color:#16a34a; }
-.red { color:#dc2626; }
-.blue { color:#2563eb; }
+    /* Inputs */
+    .input-group { margin-bottom: 15px; }
+    .input-label { font-size: 0.85rem; margin-bottom: 5px; display: block; opacity: 0.8; }
+    input[type="number"], input[type="text"], select {
+      width: 100%; padding: 12px; border-radius: 8px;
+      border: 1px solid #ddd; background: rgba(255,255,255,0.8);
+      font-size: 1rem; outline: none;
+    }
+    .night input, .night select { background: #3b4a5a; border-color: #556; color: white; }
 
-.buttons {
-  display:flex;
-  gap:10px;
-  margin:12px 0;
-}
+    /* Detail List */
+    .detail-list { margin-top: 10px; }
+    .detail-item {
+      display: flex; gap: 8px; margin-bottom: 8px;
+    }
+    .btn-icon {
+      width: 40px; border-radius: 8px; border: none; color: white;
+      display: flex; align-items: center; justify-content: center;
+    }
 
-button {
-  flex:1;
-  border:none;
-  border-radius:999px;
-  padding:10px;
-  font-weight:600;
-  color:white;
-  cursor:pointer;
-}
+    /* Modal Chart */
+    .modal {
+      display: none; position: fixed; inset: 0; z-index: 999;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal.show { display: flex; }
+    .modal-content {
+      background: white; width: 100%; max-width: 500px;
+      border-radius: 16px; padding: 20px; position: relative;
+    }
+    .close-modal {
+      position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: #333;
+    }
 
-.btn-chart { background:#f59e0b; }
-.btn-backup { background:#22c55e; }
-.btn-import { background:#3b82f6; }
-
-.month {
-  background:white;
-  border-radius:14px;
-  margin-bottom:10px;
-  padding:10px;
-}
-
-.month-header {
-  display:flex;
-  justify-content:space-between;
-  font-weight:700;
-  cursor:pointer;
-}
-
-.detail {
-  display:none;
-  margin-top:10px;
-}
-
-.row {
-  display:flex;
-  gap:6px;
-  margin-bottom:6px;
-}
-
-.row input, .row select {
-  flex:1;
-  padding:6px;
-  border-radius:8px;
-  border:1px solid #ddd;
-}
-
-.row button {
-  flex:0.3;
-  background:#ef4444;
-}
-
-.add-btn {
-  background:#22c55e;
-  margin-top:6px;
-}
-
-canvas {
-  background:white;
-  border-radius:12px;
-  padding:10px;
-  margin-top:10px;
-  display:none;
-}
-</style>
+  </style>
 </head>
+<body id="mainBody">
 
-<body>
-<div class="container">
+  <!-- BG -->
+  <div class="bg-layer">
+    <div class="bg active" id="bg1"></div>
+    <div class="bg" id="bg2"></div>
+  </div>
+  <div class="bg-overlay day" id="overlay"></div>
 
-<div class="header">
-  <div>📊 Budget Mobile</div>
-  <div style="color:#22c55e;">● Online</div>
-</div>
-
-<div class="summary">
-  <div>รายรับ<span id="totalIncome" class="green">0</span></div>
-  <div>รายจ่าย<span id="totalExpense" class="red">0</span></div>
-  <div>คงเหลือ<span id="totalBalance" class="blue">0</span></div>
-</div>
-
-<div class="buttons">
-  <button class="btn-chart" onclick="toggleChart()">กราฟ</button>
-  <button class="btn-backup" onclick="backup()">Backup</button>
-  <button class="btn-import" onclick="importData()">Import</button>
-</div>
-
-<canvas id="chart"></canvas>
-
-<div id="months"></div>
-
-<input type="file" id="fileInput" hidden />
-
-</div>
-
-<script>
-const months = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-let data = JSON.parse(localStorage.getItem("budget-data")) || {};
-let chart;
-
-const monthsDiv = document.getElementById("months");
-
-months.forEach((m,i)=>{
-  if(!data[i]) data[i] = [];
-
-  const div = document.createElement("div");
-  div.className = "month";
-
-  div.innerHTML = `
-    <div class="month-header" onclick="toggleDetail(${i})">
-      <div>${m}</div>
-      <div id="sum-${i}">0</div>
+  <!-- Top Dashboard -->
+  <div class="dashboard">
+    <h2>📊 สรุปภาพรวมทั้งปี</h2>
+    <div class="summary-grid">
+      <div class="sum-item">
+        <div class="sum-label">รายรับ</div>
+        <div class="sum-val val-inc" id="grandIncome">0</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-label">รายจ่าย</div>
+        <div class="sum-val val-exp" id="grandExpense">0</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-label">คงเหลือ</div>
+        <div class="sum-val val-bal" id="grandBalance">0</div>
+      </div>
     </div>
-    <div class="detail" id="detail-${i}">
-      <div id="rows-${i}"></div>
-      <button class="add-btn" onclick="addRow(${i})">+ เพิ่มรายการ</button>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button class="btn btn-chart" onclick="openChart()"><i class="fas fa-chart-pie"></i> ดูกราฟ</button>
+    <button class="btn btn-exp" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+    <button class="btn btn-clr" onclick="clearData()"><i class="fas fa-trash"></i> ล้าง</button>
+  </div>
+
+  <!-- Cards Container -->
+  <div id="cardsContainer"></div>
+
+  <!-- Chart Modal -->
+  <div class="modal" id="chartModal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeChart()">&times;</span>
+      <h3 style="text-align:center; margin-top:0;">กราฟสรุปรายเดือน</h3>
+      <canvas id="chart" height="300"></canvas>
     </div>
-  `;
-  monthsDiv.appendChild(div);
-  renderRows(i);
-});
+  </div>
 
-function toggleDetail(i){
-  const el = document.getElementById("detail-"+i);
-  el.style.display = el.style.display === "block" ? "none" : "block";
-}
+  <script>
+    // --- Background & System ---
+    const backgroundImages = ['DSCF1292.jpg', 'DSCF1361.jpg', 'DSCF1400.jpg', 'DSC00543.jpg', 'DSCF0921.jpg'];
+    let currentBgIndex = 0;
+    const bgA = document.getElementById('bg1');
+    const bgB = document.getElementById('bg2');
+    
+    // Init BG
+    bgA.style.backgroundImage = `url(${backgroundImages[0]})`;
+    setInterval(() => {
+      currentBgIndex = (currentBgIndex + 1) % backgroundImages.length;
+      const show = (currentBgIndex % 2 === 0) ? bgA : bgB;
+      const hide = (currentBgIndex % 2 === 0) ? bgB : bgA;
+      show.style.backgroundImage = `url(${backgroundImages[currentBgIndex]})`;
+      show.classList.add('active');
+      hide.classList.remove('active');
+    }, 8000);
 
-function addRow(i){
-  data[i].push({ type:"income", text:"", amount:0 });
-  save();
-  renderRows(i);
-}
+    // Day/Night Logic
+    function updateDayNight() {
+      const hour = new Date().getHours();
+      const isNight = hour >= 18 || hour < 6;
+      document.getElementById('overlay').className = `bg-overlay ${isNight ? 'night' : 'day'}`;
+      if(isNight) document.body.classList.add('night');
+      else document.body.classList.remove('night');
+    }
+    updateDayNight();
 
-function renderRows(i){
-  const box = document.getElementById("rows-"+i);
-  box.innerHTML = "";
-  data[i].forEach((r,index)=>{
-    const row = document.createElement("div");
-    row.className = "row";
-    row.innerHTML = `
-      <select onchange="updateRow(${i},${index},'type',this.value)">
-        <option value="income" ${r.type==="income"?"selected":""}>รับ</option>
-        <option value="expense" ${r.type==="expense"?"selected":""}>จ่าย</option>
-      </select>
-      <input placeholder="รายการ" value="${r.text}" 
-        oninput="updateRow(${i},${index},'text',this.value)">
-      <input type="number" value="${r.amount}" 
-        oninput="updateRow(${i},${index},'amount',this.value)">
-      <button onclick="removeRow(${i},${index})">✕</button>
-    `;
-    box.appendChild(row);
-  });
-  calculate();
-}
+    // --- Data Logic ---
+    const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+    let monthlyData = JSON.parse(localStorage.getItem('yearlyBudget_v1')) || months.map(() => ({ salary: 0, extra: 0, details: [] }));
 
-function updateRow(i,index,key,value){
-  data[i][index][key] = key==="amount" ? Number(value) : value;
-  save();
-  calculate();
-}
+    function saveData() {
+      localStorage.setItem('yearlyBudget_v1', JSON.stringify(monthlyData));
+      renderCards(); // Re-render to update summaries
+    }
 
-function removeRow(i,index){
-  data[i].splice(index,1);
-  save();
-  renderRows(i);
-}
+    function renderCards() {
+      const container = document.getElementById('cardsContainer');
+      // เก็บ state ว่าการ์ดไหนเปิดอยู่ (เพื่อไม่ให้ปิดเองตอนพิมพ์)
+      const openStates = Array.from(document.querySelectorAll('.month-card')).map(c => c.classList.contains('open'));
+      
+      let html = '';
+      let gInc = 0, gExp = 0;
 
-function calculate(){
-  let totalIncome=0,totalExpense=0;
-  const incomes=[], expenses=[];
+      monthlyData.forEach((m, idx) => {
+        // Calculate
+        const dInc = m.details.filter(d => d.type === 'income').reduce((s, d) => s + (Number(d.amount)||0), 0);
+        const dExp = m.details.filter(d => d.type === 'expense').reduce((s, d) => s + (Number(d.amount)||0), 0);
+        const totalInc = (Number(m.salary)||0) + (Number(m.extra)||0) + dInc;
+        const totalExp = dExp;
+        const balance = totalInc - totalExp;
 
-  months.forEach((_,i)=>{
-    let inc=0, exp=0;
-    data[i].forEach(r=>{
-      if(r.type==="income") inc+=r.amount;
-      else exp+=r.amount;
-    });
-    document.getElementById("sum-"+i).innerText = inc-exp;
-    totalIncome+=inc;
-    totalExpense+=exp;
-    incomes.push(inc);
-    expenses.push(exp);
-  });
+        gInc += totalInc; gExp += totalExp;
 
-  document.getElementById("totalIncome").innerText = totalIncome;
-  document.getElementById("totalExpense").innerText = totalExpense;
-  document.getElementById("totalBalance").innerText = totalIncome-totalExpense;
+        const isOpen = openStates[idx] ? 'open' : '';
 
-  drawChart(incomes,expenses);
-}
+        // Generate Detail List HTML
+        let detailsHtml = '';
+        m.details.forEach((d, dIdx) => {
+          detailsHtml += `
+            <div class="detail-item">
+              <select style="width:30%" onchange="updateDetail(${idx}, ${dIdx}, 'type', this.value)">
+                <option value="income" ${d.type==='income'?'selected':''}>รับ</option>
+                <option value="expense" ${d.type==='expense'?'selected':''}>จ่าย</option>
+              </select>
+              <input type="text" style="width:40%" placeholder="รายการ" value="${d.desc}" onchange="updateDetail(${idx}, ${dIdx}, 'desc', this.value)">
+              <input type="number" style="width:30%" placeholder="บาท" value="${d.amount}" onchange="updateDetail(${idx}, ${dIdx}, 'amount', this.value)">
+              <button class="btn-icon btn-clr" onclick="removeDetail(${idx}, ${dIdx})"><i class="fas fa-times"></i></button>
+            </div>
+          `;
+        });
 
-function save(){
-  localStorage.setItem("budget-data",JSON.stringify(data));
-}
+        html += `
+          <div class="month-card ${isOpen}" id="card-${idx}">
+            <div class="card-header" onclick="toggleCard(${idx})">
+              <div class="m-name">
+                <i class="far fa-calendar-alt"></i> ${months[idx]}
+              </div>
+              <div class="m-name">
+                <span class="${balance >= 0 ? 'val-inc' : 'val-exp'}">${balance.toLocaleString()}</span>
+                <i class="fas fa-chevron-down chevron"></i>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="input-group">
+                <label class="input-label">เงินเดือน</label>
+                <input type="number" value="${m.salary||''}" placeholder="0" onchange="updateBase(${idx}, 'salary', this.value)">
+              </div>
+              <div class="input-group">
+                <label class="input-label">รายได้พิเศษ (OT/โบนัส)</label>
+                <input type="number" value="${m.extra||''}" placeholder="0" onchange="updateBase(${idx}, 'extra', this.value)">
+              </div>
+              
+              <div style="border-top:1px dashed #ccc; margin: 15px 0;"></div>
+              
+              <label class="input-label">รายการเพิ่มเติม (ย่อย)</label>
+              <div class="detail-list">${detailsHtml}</div>
+              
+              <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn btn-exp" style="flex:1; padding:8px;" onclick="addDetail(${idx}, 'income')">+ รับ</button>
+                <button class="btn btn-clr" style="flex:1; padding:8px;" onclick="addDetail(${idx}, 'expense')">- จ่าย</button>
+              </div>
 
-function backup(){
-  const blob = new Blob([JSON.stringify(data)],{type:"application/json"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "budget-backup.json";
-  a.click();
-}
+              <div style="margin-top:15px; font-size:0.9rem; color:#666; text-align:center;">
+                รับรวม: ${totalInc.toLocaleString()} | จ่ายรวม: ${totalExp.toLocaleString()}
+              </div>
+            </div>
+          </div>
+        `;
+      });
 
-function importData(){
-  document.getElementById("fileInput").click();
-}
+      container.innerHTML = html;
+      
+      // Update Dashboard
+      document.getElementById('grandIncome').innerText = gInc.toLocaleString();
+      document.getElementById('grandExpense').innerText = gExp.toLocaleString();
+      document.getElementById('grandBalance').innerText = (gInc - gExp).toLocaleString();
+    }
 
-fileInput.onchange = e=>{
-  const file = e.target.files[0];
-  const reader = new FileReader();
-  reader.onload = ()=>{
-    data = JSON.parse(reader.result);
-    save();
-    location.reload();
-  };
-  reader.readAsText(file);
-};
+    // --- Actions ---
+    function toggleCard(idx) {
+      const card = document.getElementById(`card-${idx}`);
+      // ปิดอันอื่นก่อน (ถ้าต้องการให้เปิดทีละอัน ให้ uncomment บรรทัดล่าง)
+      // document.querySelectorAll('.month-card').forEach(c => c.classList.remove('open'));
+      card.classList.toggle('open');
+    }
 
-function toggleChart(){
-  const c = document.getElementById("chart");
-  c.style.display = c.style.display==="block"?"none":"block";
-}
+    function updateBase(idx, field, val) {
+      monthlyData[idx][field] = Number(val);
+      saveData();
+      // ไม่ต้อง render ใหม่หมด เพื่อกัน Input lost focus
+      // แต่ update dashboard ด้านบนพอ
+      updateGrandTotalOnly(); 
+    }
+    
+    // Helper to update only dashboard text without re-rendering DOM
+    function updateGrandTotalOnly() {
+      let gInc = 0, gExp = 0;
+      monthlyData.forEach(m => {
+        const dInc = m.details.filter(d => d.type === 'income').reduce((s, d) => s + (Number(d.amount)||0), 0);
+        const dExp = m.details.filter(d => d.type === 'expense').reduce((s, d) => s + (Number(d.amount)||0), 0);
+        gInc += (Number(m.salary)||0) + (Number(m.extra)||0) + dInc;
+        gExp += dExp;
+      });
+      document.getElementById('grandIncome').innerText = gInc.toLocaleString();
+      document.getElementById('grandExpense').innerText = gExp.toLocaleString();
+      document.getElementById('grandBalance').innerText = (gInc - gExp).toLocaleString();
+    }
 
-function drawChart(incomes,expenses){
-  const ctx = document.getElementById("chart");
-  if(chart) chart.destroy();
-  chart = new Chart(ctx,{
-    type:"scatter",
-    data:{
-      datasets:[{
-        label:"รายรับ vs รายจ่าย",
-        data: incomes.map((v,i)=>({x:expenses[i],y:v}))
-      }]
-    },
-    options:{
-      scales:{
-        x:{title:{display:true,text:"รายจ่าย"}},
-        y:{title:{display:true,text:"รายรับ"}}
+    function updateDetail(mIdx, dIdx, field, val) {
+      monthlyData[mIdx].details[dIdx][field] = (field === 'amount') ? Number(val) : val;
+      // บันทึกเงียบๆ แล้วอัพเดทเฉพาะตัวเลขรวม
+      localStorage.setItem('yearlyBudget_v1', JSON.stringify(monthlyData));
+      updateGrandTotalOnly();
+    }
+
+    function addDetail(idx, type) {
+      monthlyData[idx].details.push({ type, desc: '', amount: 0 });
+      saveData(); // อันนี้ต้อง render เพราะมี field ใหม่โผล่มา
+    }
+
+    function removeDetail(mIdx, dIdx) {
+      monthlyData[mIdx].details.splice(dIdx, 1);
+      saveData();
+    }
+
+    function clearData() {
+      if(confirm('ลบข้อมูลทั้งหมด?')) {
+        monthlyData = months.map(() => ({ salary: 0, extra: 0, details: [] }));
+        saveData();
       }
     }
-  });
-}
 
-calculate();
-</script>
+    // --- Chart & Export ---
+    let myChart = null;
+    function openChart() {
+      document.getElementById('chartModal').classList.add('show');
+      const ctx = document.getElementById('chart').getContext('2d');
+      if(myChart) myChart.destroy();
+      
+      const labels = months;
+      const dataInc = monthlyData.map(m => (m.salary||0) + (m.extra||0) + m.details.filter(d=>d.type==='income').reduce((s,d)=>s+(d.amount||0),0));
+      const dataExp = monthlyData.map(m => m.details.filter(d=>d.type==='expense').reduce((s,d)=>s+(d.amount||0),0));
+
+      myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'รับ', data: dataInc, backgroundColor: '#2ecc71', borderRadius: 4 },
+            { label: 'จ่าย', data: dataExp, backgroundColor: '#e74c3c', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: { x: { grid: { display:false } } }
+        }
+      });
+    }
+    function closeChart() { document.getElementById('chartModal').classList.remove('show'); }
+
+    function exportToExcel() {
+      let csv = "\uFEFFเดือน,ประเภท,รายการ,จำนวนเงิน\n";
+      monthlyData.forEach((m, idx) => {
+        const mm = months[idx];
+        if(m.salary) csv += `${mm},รายรับ,เงินเดือน,${m.salary}\n`;
+        if(m.extra) csv += `${mm},รายรับ,พิเศษ,${m.extra}\n`;
+        m.details.forEach(d => csv += `${mm},${d.type==='income'?'รายรับ':'รายจ่าย'},${d.desc},${d.amount}\n`);
+      });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+      link.download = "Budget_Yearly.csv";
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    }
+
+    // Init
+    renderCards();
+  </script>
 </body>
 </html>
