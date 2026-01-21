@@ -415,35 +415,22 @@
                       <span class="stat-val" style="color:var(--info)" id="monthGrandSavings">0</span>
                   </div>
               </div>
-
-               <!-- Month Savings Portfolio Widget (New) -->
-              <div class="top-expenses-widget">
-                  <div style="font-size:0.8rem; font-weight:600; color:var(--info); margin-bottom:8px;"><i class="fas fa-chart-pie"></i> พอร์ตเงินออม (เดือน)</div>
-                  <div class="savings-portfolio">
-                      <div class="sp-chart-container">
-                          <canvas id="monthSavingsDoughnut"></canvas>
-                      </div>
-                      <div id="monthSavingsLegend" class="sp-list">
-                          <span style="color:#aaa; font-size:0.8rem;">ยังไม่มีข้อมูลเงินออม</span>
-                      </div>
-                  </div>
-              </div>
           </div>
 
-          <!-- Inputs Section -->
+          <!-- Inputs Section (Cleaned) -->
           <div style="background:var(--bg-card); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-soft); margin-bottom:20px;">
               <h4 style="margin:0 0 15px 0; color:var(--text-main);">รายได้ประจำ</h4>
               <div class="modern-input-group"><label>เงินเดือน</label><input class="modern-input" type="number" id="inpSalary" placeholder="0" oninput="updateCurrentMonthBase('salary', this.value)"></div>
+              <!-- Removed budget and extra fields -->
               <div id="copyPrevBtnContainer" style="margin-top:10px;"></div>
           </div>
           
-          <!-- Extra Income Section (New) -->
+          <!-- Extra Income Section -->
           <div style="background:var(--bg-card); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-soft); margin-bottom:20px; border:1px solid var(--success-soft);">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                   <h4 style="margin:0; color:var(--success); display:flex; align-items:center; gap:5px;"><i class="fas fa-coins"></i> รายได้พิเศษ</h4>
                   <button class="btn-full" style="width:auto; margin:0; padding:6px 12px; font-size:0.8rem; background:var(--success-soft); color:var(--success);" onclick="addExtraIncomeItem()">+ เพิ่ม</button>
               </div>
-              <!-- Quick Income Types -->
               <div class="category-scroll" style="margin-bottom:10px;">
                   <button class="cat-nav-btn" onclick="addWithIconExtra('ธุรกิจ')">🏢</button>
                   <button class="cat-nav-btn" onclick="addWithIconExtra('ขายของ')">🛍️</button>
@@ -463,7 +450,6 @@
                   <h4 style="margin:0; color:var(--info); display:flex; align-items:center; gap:5px;"><i class="fas fa-piggy-bank"></i> จัดสรรเงินออม</h4>
                   <button class="btn-full" style="width:auto; margin:0; padding:6px 12px; font-size:0.8rem; background:var(--info-soft); color:var(--info);" onclick="addSavingItemCurrent()">+ เพิ่ม</button>
               </div>
-              <!-- Quick Savings Types -->
               <div class="category-scroll" style="margin-bottom:10px;">
                   <button class="cat-nav-btn" onclick="addWithIconSavings('สำรอง')">🚑</button>
                   <button class="cat-nav-btn" onclick="addWithIconSavings('ลงทุน')">💹</button>
@@ -483,20 +469,15 @@
                   <span style="font-size:0.8rem; color:var(--text-muted); font-weight:400;">ล่าสุด</span>
               </h4>
               
-              <!-- Quick Add -->
               <div class="category-picker-container">
                   <div class="cat-nav-btn" onclick="document.getElementById('cat-scroll').scrollLeft -= 50"><i class="fas fa-chevron-left"></i></div>
                   <div id="cat-scroll" class="category-scroll"></div> <!-- Injected by JS -->
                   <div class="cat-nav-btn" onclick="document.getElementById('cat-scroll').scrollLeft += 50"><i class="fas fa-chevron-right"></i></div>
               </div>
 
-              <!-- List -->
-              <div class="detail-container" id="monthDetailList">
-                  <!-- Items injected here -->
-              </div>
+              <div class="detail-container" id="monthDetailList"></div>
           </div>
           
-          <!-- Floating Action Buttons -->
           <div class="action-row" style="margin-bottom:20px;">
             <button class="action-btn btn-inc" onclick="addDetailCurrent('income')">
                 <i class="fas fa-plus"></i> <span>รับ</span>
@@ -508,7 +489,6 @@
                 <i class="fas fa-camera"></i> <span>สแกน</span>
             </button>
           </div>
-
       </div>
   </div>
 
@@ -706,12 +686,11 @@
                 if (user) {
                     userId = user.uid;
                     useCloud = !user.isAnonymous;
-                    
                     if (!user.isAnonymous) {
                         syncBadge.innerHTML = '<i class="fas fa-cloud"></i> Online';
                         syncBadge.style.background = '#dcfce7'; syncBadge.style.color = '#166534';
-                        if(btnLogin) btnLogin.classList.add('hidden');
-                        if(btnLogout) btnLogout.classList.remove('hidden');
+                        btnLogin.classList.add('hidden');
+                        btnLogout.classList.remove('hidden');
                         if(user.photoURL) { avatar.src = user.photoURL; avatar.style.display = 'block'; }
                         role.innerText = user.displayName || "User";
                         startDataListener();
@@ -719,8 +698,8 @@
                 } else {
                     useCloud = false;
                     syncBadge.innerHTML = '<i class="fas fa-wifi"></i> Offline';
-                    if(btnLogin) btnLogin.classList.remove('hidden');
-                    if(btnLogout) btnLogout.classList.add('hidden');
+                    btnLogin.classList.remove('hidden');
+                    btnLogout.classList.add('hidden');
                     avatar.style.display = 'none';
                     role.innerText = "Personal Wallet";
                 }
