@@ -246,7 +246,7 @@
                           <div id="userRoleLabel" style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">Personal Wallet</div>
                       </div>
                   </div>
-                  <div id="syncStatus" class="status-wifi">
+                  <div id="syncStatus" style="font-size:1.1rem; padding:6px 12px; border-radius:50px; background:#e2e8f0; color:#64748b;">
                       <i class="fas fa-wifi"></i>
                   </div>
               </div>
@@ -275,6 +275,7 @@
                   </div>
               </div>
           </div>
+          
           <div id="homeMonthList"></div>
       </div>
   </div>
@@ -300,7 +301,7 @@
                   <div class="stat-item"><span class="stat-label">รายจ่าย</span><span class="stat-val" style="color:var(--danger)" id="monthGrandExpense">0</span></div>
                   <div class="stat-item" style="border-left:1px solid rgba(0,0,0,0.1)"><span class="stat-label">เงินออม</span><span class="stat-val" style="color:var(--info)" id="monthGrandSavings">0</span></div>
               </div>
-              
+
               <!-- Month Savings Portfolio -->
               <div class="top-expenses-widget" style="margin-top:20px; padding-top:15px; border-top: 1px dashed rgba(0,0,0,0.08);">
                   <div style="font-size:0.85rem; font-weight:800; color:var(--info); margin-bottom:12px;"><i class="fas fa-chart-pie"></i> พอร์ตเงินออมเดือนนี้</div>
@@ -471,6 +472,7 @@
 
   <!-- App Script Logic -->
   <script>
+    const appApiKey = ""; 
     window.myMainChartObj = null; window.savingsChartObj = null; window.monthSavingsChartObj = null;
     const extraSources = ["OT", "โบนัส", "ขายของ", "ฟรีแลนซ์", "ธุรกิจ", "ของขวัญ", "ครอบครัว", "อื่นๆ"];
     const savingPurposes = ["เงินสำรอง", "ลงทุน", "เกษียณ", "ท่องเที่ยว", "บ้าน/รถ", "การศึกษา", "สุขภาพ", "อื่นๆ"];
@@ -621,87 +623,82 @@
         window.scrollTo({top:0, behavior:'smooth'});
     };
 
-    // --- Gemini 2.5 Flash API Implementation ---
+    // --- Gemini API Helper with Backoff ---
+    async function fetchGemini(payload, modelId = "gemini-2.0-flash-lite-preview-02-05") {
+        const userKey = localStorage.getItem('gemini_api_key') || appApiKey;
+        if (!userKey) throw new Error("กรุณาใส่ API Key ในหน้าตั้งค่า");
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${userKey}`;
+        let delay = 1000;
+        
+        for (let i = 0; i < 5; i++) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (response.ok) return await response.json();
+                if (response.status === 429) {
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2; continue;
+                }
+                throw new Error(`API Error: ${response.status}`);
+            } catch (err) {
+                if (i === 4) throw err;
+                await new Promise(res => setTimeout(res, delay));
+                delay *= 2;
+            }
+        }
+    }
+
+    // AI Coach Feature
     window.analyzeBudgetWithAI = async () => {
-        const apiKey = ""; // Environment provided
-        const userKey = localStorage.getItem('gemini_api_key');
-        const finalKey = userKey || apiKey;
-        
-        if(!finalKey) return alert("กรุณาใส่ API Key ในหน้าตั้งค่า");
-        
         const loader = document.getElementById('loadingOverlay');
-        const loaderText = document.getElementById('aiLoaderText');
-        loaderText.innerText = "AI กำลังวิเคราะห์ข้อมูล...";
-        loader.style.display='flex';
+        document.getElementById('aiLoaderText').innerText = "AI Coach กำลังวิเคราะห์งบประมาณ ✨";
+        loader.style.display = 'flex';
         
         try {
-            const summary = window.monthlyData.map((m,i)=>`${months[i]}: In=${calculateStats(m).inc}, Out=${calculateStats(m).exp}, Save=${calculateStats(m).save}`).join('\n');
+            const summary = window.monthlyData.map((m,i)=>`${months[i]}: In=${calculateStats(m).inc}, Out=${calculateStats(m).exp}, Saved=${calculateStats(m).save}`).join('\n');
+            const prompt = `ในฐานะผู้เชี่ยวชาญด้านการเงิน ช่วยวิเคราะห์ข้อมูลรายปีนี้และสรุปผลพร้อมให้คำแนะนำ 3 ข้อสั้นๆ เป็นภาษาไทย (Markdown format):\n${summary}`;
             
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${finalKey}`, { 
-                method:'POST', 
-                headers:{'Content-Type':'application/json'}, 
-                body:JSON.stringify({
-                    contents:[{
-                        parts:[{text:`Analyze this annual budget data in Thai Baht and provide 3 actionable, encouraging financial tips in Thai markdown. Data summary:\n${summary}`}]
-                    }]
-                }) 
-            });
-
-            if (!res.ok) throw new Error("API Connection Failed");
-
-            const d = await res.json();
-            const text = d.candidates?.[0]?.content?.parts?.[0]?.text;
+            const result = await fetchGemini({ contents: [{ parts: [{ text: prompt }] }] });
+            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
             
-            if (!text) throw new Error("AI returned empty data");
-
-            document.getElementById('aiContent').innerHTML = marked.parse(text);
+            document.getElementById('aiContent').innerHTML = marked.parse(text || "AI ไม่สามารถให้คำแนะนำได้ในขณะนี้");
             document.getElementById('aiModal').classList.add('show');
-        } catch(e) { 
-            alert("AI Error: ไม่สามารถเชื่อมต่อกับ AI ได้ในขณะนี้ กรุณาตรวจสอบรหัส API Key ของคุณ");
-        } finally { 
-            loader.style.display='none'; 
-        }
+        } catch(e) {
+            alert("AI Error: " + e.message);
+        } finally { loader.style.display = 'none'; }
     };
 
+    // AI Receipt Scanner Feature
     window.triggerScanCurrent = () => { document.getElementById('receiptInput').click(); };
 
     window.onload = function() {
         const input = document.getElementById('receiptInput');
         if(input) {
             input.addEventListener('change', async function(e) {
-                const apiKey = "";
-                const userKey = localStorage.getItem('gemini_api_key');
-                const finalKey = userKey || apiKey;
-
-                if(!finalKey || !this.files[0]) return;
-                
+                if(!this.files[0]) return;
                 const loader = document.getElementById('loadingOverlay');
-                const loaderText = document.getElementById('aiLoaderText');
-                loaderText.innerText = "กำลังอ่านข้อมูลสลิป...";
-                loader.style.display='flex';
+                document.getElementById('aiLoaderText').innerText = "กำลังใช้ AI สแกนสลิป ✨";
+                loader.style.display = 'flex';
 
                 const reader = new FileReader();
                 reader.onload = async (ev) => {
                     try {
                         const b64 = ev.target.result.split(',')[1];
-                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${finalKey}`, { 
-                            method:'POST', 
-                            headers:{'Content-Type':'application/json'}, 
-                            body:JSON.stringify({
-                                contents:[{
-                                    role:"user", 
-                                    parts:[
-                                        {text:"Analyze this receipt and extract ONLY a JSON object: { \"description\": \"string\", \"amount\": number, \"type\": \"expense\" }. Description should be in Thai."}, 
-                                        {inlineData:{mimeType:"image/jpeg",data:b64}}
-                                    ]
-                                }]
-                            }) 
+                        const result = await fetchGemini({
+                            contents: [{
+                                role: "user",
+                                parts: [
+                                    { text: "Analyze this receipt image. Extract ONLY a JSON object: { \"description\": \"string\", \"amount\": number, \"type\": \"expense\" }. Merchant name must be in Thai." },
+                                    { inlineData: { mimeType: "image/jpeg", data: b64 } }
+                                ]
+                            }]
                         });
 
-                        if (!res.ok) throw new Error("Scan API Failed");
-
-                        const d = await res.json(); 
-                        const rawText = d.candidates?.[0]?.content?.parts?.[0]?.text;
+                        const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
                         const jsonStr = rawText.replace(/```json/g,'').replace(/```/g,'').trim();
                         const json = JSON.parse(jsonStr);
                         
@@ -710,9 +707,9 @@
                             window.saveData(); window.renderMonthDetail(); 
                         }
                     } catch(err) { 
-                        alert("สแกนไม่สำเร็จ: AI ไม่สามารถประมวลผลรูปภาพได้");
+                        alert("สแกนไม่สำเร็จ: AI ไม่สามารถประมวลผลได้");
                     } finally { 
-                        loader.style.display='none'; input.value=''; 
+                        loader.style.display = 'none'; input.value = ''; 
                     }
                 }; reader.readAsDataURL(this.files[0]);
             });
