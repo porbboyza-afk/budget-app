@@ -280,7 +280,7 @@
     .night .scroll-btn { background: #334155; border-color: rgba(255,255,255,0.1); }
     
     /* Savings Portfolio Widget */
-    .savings-portfolio { margin-top: 15px; display: flex; gap: 15px; align-items: center; overflow-x: auto; padding-bottom: 5px; }
+    .savings-portfolio { margin-top: 15px; display: flex; gap: 15px; align-items: center; } /* Fixed: removed overflow-x auto, flex layout */
     .sp-chart-container { width: 80px; height: 80px; flex-shrink: 0; position: relative; }
     .sp-list { flex: 1; display: flex; flex-direction: column; gap: 5px; }
     .sp-item { display: flex; justify-content: space-between; font-size: 0.8rem; align-items: center; }
@@ -330,22 +330,25 @@
               </div>
               
               <div class="balance-container">
-                  <div class="balance-label">ยอดคงเหลือสุทธิ</div>
-                  <div class="balance-amount" id="grandBalance">0</div>
+                  <div class="balance-label">คงเหลือเดือนนี้ (<span id="currMonthName">...</span>)</div>
+                  <div class="balance-amount" id="currentMonthBalance">0</div>
+                  <div style="font-size:0.85rem; color:var(--text-muted); margin-top:5px;">
+                      ยอดสะสมทั้งปี: <span id="grandBalance" style="font-weight:600;">0</span>
+                  </div>
               </div>
 
               <div class="stats-row">
                   <div class="stat-item">
-                      <span class="stat-label">รายรับ</span>
-                      <span class="stat-val val-inc" id="grandIncome">0</span>
+                      <span class="stat-label">รายรับ (เดือนนี้)</span>
+                      <span class="stat-val" style="color:var(--success)" id="dashIncome">0</span>
                   </div>
                   <div class="stat-item">
-                      <span class="stat-label">รายจ่าย</span>
-                      <span class="stat-val val-exp" id="grandExpense">0</span>
+                      <span class="stat-label">รายจ่าย (เดือนนี้)</span>
+                      <span class="stat-val" style="color:var(--danger)" id="dashExpense">0</span>
                   </div>
                   <div class="stat-item" style="border-left:1px solid rgba(0,0,0,0.1)">
-                      <span class="stat-label">เงินออม</span>
-                      <span class="stat-val val-save" id="grandSavings">0</span>
+                      <span class="stat-label">เงินออม (เดือนนี้)</span>
+                      <span class="stat-val" style="color:var(--info)" id="dashSavings">0</span>
                   </div>
               </div>
               
@@ -442,24 +445,12 @@
               </div>
               <!-- Quick Income Types -->
               <div class="category-scroll" style="margin-bottom:10px;">
-                  <div class="cat-item" onclick="addWithIconExtra('ธุรกิจ')">
-                      <button class="cat-btn">🏢</button><span class="cat-label">ธุรกิจ</span>
-                  </div>
-                  <div class="cat-item" onclick="addWithIconExtra('ขายของ')">
-                      <button class="cat-btn">🛍️</button><span class="cat-label">ขายของ</span>
-                  </div>
-                  <div class="cat-item" onclick="addWithIconExtra('ฟรีแลนซ์')">
-                      <button class="cat-btn">💻</button><span class="cat-label">ฟรีแลนซ์</span>
-                  </div>
-                  <div class="cat-item" onclick="addWithIconExtra('ครอบครัว')">
-                      <button class="cat-btn">👨‍👩‍👧</button><span class="cat-label">ครอบครัว</span>
-                  </div>
-                  <div class="cat-item" onclick="addWithIconExtra('โบนัส')">
-                      <button class="cat-btn">🎉</button><span class="cat-label">โบนัส</span>
-                  </div>
-                  <div class="cat-item" onclick="addWithIconExtra('ดอกเบี้ย')">
-                      <button class="cat-btn">📈</button><span class="cat-label">ดอกเบี้ย</span>
-                  </div>
+                  <button class="cat-nav-btn" onclick="addWithIconExtra('ธุรกิจ')">🏢</button>
+                  <button class="cat-nav-btn" onclick="addWithIconExtra('ขายของ')">🛍️</button>
+                  <button class="cat-nav-btn" onclick="addWithIconExtra('ฟรีแลนซ์')">💻</button>
+                  <button class="cat-nav-btn" onclick="addWithIconExtra('ครอบครัว')">👨‍👩‍👧</button>
+                  <button class="cat-nav-btn" onclick="addWithIconExtra('โบนัส')">🎉</button>
+                  <button class="cat-nav-btn" onclick="addWithIconExtra('ดอกเบี้ย')">📈</button>
               </div>
               <div id="extraIncomeList">
                   <div style="text-align:center; color:#ccc; font-size:0.9rem;">ไม่มีรายได้พิเศษ</div>
@@ -474,21 +465,11 @@
               </div>
               <!-- Quick Savings Types -->
               <div class="category-scroll" style="margin-bottom:10px;">
-                  <div class="cat-item" onclick="addWithIconSavings('สำรอง')">
-                      <button class="cat-btn">🚑</button><span class="cat-label">สำรอง</span>
-                  </div>
-                  <div class="cat-item" onclick="addWithIconSavings('ลงทุน')">
-                      <button class="cat-btn">💹</button><span class="cat-label">ลงทุน</span>
-                  </div>
-                  <div class="cat-item" onclick="addWithIconSavings('ทองคำ')">
-                      <button class="cat-btn">👑</button><span class="cat-label">ทองคำ</span>
-                  </div>
-                  <div class="cat-item" onclick="addWithIconSavings('เที่ยว')">
-                      <button class="cat-btn">✈️</button><span class="cat-label">เที่ยว</span>
-                  </div>
-                  <div class="cat-item" onclick="addWithIconSavings('เกษียณ')">
-                      <button class="cat-btn">👴</button><span class="cat-label">เกษียณ</span>
-                  </div>
+                  <button class="cat-nav-btn" onclick="addWithIconSavings('สำรอง')">🚑</button>
+                  <button class="cat-nav-btn" onclick="addWithIconSavings('ลงทุน')">💹</button>
+                  <button class="cat-nav-btn" onclick="addWithIconSavings('ทองคำ')">👑</button>
+                  <button class="cat-nav-btn" onclick="addWithIconSavings('เที่ยว')">✈️</button>
+                  <button class="cat-nav-btn" onclick="addWithIconSavings('เกษียณ')">👴</button>
               </div>
               <div id="savingsDetailList">
                   <div style="text-align:center; color:#ccc; font-size:0.9rem;">ยังไม่มีรายการออม</div>
@@ -729,8 +710,8 @@
                     if (!user.isAnonymous) {
                         syncBadge.innerHTML = '<i class="fas fa-cloud"></i> Online';
                         syncBadge.style.background = '#dcfce7'; syncBadge.style.color = '#166534';
-                        btnLogin.classList.add('hidden');
-                        btnLogout.classList.remove('hidden');
+                        if(btnLogin) btnLogin.classList.add('hidden');
+                        if(btnLogout) btnLogout.classList.remove('hidden');
                         if(user.photoURL) { avatar.src = user.photoURL; avatar.style.display = 'block'; }
                         role.innerText = user.displayName || "User";
                         startDataListener();
@@ -738,8 +719,8 @@
                 } else {
                     useCloud = false;
                     syncBadge.innerHTML = '<i class="fas fa-wifi"></i> Offline';
-                    btnLogin.classList.remove('hidden');
-                    btnLogout.classList.add('hidden');
+                    if(btnLogin) btnLogin.classList.remove('hidden');
+                    if(btnLogout) btnLogout.classList.add('hidden');
                     avatar.style.display = 'none';
                     role.innerText = "Personal Wallet";
                 }
@@ -866,6 +847,10 @@
         let gInc = 0, gExp = 0, gSave = 0;
         const yearlyExpMap = {};
         const savingsMap = {};
+        
+        // Find current month stats for Dashboard Highlight
+        const currentMonthIdx = new Date().getMonth();
+        const currentMonthStats = calculateStats(window.monthlyData[currentMonthIdx]);
 
         window.monthlyData.forEach((m, idx) => {
             const stats = calculateStats(m);
@@ -900,10 +885,18 @@
         });
         
         list.innerHTML = html;
-        animateValue(document.getElementById('grandBalance'), 0, gInc - gExp, 800);
-        document.getElementById('grandIncome').innerText = gInc.toLocaleString();
-        document.getElementById('grandExpense').innerText = gExp.toLocaleString();
-        document.getElementById('grandSavings').innerText = gSave.toLocaleString();
+        
+        // Update Dashboard with Current Month Focus
+        document.getElementById('currMonthName').innerText = months[currentMonthIdx];
+        animateValue(document.getElementById('currentMonthBalance'), 0, currentMonthStats.freeBalance, 800);
+        
+        // Stats Boxes (Current Month)
+        document.getElementById('dashIncome').innerText = currentMonthStats.totalInc.toLocaleString();
+        document.getElementById('dashExpense').innerText = currentMonthStats.totalExp.toLocaleString();
+        document.getElementById('dashSavings').innerText = currentMonthStats.saving.toLocaleString();
+
+        // Small Yearly Balance
+        document.getElementById('grandBalance').innerText = (gInc - gExp).toLocaleString();
         
         const top5 = Object.entries(yearlyExpMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
         document.getElementById('yearTopExpList').innerHTML = top5.length ? top5.map(i=>`<span class="top-pill">${i[0]} ${i[1].toLocaleString()}</span>`).join('') : '<span style="color:#aaa; font-size:0.8rem;">ไม่มีข้อมูล</span>';
@@ -951,7 +944,7 @@
         const stats = calculateStats(m);
 
         document.getElementById('detailMonthName').innerText = months[idx];
-        document.getElementById('monthGrandBalance').innerText = stats.balance.toLocaleString();
+        document.getElementById('monthGrandBalance').innerText = stats.freeBalance.toLocaleString();
         document.getElementById('monthGrandIncome').innerText = stats.totalInc.toLocaleString();
         document.getElementById('monthGrandExpense').innerText = stats.totalExp.toLocaleString();
         document.getElementById('monthGrandSavings').innerText = stats.saving.toLocaleString();
@@ -1067,7 +1060,7 @@
     
     function updateMonthStatsUI() {
         const stats = calculateStats(window.monthlyData[window.currentMonthIndex]);
-        document.getElementById('monthGrandBalance').innerText = stats.balance.toLocaleString();
+        document.getElementById('monthGrandBalance').innerText = stats.freeBalance.toLocaleString();
         document.getElementById('monthGrandIncome').innerText = stats.totalInc.toLocaleString();
         document.getElementById('monthGrandExpense').innerText = stats.totalExp.toLocaleString();
         document.getElementById('monthGrandSavings').innerText = stats.saving.toLocaleString();
