@@ -11,7 +11,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="MyBudget">
-  <!-- Apple Touch Icon -->
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2344/2344147.png">
   <meta name="theme-color" content="#5e72e4">
 
@@ -19,8 +18,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
   
   <style>
@@ -38,10 +35,10 @@
       --text-muted: #8898aa;
       --bg-body: #f8f9fe;
       --bg-card: #ffffff;
-      --radius: 20px;
-      --radius-sm: 12px;
-      --bottom-nav-height: 70px;
-      --shadow-soft: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+      --radius: 24px;
+      --radius-sm: 15px;
+      --bottom-nav-height: 85px;
+      --shadow-soft: 0 10px 25px rgba(0,0,0,0.06);
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -50,152 +47,195 @@
       font-family: 'Prompt', 'Sarabun', sans-serif;
       margin: 0; padding: 0; min-height: 100vh;
       color: var(--text-main); background: var(--bg-body);
-      padding-bottom: calc(var(--bottom-nav-height) + 20px);
-      transition: background 0.3s, color 0.3s;
+      padding-bottom: calc(var(--bottom-nav-height) + 15px);
+      transition: background 0.3s;
       overscroll-behavior-y: none;
       background-size: cover; background-position: center; background-attachment: fixed;
     }
     
     body.night {
-        --text-main: #e2e8f0; --text-muted: #94a3b8;
+        --text-main: #f1f5f9; --text-muted: #94a3b8;
         --bg-body: #0f172a; --bg-card: #1e293b;
-        --primary-soft: rgba(94, 114, 228, 0.15); 
-        --success-soft: rgba(45, 206, 137, 0.15);
-        --danger-soft: rgba(245, 54, 92, 0.15); 
-        --info-soft: rgba(17, 205, 239, 0.15);
-        --warning-soft: rgba(251, 99, 64, 0.15);
+        --primary-soft: rgba(94, 114, 228, 0.2);
     }
 
     .main-container { max-width: 600px; margin: 0 auto; width: 100%; padding: 20px; }
-    .view-section { display: none; animation: fadeIn 0.3s ease; }
-    .view-section.active { display: block; }
+    
+    .view-section { display: none; }
+    .view-section.active { display: block; animation: fadeIn 0.3s ease; }
 
     /* Dashboard */
     .dashboard {
-      background: var(--bg-card); border-radius: var(--radius); padding: 24px;
+      background: var(--bg-card); border-radius: var(--radius); padding: 25px 20px;
       box-shadow: var(--shadow-soft); margin-bottom: 25px; position: relative; overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.5);
+      border: 1px solid rgba(0,0,0,0.02);
     }
-    .night .dashboard { border-color: rgba(255,255,255,0.05); }
-    .dashboard::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, var(--primary), var(--info)); }
-    .dash-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-    .user-profile-header { display: flex; align-items: center; gap: 12px; }
-    .main-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--bg-card); display: none; }
+    .dashboard::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, var(--primary), var(--info)); }
     
-    .balance-container { text-align: center; margin-bottom: 25px; padding: 10px 0; }
-    .balance-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px; font-weight: 500; }
+    .balance-container { text-align: center; margin: 15px 0; }
     .balance-amount { font-size: 2.8rem; font-weight: 700; letter-spacing: -1px; line-height: 1; transition: color 0.3s; }
-    .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: var(--primary-soft); padding: 15px; border-radius: var(--radius-sm); margin-top: 10px; }
+    .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: var(--primary-soft); padding: 15px; border-radius: var(--radius-sm); margin-top: 20px; }
     .stat-item { text-align: center; }
-    .stat-label { font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
-    .stat-val { font-size: 1rem; font-weight: 600; white-space: nowrap; }
+    .stat-label { font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 3px; font-weight: 700; text-transform: uppercase; }
+    .stat-val { font-size: 0.95rem; font-weight: 700; }
 
-    /* Summary Cards */
+    /* Nav & Back Button */
+    .nav-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+    .btn-back { 
+        width: 48px; height: 48px; border-radius: 18px; background: var(--bg-card); 
+        border: none; box-shadow: var(--shadow-soft); display: flex; align-items: center; justify-content: center; 
+        color: var(--text-main); cursor: pointer; transition: all 0.2s; font-size: 1.2rem;
+    }
+    .btn-back:active { transform: scale(0.9); background: var(--primary-soft); }
+
+    /* List Item Cards */
     .month-summary-card {
-        background: var(--bg-card); border-radius: var(--radius); margin-bottom: 15px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05);
-        padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
+        background: var(--bg-card); border-radius: var(--radius); margin-bottom: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.01);
+        padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
         cursor: pointer; transition: transform 0.2s;
     }
-    .month-summary-card:active { transform: scale(0.98); }
     .m-left { display: flex; align-items: center; gap: 15px; }
-    .m-icon { width: 45px; height: 45px; background: var(--primary-soft); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.2rem; }
-    .m-info h4 { margin: 0; font-size: 1rem; font-weight: 600; }
-    .m-right { text-align: right; }
-    .m-bal { font-weight: 700; font-size: 1rem; display: block; }
-
-    /* Nav Header */
-    .nav-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-    .btn-back { width: 40px; height: 40px; border-radius: 12px; background: var(--bg-card); border: none; box-shadow: var(--shadow-soft); display: flex; align-items: center; justify-content: center; color: var(--text-main); cursor: pointer; }
-    .page-title { margin: 0; font-size: 1.5rem; font-weight: 700; }
+    .m-icon { width: 44px; height: 44px; background: var(--primary-soft); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: 700; }
 
     /* Inputs */
-    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-    .modern-input { width: 100%; padding: 12px 15px; border-radius: var(--radius-sm); border: 1px solid #e2e8f0; background: #fff; font-size: 1rem; font-family: 'Sarabun'; color: var(--text-main); transition: border-color 0.2s; }
-    .night .modern-input { background: #1e293b; border-color: #334155; }
-    .modern-input:focus { border-color: var(--primary); outline: none; }
-    .modern-input-group label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; display: block; font-weight: 600; }
+    .modern-input { 
+        width: 100%; padding: 14px 16px; border-radius: 15px; border: 1px solid #eef2f6; 
+        background: #fff; font-size: 1rem; font-family: 'Sarabun'; color: var(--text-main); outline: none; transition: all 0.2s;
+    }
+    .modern-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
 
-    /* Buttons Modern */
-    .btn-rounded-pill { padding: 10px 20px; border-radius: 50px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s; }
-    .btn-rounded-pill:active { transform: translateY(1px); box-shadow: none; }
-    .btn-del-modern { width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--danger-soft); color: var(--danger); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
-    .btn-del-modern:hover { background: var(--danger); color: white; }
+    /* Detail Row & Type Badges */
+    .detail-row { 
+        display: flex; align-items: center; gap: 10px; margin-bottom: 12px; 
+        background: var(--bg-card); padding: 10px 14px; border-radius: var(--radius-sm);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.02);
+    }
+    .type-badge-circle { 
+        width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+        font-size: 0.9rem; font-weight: 800; color: #fff; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .badge-inc { background: var(--success); }
+    .badge-exp { background: var(--danger); }
+    .btn-del-modern { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--danger-soft); color: var(--danger); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; font-size: 0.8rem; }
 
-    /* Bottom Nav */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--bottom-nav-height); background: var(--bg-card); box-shadow: 0 -5px 20px rgba(0,0,0,0.05); display: flex; justify-content: space-around; align-items: center; z-index: 1000; border-top-left-radius: 20px; border-top-right-radius: 20px; padding-bottom: env(safe-area-inset-bottom); }
-    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); cursor: pointer; width: 20%; }
-    .nav-item i { font-size: 1.3rem; }
-    .nav-item span { font-size: 0.7rem; font-weight: 500; }
-    .nav-item.active { color: var(--primary); }
+    /* Action Buttons - FIXED HORIZONTAL GRID */
+    .action-container { margin-top: 35px; margin-bottom: 30px; }
+    .action-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+    .btn-action-main { 
+        padding: 12px; border-radius: 25px; border: none; font-weight: 700; cursor: pointer; 
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+        color: white; box-shadow: 0 6px 15px rgba(0,0,0,0.1); height: 82px; transition: all 0.2s;
+    }
+    .btn-action-main:active { transform: scale(0.94); box-shadow: none; }
+    .btn-action-inc { background: linear-gradient(135deg, #2dce89, #2dcecc); }
+    .btn-action-exp { background: linear-gradient(135deg, #f5365c, #f56636); }
+    .btn-action-scan { background: #34495e; }
 
-    /* Portfolio Widget */
+    .btn-rounded-pill { padding: 10px 22px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+    /* Bottom Navigation - MODERN ROUNDED TABS */
+    .bottom-nav { 
+        position: fixed; bottom: 0; left: 0; width: 100%; height: var(--bottom-nav-height); 
+        background: var(--bg-card); box-shadow: 0 -10px 30px rgba(0,0,0,0.08); 
+        display: flex; justify-content: space-around; align-items: center; 
+        z-index: 2000; border-top-left-radius: 30px; border-top-right-radius: 30px;
+        padding-bottom: env(safe-area-inset-bottom);
+        backdrop-filter: blur(15px);
+    }
+    .nav-item { 
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 4px; color: var(--text-muted); cursor: pointer; transition: all 0.3s;
+        padding: 8px 12px; border-radius: 20px;
+    }
+    .nav-item.active { 
+        color: var(--primary); 
+        background: var(--primary-soft);
+    }
+    .nav-item i { font-size: 1.4rem; }
+    .nav-item span { font-size: 0.7rem; font-weight: 700; }
+
+    /* Selection Styles */
+    .modern-select {
+        flex: 1; min-width: 0; border: none; background: transparent; 
+        font-size: 0.95rem; font-family: 'Sarabun'; font-weight: 500; color: var(--text-main); outline: none;
+    }
+    .amt-input { width: 85px; text-align: right; border: none; background: transparent; font-weight: 700; font-size: 1.1rem; color: var(--text-main); outline: none; }
+
+    /* Modals */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 3000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
+    .modal.show { display: flex; }
+    .modal-card { background: var(--bg-card); width: 100%; max-width: 480px; border-radius: 35px; padding: 35px 25px; position: relative; box-shadow: 0 25px 60px rgba(0,0,0,0.4); max-height: 85vh; overflow-y: auto; }
+    .modal-section { margin-bottom: 25px; padding: 20px; background: rgba(0,0,0,0.02); border-radius: 22px; border: 1px solid rgba(0,0,0,0.02); }
+    .modal-section h4 { margin-top: 0; margin-bottom: 15px; font-size: 0.9rem; font-weight: 800; color: var(--primary); text-transform: uppercase; }
+    
+    .btn-full { width: 100%; padding: 16px; border-radius: 20px; border: none; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; transition: all 0.2s; }
+    .btn-chart-pill { flex: 1; padding: 12px; border-radius: 50px; border: 1px solid #ddd; background: transparent; color: var(--text-muted); font-weight: 700; cursor: pointer; }
+    .btn-chart-pill.active { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+
+    /* AI Loader */
+    .loading { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 4000; display: none; align-items: center; justify-content: center; flex-direction: column; }
+    .ai-loader-icon { font-size: 5rem; color: var(--primary); margin-bottom: 15px; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1.1); opacity: 1; } }
+
+    /* Portfolio Chart */
     .savings-portfolio { margin-top: 15px; display: flex; gap: 15px; align-items: center; }
-    .sp-chart-container { width: 80px; height: 80px; flex-shrink: 0; }
+    .sp-chart-container { width: 85px; height: 85px; flex-shrink: 0; }
     .sp-list { flex: 1; display: flex; flex-direction: column; gap: 5px; }
     .sp-item { display: flex; justify-content: space-between; font-size: 0.8rem; }
     .sp-color { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
 
-    /* Loader Robot Animation */
-    .loading { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; flex-direction: column; }
-    .night .loading { background: rgba(15,23,42,0.9); }
-    .ai-loader-icon { font-size: 5rem; color: var(--primary); margin-bottom: 10px; animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%, 100% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1.1); opacity: 1; } }
-
-    /* Modals */
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
-    .modal.show { display: flex; }
-    .modal-card { background: var(--bg-card); width: 100%; max-width: 500px; border-radius: 24px; padding: 25px; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3); max-height: 85vh; overflow-y: auto; }
-    .chart-container-wrapper { position: relative; height: 40vh; width: 100%; }
-    
-    .btn-full { width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; }
-    .btn-chart-type { flex: 1; padding: 10px; border: 1px solid #eee; background: transparent; color: var(--text-muted); border-radius: 10px; font-weight: 600; cursor: pointer; }
-    .btn-chart-type.active { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body id="mainBody">
+
+  <!-- AI Loader -->
+  <div class="loading" id="loadingOverlay">
+    <i class="fas fa-robot ai-loader-icon"></i>
+    <p style="font-weight:800; color:var(--primary); margin-top:20px; font-size:1.1rem;">AI กำลังคิด...</p>
+  </div>
 
   <!-- ================= VIEW: HOME ================= -->
   <div id="view-home" class="view-section active">
       <div class="main-container">
           <div class="dashboard">
               <div class="dash-header">
-                  <div class="user-profile-header">
-                      <img id="mainAvatar" class="main-avatar" src="" alt="Me">
-                      <div class="user-info">
-                          <h2 style="margin:0; font-size:1.2rem;">การเงินของฉัน</h2>
-                          <div id="userRole" style="font-size:0.8rem; color:var(--text-muted);">Personal Wallet</div>
+                  <div style="display:flex; align-items:center; gap:12px;">
+                      <img id="mainAvatar" class="main-avatar" src="" alt="">
+                      <div>
+                          <h2 id="userNameLabel" style="margin:0; font-size:1.1rem;">สรุปการเงิน</h2>
+                          <div id="userRoleLabel" style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">Personal Wallet</div>
                       </div>
                   </div>
-                  <div id="syncStatus" style="font-size:0.75rem; padding:4px 10px; border-radius:20px; background:#e2e8f0; color:#64748b;">
-                      <i class="fas fa-wifi"></i> Offline
-                  </div>
+                  <div id="syncStatus" style="font-size:0.7rem; padding:6px 14px; border-radius:20px; background:#e2e8f0; color:#64748b; font-weight:800;">Offline</div>
               </div>
               
               <div class="balance-container">
-                  <div class="balance-label">คงเหลือเดือนนี้ (<span id="currMonthName">...</span>)</div>
+                  <div class="balance-label" style="font-weight:600; color:var(--text-muted); font-size:0.9rem;">
+                    เงินคงเหลือเดือนนี้ (<span id="currMonthName">...</span>)
+                  </div>
                   <div class="balance-amount" id="currentMonthBalance">0</div>
-                  <div style="font-size:0.85rem; color:var(--text-muted); margin-top:5px;">
-                      ยอดสะสมทั้งปี: <span id="grandBalance" style="font-weight:600;">0</span>
+                  <div style="font-size:0.85rem; color:var(--text-muted); margin-top:12px;">
+                      ยอดรวมสะสมทั้งปี: <span id="grandBalance" style="font-weight:800; color:var(--text-main);">0</span>
                   </div>
               </div>
 
               <div class="stats-row">
-                  <div class="stat-item"><span class="stat-label">รายรับ (ด.)</span><span class="stat-val" style="color:var(--success)" id="dashIncome">0</span></div>
-                  <div class="stat-item"><span class="stat-label">รายจ่าย (ด.)</span><span class="stat-val" style="color:var(--danger)" id="dashExpense">0</span></div>
-                  <div class="stat-item" style="border-left:1px solid rgba(0,0,0,0.1)"><span class="stat-label">เงินออม (ด.)</span><span class="stat-val" style="color:var(--info)" id="dashSavings">0</span></div>
+                  <div class="stat-item"><span class="stat-label">รายรับ</span><span class="stat-val" style="color:var(--success)" id="dashIncome">0</span></div>
+                  <div class="stat-item"><span class="stat-label">รายจ่าย</span><span class="stat-val" style="color:var(--danger)" id="dashExpense">0</span></div>
+                  <div class="stat-item" style="border-left:1px solid rgba(0,0,0,0.1)"><span class="stat-label">เงินออม</span><span class="stat-val" style="color:var(--info)" id="dashSavings">0</span></div>
               </div>
               
-              <div class="top-expenses-widget">
-                  <div style="font-size:0.8rem; font-weight:600; color:var(--info); margin-bottom:8px;"><i class="fas fa-chart-pie"></i> พอร์ตเงินออม (ปี)</div>
+              <div class="top-expenses-widget" style="margin-top:25px;">
+                  <div style="font-size:0.85rem; font-weight:800; color:var(--info); margin-bottom:12px;"><i class="fas fa-chart-pie"></i> พอร์ตเงินออม (ปี)</div>
                   <div class="savings-portfolio">
                       <div class="sp-chart-container"><canvas id="savingsDoughnut"></canvas></div>
                       <div id="savingsLegend" class="sp-list"></div>
                   </div>
               </div>
           </div>
+          
           <div id="homeMonthList"></div>
       </div>
   </div>
@@ -204,16 +244,16 @@
   <div id="view-month" class="view-section">
       <div class="main-container">
           <div class="nav-header">
-              <button class="btn-back" onclick="switchView('home')"><i class="fas fa-chevron-left"></i></button>
+              <button class="btn-back" onclick="window.switchView('home')"><i class="fas fa-arrow-left"></i></button>
               <h2 class="page-title" id="detailMonthName">มกราคม</h2>
           </div>
 
           <div class="dashboard">
-              <div class="balance-container" style="margin-bottom:15px; padding:0;">
-                  <div class="balance-label">คงเหลือใช้จริง (หักออมแล้ว)</div>
+              <div class="balance-container" style="margin-bottom:15px;">
+                  <div class="balance-label" style="font-weight:600; color:var(--text-muted); font-size:0.9rem;">คงเหลือจริง (หักออมแล้ว)</div>
                   <div class="balance-amount" id="monthGrandBalance">0</div>
-                  <div style="width:100%; height:6px; background:#f1f5f9; border-radius:3px; margin-top:10px; overflow:hidden;">
-                      <div id="monthProgressBar" style="height:100%; width:0%; background:var(--success); transition:width 0.5s;"></div>
+                  <div style="width:100%; height:10px; background:#f1f5f9; border-radius:10px; margin-top:18px; overflow:hidden; border:1px solid #eee;">
+                      <div id="monthProgressBar" style="height:100%; width:0%; background:var(--success); transition:width 0.8s ease-out;"></div>
                   </div>
               </div>
               <div class="stats-row">
@@ -221,8 +261,10 @@
                   <div class="stat-item"><span class="stat-label">รายจ่าย</span><span class="stat-val" style="color:var(--danger)" id="monthGrandExpense">0</span></div>
                   <div class="stat-item" style="border-left:1px solid rgba(0,0,0,0.1)"><span class="stat-label">เงินออม</span><span class="stat-val" style="color:var(--info)" id="monthGrandSavings">0</span></div>
               </div>
-              <div class="top-expenses-widget">
-                  <div style="font-size:0.8rem; font-weight:600; color:var(--info); margin-bottom:8px;"><i class="fas fa-chart-pie"></i> พอร์ตเงินออม (เดือน)</div>
+
+              <!-- Month Savings Portfolio -->
+              <div class="top-expenses-widget" style="margin-top:20px; padding-top:15px; border-top: 1px dashed rgba(0,0,0,0.08);">
+                  <div style="font-size:0.85rem; font-weight:800; color:var(--info); margin-bottom:12px;"><i class="fas fa-chart-pie"></i> พอร์ตเงินออมเดือนนี้</div>
                   <div class="savings-portfolio">
                       <div class="sp-chart-container"><canvas id="monthSavingsDoughnut"></canvas></div>
                       <div id="monthSavingsLegend" class="sp-list"></div>
@@ -230,123 +272,113 @@
               </div>
           </div>
 
-          <div style="background:var(--bg-card); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-soft); margin-bottom:20px;">
-              <h4 style="margin:0 0 15px 0;">รายได้ประจำ</h4>
-              <div class="modern-input-group"><label>เงินเดือน</label><input class="modern-input" type="number" id="inpSalary" placeholder="0" oninput="updateCurrentMonthBase('salary', this.value)"></div>
-              <div id="copyPrevBtnContainer" style="margin-top:10px;"></div>
+          <!-- Section: Salary -->
+          <div class="modal-section" style="background:var(--bg-card); margin-bottom:15px; box-shadow: var(--shadow-soft);">
+              <h4 style="color:var(--text-main); font-size:0.9rem;">💰 รายรับหลักประจำเดือน</h4>
+              <input class="modern-input" type="number" id="inpSalary" placeholder="ระบุเงินเดือน..." oninput="updateCurrentMonthBase('salary', this.value)">
+              <div id="copyPrevBtnContainer" style="margin-top:12px;"></div>
           </div>
           
-          <div style="background:var(--bg-card); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-soft); margin-bottom:20px; border:1px solid var(--success-soft);">
+          <!-- Section: Extra -->
+          <div class="modal-section" style="background:var(--bg-card); border-left:5px solid var(--success); margin-bottom:15px; box-shadow: var(--shadow-soft);">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                  <h4 style="margin:0; color:var(--success);">รายได้พิเศษ</h4>
-                  <button class="btn-rounded-pill" style="background:var(--success); color:white;" onclick="addExtraIncomeItem()">+ เพิ่ม</button>
-              </div>
-              <div class="category-scroll" style="margin-bottom:10px;">
-                  <div class="cat-item" onclick="addWithIconExtra('ธุรกิจ')"><button class="cat-btn">🏢</button><span class="cat-label">ธุรกิจ</span></div>
-                  <div class="cat-item" onclick="addWithIconExtra('ขายของ')"><button class="cat-btn">🛍️</button><span class="cat-label">ขายของ</span></div>
-                  <div class="cat-item" onclick="addWithIconExtra('ครอบครัว')"><button class="cat-btn">👨‍👩‍👧</button><span class="cat-label">ครอบครัว</span></div>
-                  <div class="cat-item" onclick="addWithIconExtra('ฟรีแลนซ์')"><button class="cat-btn">💻</button><span class="cat-label">ฟรีแลนซ์</span></div>
+                  <h4 style="margin:0; color:var(--success); font-size:0.9rem;">✨ รายได้พิเศษ</h4>
+                  <button class="btn-rounded-pill" style="background:var(--success); font-size:0.8rem; padding:8px 16px;" onclick="addExtraIncomeItem()">+ เพิ่ม</button>
               </div>
               <div id="extraIncomeList"></div>
           </div>
 
-          <div style="background:var(--bg-card); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-soft); margin-bottom:20px; border:1px solid var(--info-soft);">
+          <!-- Section: Savings -->
+          <div class="modal-section" style="background:var(--bg-card); border-left:5px solid var(--info); margin-bottom:15px; box-shadow: var(--shadow-soft);">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                  <h4 style="margin:0; color:var(--info);">จัดสรรเงินออม</h4>
-                  <button class="btn-rounded-pill" style="background:var(--info); color:white;" onclick="addSavingItemCurrent()">+ เพิ่ม</button>
-              </div>
-              <div class="category-scroll" style="margin-bottom:10px;">
-                  <div class="cat-item" onclick="addWithIconSavings('ลงทุน')"><button class="cat-btn">💹</button><span class="cat-label">ลงทุน</span></div>
-                  <div class="cat-item" onclick="addWithIconSavings('สำรอง')"><button class="cat-btn">🚑</button><span class="cat-label">สำรอง</span></div>
-                  <div class="cat-item" onclick="addWithIconSavings('เกษียณ')"><button class="cat-btn">👴</button><span class="cat-label">เกษียณ</span></div>
+                  <h4 style="margin:0; color:var(--info); font-size:0.9rem;">🏦 การออมเงิน</h4>
+                  <button class="btn-rounded-pill" style="background:var(--info); font-size:0.8rem; padding:8px 16px;" onclick="addSavingItemCurrent()">+ เพิ่ม</button>
               </div>
               <div id="savingsDetailList"></div>
           </div>
 
-          <div style="margin-bottom:20px;">
-              <h4 style="margin:0 0 10px 0;">รายการใช้จ่าย</h4>
-              <div class="category-picker-container">
-                  <div class="cat-nav-btn" onclick="document.getElementById('cat-scroll').scrollLeft -= 50"><i class="fas fa-chevron-left"></i></div>
-                  <div id="cat-scroll" class="category-scroll"></div> 
-                  <div class="cat-nav-btn" onclick="document.getElementById('cat-scroll').scrollLeft += 50"><i class="fas fa-chevron-right"></i></div>
-              </div>
-              <div class="detail-container" id="monthDetailList"></div>
+          <div style="margin-bottom:30px;">
+              <h4 style="margin:0 0 15px 5px; font-size:0.95rem; font-weight:800;">📝 บันทึกรายการรายวัน</h4>
+              <div id="monthDetailList"></div>
           </div>
           
-          <div class="action-row" style="margin-bottom:20px;">
-            <button class="action-btn btn-inc" onclick="addDetailCurrent('income')"><i class="fas fa-plus"></i> <span>รับ</span></button>
-            <button class="action-btn btn-exp" onclick="addDetailCurrent('expense')"><i class="fas fa-minus"></i> <span>จ่าย</span></button>
-            <button class="action-btn btn-scan" onclick="triggerScanCurrent()"><i class="fas fa-camera"></i> <span>สแกน</span></button>
+          <!-- Month View Actions -->
+          <div class="action-container">
+              <div class="action-grid">
+                <button class="btn-action-main btn-action-inc" onclick="addDetailCurrent('income')"><i class="fas fa-plus-circle"></i> รับ</button>
+                <button class="btn-action-main btn-action-exp" onclick="addDetailCurrent('expense')"><i class="fas fa-minus-circle"></i> จ่าย</button>
+                <button class="btn-action-main btn-action-scan" onclick="window.triggerScanCurrent()"><i class="fas fa-camera"></i> สแกน</button>
+              </div>
           </div>
+          <div style="height:40px;"></div>
       </div>
   </div>
 
   <!-- Bottom Navigation -->
   <div class="bottom-nav">
-      <div class="nav-item active" onclick="switchView('home')"><i class="fas fa-home"></i><span>หน้าหลัก</span></div>
-      <div class="nav-item" onclick="openChartModal('bar')"><i class="fas fa-chart-pie"></i><span>กราฟ</span></div>
-      <div class="nav-item" onclick="analyzeBudgetWithAI()"><i class="fas fa-robot"></i><span>AI</span></div>
-      <div class="nav-item" onclick="openToolsModal()"><i class="fas fa-tools"></i><span>เครื่องมือ</span></div>
-      <div class="nav-item" onclick="openSettingsModal()"><i class="fas fa-cog"></i><span>ตั้งค่า</span></div>
+      <div class="nav-item active" id="nav-home" onclick="window.switchView('home')"><i class="fas fa-home"></i><span>หน้าหลัก</span></div>
+      <div class="nav-item" id="nav-chart" onclick="window.openChartModal('bar')"><i class="fas fa-chart-pie"></i><span>กราฟ</span></div>
+      <div class="nav-item" id="nav-ai" onclick="window.analyzeBudgetWithAI()"><i class="fas fa-robot"></i><span>AI Coach</span></div>
+      <div class="nav-item" id="nav-tools" onclick="window.openToolsModal()"><i class="fas fa-tools"></i><span>เครื่องมือ</span></div>
+      <div class="nav-item" id="nav-settings" onclick="window.openSettingsModal()"><i class="fas fa-cog"></i><span>ตั้งค่า</span></div>
   </div>
 
-  <!-- Modals & Overlay -->
-  <input type="file" id="receiptInput" accept="image/*" style="display: none;">
-  <input type="file" id="restoreInput" accept="application/json" style="display: none;" onchange="importJSON(this)">
-  <input type="file" id="bgInput" accept="image/*" style="display: none;" onchange="window.handleBgChange(this)">
-
-  <div class="loading" id="loadingOverlay">
-    <i class="fas fa-robot ai-loader-icon"></i>
-    <p style="font-weight:500; color:var(--text-muted);">AI กำลังคิด...</p>
-  </div>
-
+  <!-- Modals -->
   <div class="modal" id="chartModal">
     <div class="modal-card">
-      <span style="position:absolute; top:15px; right:20px; font-size:1.5rem; cursor:pointer;" onclick="closeModal('chartModal')">&times;</span>
-      <h3 id="modalChartTitle" style="margin-top:0;">สถิติ</h3>
-      <div style="display:flex; gap:5px; margin-bottom:15px;">
-          <button class="btn-chart-type active" id="btn-chart-bar" onclick="openChartModal('bar')">แท่ง</button>
-          <button class="btn-chart-type" id="btn-chart-pie" onclick="openChartModal('pie')">วงกลม</button>
-          <button class="btn-chart-type" id="btn-chart-line" onclick="openChartModal('line')">ออม</button>
+      <span style="position:absolute; top:20px; right:25px; font-size:1.8rem; cursor:pointer; color:#888;" onclick="closeModal('chartModal')">&times;</span>
+      <h3 id="modalChartTitle" style="margin-top:0; margin-bottom:20px; font-size:1.2rem;">สถิติการเงิน</h3>
+      <div style="display:flex; gap:10px; margin-bottom:25px;">
+          <button class="btn-chart-pill active" id="btn-chart-bar" onclick="window.openChartModal('bar')">แท่ง</button>
+          <button class="btn-chart-pill" id="btn-chart-pie" onclick="window.openChartModal('pie')">สัดส่วน</button>
+          <button class="btn-chart-pill" id="btn-chart-line" onclick="window.openChartModal('line')">เงินออม</button>
       </div>
-      <div class="chart-container-wrapper"><canvas id="chart"></canvas></div>
+      <div class="chart-container-wrapper" style="position:relative; height:40vh;"><canvas id="chart"></canvas></div>
     </div>
   </div>
 
-  <div class="modal" id="aiModal"><div class="modal-card"><span style="position:absolute; top:15px; right:20px; font-size:1.5rem; cursor:pointer;" onclick="closeModal('aiModal')">&times;</span><h3 style="color:var(--primary);"><i class="fas fa-robot"></i> AI Coach</h3><div id="aiContent" style="line-height:1.7;"></div></div></div>
-  <div class="modal" id="toolsModal"><div class="modal-card"><h3>เครื่องมือ</h3><button class="btn-full" style="background:#d1fae5; color:#065f46;" onclick="exportToExcel()">Excel</button><button class="btn-full" style="background:#f1f5f9;" onclick="exportJSON()">Backup</button><button class="btn-full" style="background:#fee2e2; color:#dc2626;" onclick="openClearModal()">ล้างข้อมูล</button><button class="btn-full" style="margin-top:10px; background:transparent; border:none; color:#888;" onclick="closeModal('toolsModal')">ปิด</button></div></div>
+  <div class="modal" id="toolsModal">
+    <div class="modal-card" style="max-width:420px;">
+      <h3 style="margin-top:0; margin-bottom:25px; font-size:1.2rem;"><i class="fas fa-tools"></i> เครื่องมือจัดการ</h3>
+      <button class="btn-full" style="background:#d1fae5; color:#065f46; border-radius:50px" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> ส่งออก Excel</button>
+      <button class="btn-full" style="background:#f1f5f9; color:#475569; border-radius:50px" onclick="exportJSON()"><i class="fas fa-file-download"></i> สำรองข้อมูล</button>
+      <hr style="margin:20px 0; opacity: 0.1;">
+      <button class="btn-full" style="background:#fee2e2; color:#dc2626; border-radius:50px" onclick="openClearModal()"><i class="fas fa-trash-alt"></i> ล้างข้อมูลแอป</button>
+      <button class="btn-full" onclick="closeModal('toolsModal')" style="background:transparent; color:#888; border:1px solid #eee; border-radius:50px;">ปิดหน้าต่าง</button>
+    </div>
+  </div>
+
   <div class="modal" id="settingsModal">
     <div class="modal-card">
-        <span style="position:absolute; top:15px; right:20px; font-size:1.5rem; cursor:pointer;" onclick="closeModal('settingsModal')">&times;</span>
-        <h3>ตั้งค่า</h3>
-        <div id="authSection" style="margin-bottom:20px;">
-            <button id="btnLogin" class="btn-full" style="background:#fff; border:1px solid #ddd;" onclick="loginGoogle()">Login Google</button>
-            <button id="btnLogout" class="btn-full hidden" style="background:#fee2e2; color:#dc2626;" onclick="logout()">Logout</button>
+        <span style="position:absolute; top:20px; right:25px; font-size:1.8rem; cursor:pointer; color:#888;" onclick="closeModal('settingsModal')">&times;</span>
+        <h3 style="margin-top:0; margin-bottom:25px; font-size:1.2rem;"><i class="fas fa-cog"></i> ตั้งค่าการใช้งาน</h3>
+        <div class="modal-section">
+            <h4>🛰️ เชื่อมต่อคลาวด์</h4>
+            <button id="btnLogin" class="btn-full" style="background:#fff; border:1px solid #e2e8f0; color:#444; border-radius:50px;" onclick="loginGoogle()"><i class="fab fa-google"></i> Login with Google</button>
+            <button id="btnLogout" class="btn-full hidden" style="background:#fee2e2; color:#dc2626; border-radius:50px;" onclick="logout()">ออกจากระบบ</button>
         </div>
-        <div>
-            <h4 style="margin-bottom:5px;">Gemini API Key</h4>
-            <div style="display:flex; gap:10px; margin-bottom: 10px;">
-                <input id="apiKeyInput" type="password" class="modern-input" placeholder="AIza...">
-                <button onclick="saveApiKey()" style="padding:10px; border-radius:12px; background:var(--primary); color:#fff; border:none;">บันทึก</button>
+        <div class="modal-section">
+            <h4>🤖 ระบบ AI COACH</h4>
+            <div style="display:flex; gap:12px; margin-bottom:12px;">
+                <input id="apiKeyInput" type="password" class="modern-input" placeholder="ใส่ Gemini API Key...">
+                <button onclick="saveApiKey()" style="padding:0 22px; border-radius:50px; background:var(--primary); color:#fff; border:none; font-weight:800;">บันทึก</button>
             </div>
-            <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size:0.75rem; color:var(--primary); text-decoration:none;">👉 สมัครขอคีย์ฟรีที่นี่</a>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size:0.75rem; color:var(--primary); text-decoration:none; font-weight:700;">👉 คลิกขอรับรหัสใช้งาน AI ฟรี</a>
         </div>
-        <div style="margin-top:20px;">
-            <h4>โหมดแสดงผล</h4>
-            <div style="display:flex; gap:10px; margin-bottom: 15px;">
-                <button onclick="window.setDisplayMode('light')" style="flex:1; padding:10px; border-radius:12px; border:1px solid #ddd;">สว่าง</button>
-                <button onclick="window.setDisplayMode('night')" style="flex:1; padding:10px; border-radius:12px; border:1px solid #ddd;">มืด</button>
-                <button onclick="window.setDisplayMode('auto')" style="flex:1; padding:10px; border-radius:12px; border:1px solid #ddd;">ออโต้</button>
+        <div class="modal-section">
+            <h4>🌗 โหมดแสดงผล</h4>
+            <div style="display:flex; gap:12px;">
+                <button onclick="window.setDisplayMode('light')" style="flex:1; padding:12px; border-radius:50px; border:1px solid #ddd; background:white; font-weight:800;"><i class="fas fa-sun"></i> สว่าง</button>
+                <button onclick="window.setDisplayMode('night')" style="flex:1; padding:12px; border-radius:50px; border:1px solid #ddd; background:#334155; color:white; font-weight:800;"><i class="fas fa-moon"></i> มืด</button>
             </div>
-            <button class="btn-full" style="background:var(--primary-soft); color:var(--primary); border:none;" onclick="document.getElementById('bgInput').click()">เปลี่ยนพื้นหลัง</button>
-            <button class="btn-full" style="background:#eee; color:#888; border:none;" onclick="window.resetBackground()">คืนค่าเริ่มต้น</button>
         </div>
     </div>
   </div>
 
-  <div class="modal" id="clearDataModal"><div class="modal-card"><h3>ล้างข้อมูล</h3><p style="color:#888;">ล้างข้อมูลทั้งหมด?</p><div style="display:flex; gap:10px;"><button class="btn-full" style="background:#fee2e2; color:#dc2626; flex:1;" onclick="performClear()">ล้างเลย</button><button class="btn-full" style="background:#eee; flex:1;" onclick="closeModal('clearDataModal')">ยกเลิก</button></div></div></div>
+  <div class="modal" id="aiModal"><div class="modal-card"><span class="close-btn" onclick="closeModal('aiModal')">&times;</span><h3><i class="fas fa-robot"></i> คำแนะนำจาก AI</h3><div id="aiContent" style="line-height:1.7;"></div></div></div>
+  <div class="modal" id="clearDataModal"><div class="modal-card"><h3>ยืนยันล้างข้อมูล?</h3><div style="display:flex; gap:12px;"><button class="btn-full" style="background:#fee2e2; color:#dc2626; flex:1; border-radius:50px;" onclick="performClear()">ล้างเลย</button><button class="btn-full" style="background:#eee; flex:1; border-radius:50px;" onclick="closeModal('clearDataModal')">ยกเลิก</button></div></div></div>
 
-  <!-- Firebase Script -->
+  <!-- Scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -359,20 +391,21 @@
     const appId = 'budget-app';
     let userId, useCloud = false;
 
-    window.loginGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); window.closeModal('settingsModal'); } catch(e) { alert("Login Failed"); } };
+    window.loginGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); window.closeModal('settingsModal'); } catch(e) { } };
     window.logout = async () => { await signOut(auth); window.location.reload(); };
 
     onAuthStateChanged(auth, (user) => {
         const syncBadge = document.getElementById('syncStatus');
+        const userLabel = document.getElementById('userNameLabel');
         if (user) {
             userId = user.uid; useCloud = true;
-            syncBadge.innerHTML = '<i class="fas fa-cloud"></i> Online'; syncBadge.style.background = '#dcfce7'; syncBadge.style.color = '#166534';
+            syncBadge.innerHTML = 'Online'; syncBadge.style.background = '#dcfce7'; syncBadge.style.color = '#166534';
             document.getElementById('btnLogin').classList.add('hidden');
             document.getElementById('btnLogout').classList.remove('hidden');
             if(user.photoURL) { document.getElementById('mainAvatar').src = user.photoURL; document.getElementById('mainAvatar').style.display = 'block'; }
-            document.getElementById('userRole').innerText = user.displayName;
+            if(userLabel) userLabel.innerText = user.displayName || "ผู้ใช้งาน";
             startDataListener();
-        } else { useCloud = false; syncBadge.innerHTML = '<i class="fas fa-wifi"></i> Offline'; }
+        } else { useCloud = false; syncBadge.innerHTML = 'Offline'; }
     });
 
     function startDataListener() {
@@ -391,58 +424,31 @@
     }
   </script>
 
-  <!-- Main App Script -->
   <script>
-    // --- Global Chart Instances ---
-    window.myMainChart = null; 
-    window.savingsChartObj = null;
-    window.monthSavingsChartObj = null;
+    window.myMainChartObj = null; window.savingsChartObj = null; window.monthSavingsChartObj = null;
+    const extraSources = ["OT", "โบนัส", "ขายของ", "ฟรีแลนซ์", "ธุรกิจ", "ของขวัญ", "ครอบครัว", "อื่นๆ"];
+    const savingPurposes = ["เงินสำรอง", "ลงทุน", "เกษียณ", "ท่องเที่ยว", "บ้าน/รถ", "การศึกษา", "สุขภาพ", "อื่นๆ"];
 
-    // --- Utils ---
     window.closeModal = (id) => { document.getElementById(id).classList.remove('show'); };
     window.scrollContainer = (id, offset) => { const el = document.getElementById(id); if(el) el.scrollLeft += offset; };
     function escapeHtml(text) { return text ? String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m])) : ""; }
 
-    // --- Theme Logic ---
     window.setDisplayMode = (mode) => { localStorage.setItem('display_mode', mode); applyThemeMode(); };
     function applyThemeMode() {
         const mode = localStorage.getItem('display_mode') || 'auto';
         const isNight = mode === 'auto' ? (new Date().getHours() >= 18 || new Date().getHours() < 6) : mode === 'night';
         document.body.classList.toggle('night', isNight);
     }
-    window.setTheme = (c) => {
-        document.documentElement.style.setProperty('--primary', c);
-        document.documentElement.style.setProperty('--primary-soft', c + '20');
-        localStorage.setItem('app_theme', c);
-    };
-    window.handleBgChange = (input) => {
-        const file = input.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => { document.body.style.backgroundImage = `url(${e.target.result})`; localStorage.setItem('custom_bg', e.target.result); };
-            reader.readAsDataURL(file);
-        }
-    };
-    window.resetBackground = () => { document.body.style.backgroundImage = ''; localStorage.removeItem('custom_bg'); };
 
     const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
     window.monthlyData = JSON.parse(localStorage.getItem('yearlyBudget_v1')) || months.map(() => ({ salary: 0, extraList: [], savings: [], details: [] }));
     window.currentMonthIndex = 0;
 
     window.initDataAndRender = function() {
-        window.monthlyData = window.monthlyData.map(m => ({
-            ...m,
-            details: Array.isArray(m.details) ? m.details : [],
-            extraList: Array.isArray(m.extraList) ? m.extraList : [],
-            savings: Array.isArray(m.savings) ? m.savings : []
-        }));
+        window.monthlyData = window.monthlyData.map(m => ({ ...m, details: Array.isArray(m.details) ? m.details : [], extraList: Array.isArray(m.extraList) ? m.extraList : [], savings: Array.isArray(m.savings) ? m.savings : [] }));
         applyThemeMode();
-        const savedTheme = localStorage.getItem('app_theme'); if(savedTheme) window.setTheme(savedTheme);
-        const savedBg = localStorage.getItem('custom_bg'); if(savedBg) document.body.style.backgroundImage = `url(${savedBg})`;
-        const storedKey = localStorage.getItem('gemini_api_key'); if(storedKey) document.getElementById('apiKeyInput').value = storedKey;
-
-        if(document.getElementById('view-home').classList.contains('active')) window.renderHome(); 
-        else window.renderMonthDetail();
+        const storedKey = localStorage.getItem('gemini_api_key'); if(storedKey) { const el = document.getElementById('apiKeyInput'); if(el) el.value = storedKey; }
+        if(document.getElementById('view-home').classList.contains('active')) window.renderHome(); else window.renderMonthDetail();
     };
 
     function calculateStats(m) {
@@ -453,14 +459,11 @@
     }
 
     let saveTimeout;
-    window.saveData = () => {
-        localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData));
-        clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(() => { if(window.saveDataToCloud) window.saveDataToCloud(); }, 2000);
-    };
+    window.saveData = () => { localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData)); clearTimeout(saveTimeout); saveTimeout = setTimeout(() => { if(window.saveDataToCloud) window.saveDataToCloud(); }, 2000); };
 
     window.renderHome = () => {
         const list = document.getElementById('homeMonthList');
+        if(!list) return;
         let html = '', gInc = 0, gExp = 0, gSave = 0, savingsMap = {};
         const currIdx = new Date().getMonth();
         const currStats = calculateStats(window.monthlyData[currIdx]);
@@ -469,7 +472,7 @@
             const s = calculateStats(m);
             gInc += s.inc; gExp += s.exp; gSave += s.save;
             m.savings.forEach(v => { let k=v.desc||'ออมทั่วไป'; savingsMap[k]=(savingsMap[k]||0)+Number(v.amount); });
-            html += `<div class="month-summary-card" onclick="openMonth(${i})"><div class="m-left"><div class="m-icon">${i+1}</div><div class="m-info"><h4>${months[i]}</h4><span>คงเหลือ: ${s.free.toLocaleString()}</span></div></div><div class="m-right"><span class="m-bal" style="color:${s.free>=0?'var(--primary)':'var(--danger)'}">${s.free.toLocaleString()}</span></div></div>`;
+            html += `<div class="month-summary-card" onclick="window.openMonth(${i})"><div class="m-left"><div class="m-icon">${i+1}</div><div class="m-info"><h4>${months[i]}</h4><span style="font-size:0.75rem; color:#888">คงเหลือจริง: ${s.free.toLocaleString()}</span></div></div><div class="m-right"><span class="m-bal" style="color:${s.free>=0?'var(--primary)':'var(--danger)'}">${s.free.toLocaleString()}</span></div></div>`;
         });
         list.innerHTML = html;
         document.getElementById('currMonthName').innerText = months[currIdx];
@@ -481,50 +484,61 @@
         renderPortfolioChart(savingsMap, 'savingsDoughnut', 'savingsLegend');
     };
 
-    window.openMonth = (idx) => { window.currentMonthIndex = idx; switchView('month'); window.renderMonthDetail(); };
+    window.openMonth = (idx) => { window.currentMonthIndex = idx; window.switchView('month'); };
 
     window.renderMonthDetail = () => {
         const m = window.monthlyData[window.currentMonthIndex];
         const s = calculateStats(m);
-        document.getElementById('detailMonthName').innerText = months[window.currentMonthIndex];
-        document.getElementById('monthGrandBalance').innerText = s.free.toLocaleString();
-        document.getElementById('monthGrandIncome').innerText = s.inc.toLocaleString();
-        document.getElementById('monthGrandExpense').innerText = s.exp.toLocaleString();
-        document.getElementById('monthGrandSavings').innerText = s.save.toLocaleString();
-        document.getElementById('inpSalary').value = m.salary || '';
+        const elMonthName = document.getElementById('detailMonthName');
+        const elGrandBal = document.getElementById('monthGrandBalance');
+        const elGrandInc = document.getElementById('monthGrandIncome');
+        const elGrandExp = document.getElementById('monthGrandExpense');
+        const elGrandSav = document.getElementById('monthGrandSavings');
+        const elProg = document.getElementById('monthProgressBar');
+
+        if(elMonthName) elMonthName.innerText = months[window.currentMonthIndex];
+        if(elGrandBal) elGrandBal.innerText = s.free.toLocaleString();
+        if(elGrandInc) elGrandInc.innerText = s.inc.toLocaleString();
+        if(elGrandExp) elGrandExp.innerText = s.exp.toLocaleString();
+        if(elGrandSav) elGrandSav.innerText = s.save.toLocaleString();
+        if(elProg) elProg.style.width = Math.min((s.exp / (s.inc||1)) * 100, 100) + '%';
+
+        const inpSal = document.getElementById('inpSalary');
+        if(inpSal) inpSal.value = m.salary || '';
         
-        renderSubList(m.extraList, 'extraIncomeList', 'updateExtra', 'removeExtra', '💸');
-        renderSubList(m.savings, 'savingsDetailList', 'updateSave', 'removeSave', '🐷');
+        renderCategorizedList(m.extraList, 'extraIncomeList', 'updateExtra', 'removeExtra', '💸', extraSources);
+        renderCategorizedList(m.savings, 'savingsDetailList', 'updateSave', 'removeSave', '🏦', savingPurposes);
         
-        document.getElementById('monthDetailList').innerHTML = m.details.map((d, i) => `
-            <div class="detail-row">
-                <div class="type-select ${d.type==='income'?'inc':'exp'}" style="width:75px; flex-shrink:0; font-weight:600; cursor:pointer;" onclick="toggleType(${i})">${d.type==='income'?'+ รับ':'- จ่าย'}</div>
-                <input class="desc-input" style="flex:1; min-width:0; border:none; background:transparent;" value="${escapeHtml(d.desc)}" oninput="updateDetail(${i},'desc',this.value)">
-                <div class="detail-divider" style="width:1px; height:20px; background:#ddd;"></div>
-                <input class="amt-input" style="width:70px; text-align:right; border:none; background:transparent;" type="number" value="${d.amount}" oninput="updateDetail(${i},'amount',this.value)">
-                <button class="btn-del-modern" onclick="removeDetail(${i})"><i class="fas fa-times"></i></button>
-            </div>
-        `).join('');
+        const detailList = document.getElementById('monthDetailList');
+        if(detailList) {
+          detailList.innerHTML = m.details.map((d, i) => `<div class="detail-row"><div class="type-badge-circle ${d.type==='income'?'badge-inc':'badge-exp'}" onclick="toggleType(${i})">${d.type==='income'?'+':'-'}</div><input class="desc-input" value="${escapeHtml(d.desc)}" oninput="updateDetail(${i},'desc',this.value)"><div style="width:1px; height:20px; background:#eee;"></div><input class="amt-input" type="number" value="${d.amount}" oninput="updateDetail(${i},'amount',this.value)"><button class="btn-del-modern" onclick="removeDetail(${i})"><i class="fas fa-times"></i></button></div>`).join('');
+        }
         const mSavMap = {}; m.savings.forEach(v => { let k=v.desc||'ทั่วไป'; mSavMap[k]=(mSavMap[k]||0)+Number(v.amount); });
-        renderPortfolioChart(mSavMap, 'monthSavingsDoughnut', 'monthSavingsLegend');
+        renderPortfolioChart(mSavMap, 'monthSavingsDoughnut', 'monthSavingsLegend', true);
     };
 
-    function renderSubList(arr, id, upFn, rmFn, icon) {
+    function renderCategorizedList(arr, id, upFn, rmFn, icon, options) {
         document.getElementById(id).innerHTML = arr.length ? arr.map((v, i) => `
-            <div class="detail-row"><span>${icon}</span><input class="desc-input" style="flex:1; min-width:0; border:none; background:transparent;" value="${escapeHtml(v.desc)}" oninput="window.${upFn}(${i},'desc',this.value)"><div class="detail-divider" style="width:1px; height:20px; background:#ddd;"></div><input class="amt-input" style="width:70px; text-align:right; border:none; background:transparent;" type="number" value="${v.amount}" oninput="window.${upFn}(${i},'amount',this.value)"><button class="btn-del-modern" onclick="window.${rmFn}(${i})"><i class="fas fa-times"></i></button></div>
-        `).join('') : '<div style="text-align:center; color:#ccc; font-size:0.8rem;">ไม่มีรายการ</div>';
+            <div class="detail-row">
+                <span>${icon}</span>
+                <select class="modern-select" onchange="window.${upFn}(${i},'desc',this.value)">
+                    <option value="" disabled ${!v.desc ? 'selected' : ''}>เลือกรายการ...</option>
+                    ${options.map(opt => `<option value="${opt}" ${v.desc===opt?'selected':''}>${opt}</option>`).join('')}
+                </select>
+                <div style="width:1px; height:20px; background:#eee;"></div>
+                <input class="amt-input" type="number" value="${v.amount}" oninput="window.${upFn}(${i},'amount',this.value)">
+                <button class="btn-del-modern" onclick="window.${rmFn}(${i})"><i class="fas fa-times"></i></button>
+            </div>
+        `).join('') : '<div style="text-align:center; color:#ccc; font-size:0.8rem; padding:10px">ยังไม่มีรายการ</div>';
     }
 
-    // --- Actions ---
     window.updateCurrentMonthBase = (f, v) => { window.monthlyData[window.currentMonthIndex][f] = Number(v); window.saveData(); updateMonthStatsUI(); };
     window.addExtraIncomeItem = () => { window.monthlyData[window.currentMonthIndex].extraList.push({desc:'', amount:''}); window.saveData(); window.renderMonthDetail(); };
     window.updateExtra = (i, f, v) => { window.monthlyData[window.currentMonthIndex].extraList[i][f] = f==='amount'?Number(v):v; window.saveData(); updateMonthStatsUI(); };
     window.removeExtra = (i) => { window.monthlyData[window.currentMonthIndex].extraList.splice(i, 1); window.saveData(); window.renderMonthDetail(); };
-    window.addWithIconExtra = (l) => { window.monthlyData[window.currentMonthIndex].extraList.push({desc:l, amount:''}); window.saveData(); window.renderMonthDetail(); };
     window.addSavingItemCurrent = () => { window.monthlyData[window.currentMonthIndex].savings.push({desc:'', amount:''}); window.saveData(); window.renderMonthDetail(); };
     window.updateSave = (i, f, v) => { window.monthlyData[window.currentMonthIndex].savings[i][f] = f==='amount'?Number(v):v; window.saveData(); updateMonthStatsUI(); };
     window.removeSave = (i) => { window.monthlyData[window.currentMonthIndex].savings.splice(i, 1); window.saveData(); window.renderMonthDetail(); };
-    window.addWithIconSavings = (l) => { window.monthlyData[window.currentMonthIndex].savings.push({desc:l, amount:''}); window.saveData(); window.renderMonthDetail(); };
     window.addDetailCurrent = (t) => { window.monthlyData[window.currentMonthIndex].details.push({type:t, desc:'', amount:''}); window.saveData(); window.renderMonthDetail(); };
     window.updateDetail = (i, f, v) => { window.monthlyData[window.currentMonthIndex].details[i][f] = f==='amount'?Number(v):v; window.saveData(); updateMonthStatsUI(); };
     window.removeDetail = (i) => { window.monthlyData[window.currentMonthIndex].details.splice(i, 1); window.saveData(); window.renderMonthDetail(); };
@@ -532,50 +546,50 @@
 
     function updateMonthStatsUI() {
         const s = calculateStats(window.monthlyData[window.currentMonthIndex]);
-        document.getElementById('monthGrandBalance').innerText = s.free.toLocaleString();
-        document.getElementById('monthGrandIncome').innerText = s.inc.toLocaleString();
-        document.getElementById('monthGrandExpense').innerText = s.exp.toLocaleString();
-        document.getElementById('monthGrandSavings').innerText = s.save.toLocaleString();
+        const elBal = document.getElementById('monthGrandBalance'); if(elBal) elBal.innerText = s.free.toLocaleString();
+        const elProg = document.getElementById('monthProgressBar'); if(elProg) elProg.style.width = Math.min((s.exp / (s.inc||1)) * 100, 100) + '%';
+        const elInc = document.getElementById('monthGrandIncome'); if(elInc) elInc.innerText = s.inc.toLocaleString();
+        const elExp = document.getElementById('monthGrandExpense'); if(elExp) elExp.innerText = s.exp.toLocaleString();
+        const elSav = document.getElementById('monthGrandSavings'); if(elSav) elSav.innerText = s.save.toLocaleString();
     }
 
-    function renderPortfolioChart(map, canvasId, legendId) {
-        const canvas = document.getElementById(canvasId);
-        if(!canvas) return;
+    function renderPortfolioChart(map, canvasId, legendId, isMonth = false) {
+        const canvas = document.getElementById(canvasId); if(!canvas) return;
         const entries = Object.entries(map).sort((a,b)=>b[1]-a[1]);
-        if (!entries.length) { document.getElementById(legendId).innerHTML = '<span style="color:#aaa; font-size:0.8rem;">ไม่มีข้อมูล</span>'; return; }
+        const legend = document.getElementById(legendId);
+        if (!entries.length) { if(legend) legend.innerHTML = '<span style="color:#aaa; font-size:0.8rem; padding:10px">ไม่มีข้อมูล</span>'; return; }
         const colors = ['#11cdef','#2dce89','#5e72e4','#fb6340','#f5365c'];
-        const chartKey = canvasId === 'savingsDoughnut' ? 'savingsChartObj' : 'monthSavingsChartObj';
+        const chartKey = isMonth ? 'monthSavingsChartObj' : 'savingsChartObj';
         if(window[chartKey]) window[chartKey].destroy();
         window[chartKey] = new Chart(canvas.getContext('2d'), { type:'doughnut', data:{ labels:entries.map(e=>e[0]), datasets:[{data:entries.map(e=>e[1]), backgroundColor:colors, borderWidth:0, cutout:'70%'}] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} } });
-        document.getElementById(legendId).innerHTML = entries.map((e,i)=>`<div class="sp-item"><span><span class="sp-color" style="background:${colors[i%5]}"></span>${escapeHtml(e[0])}</span><b>${e[1].toLocaleString()}</b></div>`).join('');
+        if(legend) legend.innerHTML = entries.map((e,i)=>`<div class="sp-item"><span><span class="sp-color" style="background:${colors[i%5]}"></span>${escapeHtml(e[0])}</span><b>${e[1].toLocaleString()}</b></div>`).join('');
     }
 
     window.openChartModal = (type) => {
         document.getElementById('chartModal').classList.add('show');
-        document.querySelectorAll('.btn-chart-type').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.btn-chart-pill').forEach(b => b.classList.remove('active'));
         const btn = document.getElementById('btn-chart-' + type); if(btn) btn.classList.add('active');
         const ctx = document.getElementById('chart').getContext('2d');
-        if(window.myMainChart) window.myMainChart.destroy();
-        const labels = months;
+        if(window.myMainChartObj) window.myMainChartObj.destroy();
         if (type === 'bar') {
-            document.getElementById('modalChartTitle').innerText = "สถิติรายรับ-รายจ่าย";
-            window.myMainChart = new Chart(ctx, { type: 'bar', data: { labels, datasets: [ { label: 'รับ', data: monthlyData.map(m=>calculateStats(m).inc), backgroundColor: '#2dce89' }, { label: 'จ่าย', data: monthlyData.map(m=>calculateStats(m).exp), backgroundColor: '#f5365c' } ] }, options: { responsive: true, maintainAspectRatio: false } });
+            document.getElementById('modalChartTitle').innerText = "รายรับ-รายจ่าย รายเดือน";
+            window.myMainChartObj = new Chart(ctx, { type: 'bar', data: { labels: months, datasets: [ { label: 'รับ', data: window.monthlyData.map(m=>calculateStats(m).inc), backgroundColor: '#2dce89' }, { label: 'จ่าย', data: window.monthlyData.map(m=>calculateStats(m).exp), backgroundColor: '#f5365c' } ] }, options: { responsive: true, maintainAspectRatio: false } });
         } else if (type === 'pie') {
-            document.getElementById('modalChartTitle').innerText = "สัดส่วนรายจ่าย";
-            const expMap = {}; monthlyData.forEach(m => m.details.filter(d=>d.type==='expense').forEach(d => { let k=d.desc.trim()||'อื่นๆ'; expMap[k]=(expMap[k]||0)+Number(d.amount); }));
+            document.getElementById('modalChartTitle').innerText = "สัดส่วนรายจ่ายปีนี้";
+            const expMap = {}; window.monthlyData.forEach(m => m.details.filter(d=>d.type==='expense').forEach(d => { let k=d.desc.trim()||'อื่นๆ'; expMap[k]=(expMap[k]||0)+Number(d.amount); }));
             const ent = Object.entries(expMap).sort((a,b)=>b[1]-a[1]).slice(0, 8);
-            window.myMainChart = new Chart(ctx, { type: 'doughnut', data: { labels: ent.map(e=>e[0]), datasets: [{ data: ent.map(e=>e[1]), backgroundColor: ['#5e72e4','#2dce89','#fb6340','#f5365c','#11cdef','#f39c12'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+            window.myMainChartObj = new Chart(ctx, { type: 'doughnut', data: { labels: ent.map(e=>e[0]), datasets: [{ data: ent.map(e=>e[1]), backgroundColor: ['#5e72e4','#2dce89','#fb6340','#f5365c','#11cdef'] }] }, options: { responsive: true, maintainAspectRatio: false } });
         } else if (type === 'line') {
-            document.getElementById('modalChartTitle').innerText = "แนวโน้มเงินออม";
-            window.myMainChart = new Chart(ctx, { type: 'line', data: { labels, datasets: [{ label: 'เงินออม', data: monthlyData.map(m=>calculateStats(m).save), borderColor: '#11cdef', fill: true, backgroundColor: 'rgba(17,205,239,0.1)' }] }, options: { responsive: true, maintainAspectRatio: false } });
+            document.getElementById('modalChartTitle').innerText = "พอร์ตเงินออมสะสม";
+            window.myMainChartObj = new Chart(ctx, { type: 'line', data: { labels: months, datasets: [{ label: 'เงินออม', data: window.monthlyData.map(m=>calculateStats(m).save), borderColor: '#11cdef', fill: true, backgroundColor: 'rgba(17, 205, 239, 0.15)', tension: 0.35 }] }, options: { responsive: true, maintainAspectRatio: false } });
         }
     };
 
     window.switchView = (v) => {
         document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
-        if(v==='home') { document.getElementById('view-home').classList.add('active'); document.querySelector('.nav-item:nth-child(1)').classList.add('active'); window.renderHome(); }
-        else document.getElementById('view-month').classList.add('active');
+        if(v==='home') { document.getElementById('view-home').classList.add('active'); document.getElementById('nav-home').classList.add('active'); window.renderHome(); }
+        else { document.getElementById('view-month').classList.add('active'); window.renderMonthDetail(); }
         window.scrollTo({top:0, behavior:'smooth'});
     };
 
@@ -587,42 +601,48 @@
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:`Analyze this budget and give 3 short tips in Thai markdown:\n${sum}`}]}]}) });
             const d = await res.json(); document.getElementById('aiContent').innerHTML = marked.parse(d.candidates[0].content.parts[0].text);
             document.getElementById('aiModal').classList.add('show');
-        } catch(e) { alert("API Error"); } finally { document.getElementById('loadingOverlay').style.display='none'; }
+        } catch(e) { } finally { document.getElementById('loadingOverlay').style.display='none'; }
     };
 
-    window.triggerScanCurrent = () => document.getElementById('receiptInput').click();
-    document.getElementById('receiptInput').addEventListener('change', async function(e) {
-        const key = localStorage.getItem('gemini_api_key'); if(!key || !this.files[0]) return;
-        document.getElementById('loadingOverlay').style.display='flex';
-        const reader = new FileReader();
-        reader.onload = async (ev) => {
-            try {
-                const b64 = ev.target.result.split(',')[1];
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{role:"user", parts:[{text:"Extract JSON: { \"description\": \"string\", \"amount\": number, \"type\": \"expense\" }"}, {inlineData:{mimeType:"image/jpeg",data:b64}}]}]}) });
-                const d = await res.json(); const json = JSON.parse(d.candidates[0].content.parts[0].text.replace(/```json/g,'').replace(/```/g,'').trim());
-                if(json.amount) { window.monthlyData[window.currentMonthIndex].details.push({type:json.type||'expense', desc:json.description, amount:json.amount}); window.saveData(); window.renderMonthDetail(); }
-            } catch(err) { alert("Scan Failed"); } finally { document.getElementById('loadingOverlay').style.display='none'; this.value=''; }
-        }; reader.readAsDataURL(this.files[0]);
-    });
+    window.triggerScanCurrent = () => { document.getElementById('receiptInput').click(); };
 
-    window.openToolsModal = () => document.getElementById('toolsModal').classList.add('show');
-    window.openSettingsModal = () => document.getElementById('settingsModal').classList.add('show');
-    window.saveApiKey = () => { localStorage.setItem('gemini_api_key', document.getElementById('apiKeyInput').value); alert("Saved"); };
-    window.exportJSON = () => { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(window.monthlyData)); a.download="backup.json"; a.click(); };
+    window.onload = function() {
+        const input = document.getElementById('receiptInput');
+        if(input) {
+            input.addEventListener('change', async function(e) {
+                const key = localStorage.getItem('gemini_api_key'); if(!key || !this.files[0]) return;
+                document.getElementById('loadingOverlay').style.display='flex';
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                    try {
+                        const b64 = ev.target.result.split(',')[1];
+                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{role:"user", parts:[{text:"Extract JSON: { \"description\": \"string\", \"amount\": number, \"type\": \"expense\" }"}, {inlineData:{mimeType:"image/jpeg",data:b64}}]}]}) });
+                        const d = await res.json(); const json = JSON.parse(d.candidates[0].content.parts[0].text.replace(/```json/g,'').replace(/```/g,'').trim());
+                        if(json.amount) { window.monthlyData[window.currentMonthIndex].details.push({type:json.type||'expense', desc:json.description, amount:json.amount}); window.saveData(); window.renderMonthDetail(); }
+                    } catch(err) { } finally { document.getElementById('loadingOverlay').style.display='none'; input.value=''; }
+                }; reader.readAsDataURL(this.files[0]);
+            });
+        }
+        window.initDataAndRender();
+    };
+
+    window.saveApiKey = () => { localStorage.setItem('gemini_api_key', document.getElementById('apiKeyInput').value); alert("บันทึกรหัสสำเร็จ!"); };
+    window.exportJSON = () => { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(window.monthlyData)); a.download="budget_backup.json"; a.click(); };
     window.exportToExcel = () => {
        let csv = "\uFEFFเดือน,ประเภท,รายการ,จำนวนเงิน\n";
        window.monthlyData.forEach((m, idx) => {
-         if(m.salary) csv += `${months[idx]},เงินเดือน,เงินเดือน,${m.salary}\n`;
-         m.extraList.forEach(e => csv += `${months[idx]},พิเศษ,${e.desc},${e.amount}\n`);
-         m.savings.forEach(s => csv += `${months[idx]},เงินออม,${s.desc},${s.amount}\n`);
-         m.details.forEach(d => csv += `${months[idx]},${d.type==='income'?'รายรับ':'รายจ่าย'},${d.desc},${d.amount}\n`);
+         const mm = months[idx];
+         if(m.salary) csv += `${mm},รายรับประจำ,เงินเดือน,${m.salary}\n`;
+         m.extraList.forEach(e => csv += `${mm},รายรับพิเศษ,${e.desc},${e.amount}\n`);
+         m.savings.forEach(s => csv += `${mm},เงินออม,${s.desc},${s.amount}\n`);
+         m.details.forEach(d => csv += `${mm},${d.type==='income'?'รายรับ':'รายจ่าย'},${d.desc},${d.amount}\n`);
        });
-       const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download="Budget.csv"; a.click();
+       const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download="Budget_Export.csv"; a.click();
     };
     window.openClearModal = () => document.getElementById('clearDataModal').classList.add('show');
     window.performClear = () => { if(confirm('ยืนยันล้างทั้งหมด?')) { window.monthlyData = months.map(() => ({ salary: 0, extraList: [], savings: [], details: [] })); window.saveData(); window.initDataAndRender(); window.closeModal('clearDataModal'); window.closeModal('toolsModal'); } };
-
-    window.initDataAndRender();
+    window.openToolsModal = () => document.getElementById('toolsModal').classList.add('show');
+    window.openSettingsModal = () => document.getElementById('settingsModal').classList.add('show');
   </script>
 </body>
 </html>
