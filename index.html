@@ -102,6 +102,7 @@
         border: 2px solid var(--bg-card); box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         display: none;
     }
+    .user-info div { line-height: 1.2; }
     
     .balance-container { text-align: center; margin-bottom: 25px; padding: 10px 0; }
     .balance-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px; font-weight: 500; }
@@ -257,12 +258,6 @@
     
     .chart-container-wrapper { position: relative; flex: 1; min-height: 0; height: 45vh; width: 100%; }
     
-    /* Sidebar */
-    .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2999; display: none; opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(2px); }
-    .menu-overlay.active { display: block; opacity: 1; }
-    .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 280px; background: var(--bg-card); z-index: 3000; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 2px 0 15px rgba(0,0,0,0.1); padding: 25px; display: flex; flex-direction: column; }
-    .sidebar.active { transform: translateX(0); }
-    
     /* Top Expenses */
     .top-expenses-widget { margin-top: 20px; padding-top: 15px; border-top: 1px dashed rgba(0,0,0,0.1); }
     .top-pill { display: inline-flex; align-items: center; gap: 6px; background: var(--danger-soft); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; color: var(--danger); margin-right: 5px; margin-bottom: 5px; font-weight: 500; white-space: nowrap; }
@@ -283,6 +278,23 @@
     .scroll-btn.left { margin-right: 5px; }
     .scroll-btn.right { margin-left: 5px; }
     .night .scroll-btn { background: #334155; border-color: rgba(255,255,255,0.1); }
+    
+    /* Savings Portfolio Widget */
+    .savings-portfolio { margin-top: 15px; display: flex; gap: 15px; align-items: center; overflow-x: auto; padding-bottom: 5px; }
+    .sp-chart-container { width: 80px; height: 80px; flex-shrink: 0; position: relative; }
+    .sp-list { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+    .sp-item { display: flex; justify-content: space-between; font-size: 0.8rem; align-items: center; }
+    .sp-color { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+
+    /* Sync Status Badge */
+    .sync-status {
+        font-size: 0.75rem; padding: 4px 10px; border-radius: 20px;
+        background: #e2e8f0; color: #64748b; font-weight: 500; display: none;
+        align-items: center; gap: 5px;
+    }
+    .sync-status.show { display: flex; }
+    .sync-status.online { background: #dcfce7; color: #166534; }
+    .sync-status.offline { background: #fee2e2; color: #991b1b; }
 
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes spin{to{transform:rotate(360deg)}}
@@ -291,8 +303,7 @@
     @media (min-width: 1024px) {
         .main-container { max-width: 1200px; }
         #cardsContainer { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; }
-        .month-card { margin-bottom: 0; height: fit-content; }
-        .month-card.open { grid-column: 1 / -1; transform: scale(1.02); box-shadow: 0 15px 35px rgba(50, 50, 93, 0.1); }
+        .month-summary-card { margin-bottom: 0; }
         .toolbar-container { justify-content: center; }
     }
   </style>
@@ -306,13 +317,14 @@
           <div class="dashboard">
               <div class="dash-header">
                   <div class="user-profile-header">
+                      <!-- No menu button -->
                       <img id="mainAvatar" class="main-avatar" src="" alt="Me">
                       <div class="user-info">
                           <h2 style="margin:0; font-size:1.2rem;">การเงินของฉัน</h2>
                           <div id="userRole" style="font-size:0.8rem; color:var(--text-muted);">Personal Wallet</div>
                       </div>
                   </div>
-                  <div id="syncStatus" style="font-size:0.75rem; padding:4px 10px; border-radius:20px; background:#e2e8f0; color:#64748b;">
+                  <div id="syncStatus" class="sync-status">
                       <i class="fas fa-wifi"></i> Offline
                   </div>
               </div>
@@ -325,18 +337,31 @@
               <div class="stats-row">
                   <div class="stat-item">
                       <span class="stat-label">รายรับ</span>
-                      <span class="stat-val" style="color:var(--success)" id="grandIncome">0</span>
+                      <span class="stat-val val-inc" id="grandIncome">0</span>
                   </div>
                   <div class="stat-item">
                       <span class="stat-label">รายจ่าย</span>
-                      <span class="stat-val" style="color:var(--danger)" id="grandExpense">0</span>
+                      <span class="stat-val val-exp" id="grandExpense">0</span>
                   </div>
                   <div class="stat-item" style="border-left:1px solid rgba(0,0,0,0.1)">
                       <span class="stat-label">เงินออม</span>
-                      <span class="stat-val" style="color:var(--info)" id="grandSavings">0</span>
+                      <span class="stat-val val-save" id="grandSavings">0</span>
                   </div>
               </div>
               
+              <!-- Savings Portfolio Widget -->
+              <div class="top-expenses-widget">
+                  <div style="font-size:0.8rem; font-weight:600; color:var(--info); margin-bottom:8px;"><i class="fas fa-chart-pie"></i> พอร์ตเงินออม (ปี)</div>
+                  <div class="savings-portfolio">
+                      <div class="sp-chart-container">
+                          <canvas id="savingsDoughnut"></canvas>
+                      </div>
+                      <div id="savingsLegend" class="sp-list">
+                          <span style="color:#aaa; font-size:0.8rem;">ยังไม่มีข้อมูลเงินออม</span>
+                      </div>
+                  </div>
+              </div>
+
               <div class="top-expenses-widget">
                   <div style="font-size:0.8rem; font-weight:600; color:var(--warning); margin-bottom:8px;"><i class="fas fa-trophy"></i> รายจ่ายสูงสุดปีนี้</div>
                   <div class="scroll-wrapper">
@@ -365,7 +390,7 @@
           <!-- Month Dashboard -->
           <div class="dashboard">
               <div class="balance-container" style="margin-bottom:15px; padding:0;">
-                  <div class="balance-label">คงเหลือเดือนนี้</div>
+                  <div class="balance-label">คงเหลือใช้จริง (หักออมแล้ว)</div>
                   <div class="balance-amount" id="monthGrandBalance">0</div>
                   <div style="width:100%; height:6px; background:#f1f5f9; border-radius:3px; margin-top:10px; overflow:hidden;">
                       <div id="monthProgressBar" style="height:100%; width:0%; background:var(--success); transition:width 0.5s;"></div>
@@ -387,26 +412,87 @@
                       <span class="stat-val" style="color:var(--info)" id="monthGrandSavings">0</span>
                   </div>
               </div>
+
+               <!-- Month Savings Portfolio Widget (New) -->
+              <div class="top-expenses-widget">
+                  <div style="font-size:0.8rem; font-weight:600; color:var(--info); margin-bottom:8px;"><i class="fas fa-chart-pie"></i> พอร์ตเงินออม (เดือน)</div>
+                  <div class="savings-portfolio">
+                      <div class="sp-chart-container">
+                          <canvas id="monthSavingsDoughnut"></canvas>
+                      </div>
+                      <div id="monthSavingsLegend" class="sp-list">
+                          <span style="color:#aaa; font-size:0.8rem;">ยังไม่มีข้อมูลเงินออม</span>
+                      </div>
+                  </div>
+              </div>
           </div>
 
           <!-- Inputs Section -->
           <div style="background:var(--bg-card); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-soft); margin-bottom:20px;">
-              <h4 style="margin:0 0 15px 0; color:var(--text-main);">ตั้งค่ารายรับ & งบประมาณ</h4>
-              <div class="input-row">
-                  <div class="modern-input-group"><label>เงินเดือน</label><input class="modern-input" type="number" id="inpSalary" placeholder="0" oninput="updateCurrentMonthBase('salary', this.value)"></div>
-                  <div class="modern-input-group"><label>รายได้พิเศษ</label><input class="modern-input" type="number" id="inpExtra" placeholder="0" oninput="updateCurrentMonthBase('extra', this.value)"></div>
-              </div>
-              <div class="input-row">
-                  <div class="modern-input-group"><label>เป้าหมาย (Budget)</label><input class="modern-input" style="border-color:var(--warning);" type="number" id="inpBudget" placeholder="0" oninput="updateCurrentMonthBase('budget', this.value)"></div>
-                  <div class="modern-input-group"><label>เงินออม</label><input class="modern-input" style="border-color:var(--info);" type="number" id="inpSavings" placeholder="0" oninput="updateCurrentMonthBase('savings', this.value)"></div>
-              </div>
-              
-              <!-- Real Free Cash Display -->
-              <div style="margin-top:10px; text-align:right; font-size:0.9rem; color:var(--text-muted);">
-                  คงเหลือใช้จริง: <b id="monthFreeBalance" style="color:var(--text-main); font-size:1.1rem;">0</b>
-              </div>
-              
+              <h4 style="margin:0 0 15px 0; color:var(--text-main);">รายได้ประจำ</h4>
+              <div class="modern-input-group"><label>เงินเดือน</label><input class="modern-input" type="number" id="inpSalary" placeholder="0" oninput="updateCurrentMonthBase('salary', this.value)"></div>
               <div id="copyPrevBtnContainer" style="margin-top:10px;"></div>
+          </div>
+          
+          <!-- Extra Income Section (New) -->
+          <div style="background:var(--bg-card); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-soft); margin-bottom:20px; border:1px solid var(--success-soft);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                  <h4 style="margin:0; color:var(--success); display:flex; align-items:center; gap:5px;"><i class="fas fa-coins"></i> รายได้พิเศษ</h4>
+                  <button class="btn-full" style="width:auto; margin:0; padding:6px 12px; font-size:0.8rem; background:var(--success-soft); color:var(--success);" onclick="addExtraIncomeItem()">+ เพิ่ม</button>
+              </div>
+              <!-- Quick Income Types -->
+              <div class="category-scroll" style="margin-bottom:10px;">
+                  <div class="cat-item" onclick="addWithIconExtra('ธุรกิจ')">
+                      <button class="cat-btn">🏢</button><span class="cat-label">ธุรกิจ</span>
+                  </div>
+                  <div class="cat-item" onclick="addWithIconExtra('ขายของ')">
+                      <button class="cat-btn">🛍️</button><span class="cat-label">ขายของ</span>
+                  </div>
+                  <div class="cat-item" onclick="addWithIconExtra('ฟรีแลนซ์')">
+                      <button class="cat-btn">💻</button><span class="cat-label">ฟรีแลนซ์</span>
+                  </div>
+                  <div class="cat-item" onclick="addWithIconExtra('ครอบครัว')">
+                      <button class="cat-btn">👨‍👩‍👧</button><span class="cat-label">ครอบครัว</span>
+                  </div>
+                  <div class="cat-item" onclick="addWithIconExtra('โบนัส')">
+                      <button class="cat-btn">🎉</button><span class="cat-label">โบนัส</span>
+                  </div>
+                  <div class="cat-item" onclick="addWithIconExtra('ดอกเบี้ย')">
+                      <button class="cat-btn">📈</button><span class="cat-label">ดอกเบี้ย</span>
+                  </div>
+              </div>
+              <div id="extraIncomeList">
+                  <div style="text-align:center; color:#ccc; font-size:0.9rem;">ไม่มีรายได้พิเศษ</div>
+              </div>
+          </div>
+
+          <!-- Savings Section -->
+          <div style="background:var(--bg-card); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-soft); margin-bottom:20px; border:1px solid var(--info-soft);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                  <h4 style="margin:0; color:var(--info); display:flex; align-items:center; gap:5px;"><i class="fas fa-piggy-bank"></i> จัดสรรเงินออม</h4>
+                  <button class="btn-full" style="width:auto; margin:0; padding:6px 12px; font-size:0.8rem; background:var(--info-soft); color:var(--info);" onclick="addSavingItemCurrent()">+ เพิ่ม</button>
+              </div>
+              <!-- Quick Savings Types -->
+              <div class="category-scroll" style="margin-bottom:10px;">
+                  <div class="cat-item" onclick="addWithIconSavings('สำรอง')">
+                      <button class="cat-btn">🚑</button><span class="cat-label">สำรอง</span>
+                  </div>
+                  <div class="cat-item" onclick="addWithIconSavings('ลงทุน')">
+                      <button class="cat-btn">💹</button><span class="cat-label">ลงทุน</span>
+                  </div>
+                  <div class="cat-item" onclick="addWithIconSavings('ทองคำ')">
+                      <button class="cat-btn">👑</button><span class="cat-label">ทองคำ</span>
+                  </div>
+                  <div class="cat-item" onclick="addWithIconSavings('เที่ยว')">
+                      <button class="cat-btn">✈️</button><span class="cat-label">เที่ยว</span>
+                  </div>
+                  <div class="cat-item" onclick="addWithIconSavings('เกษียณ')">
+                      <button class="cat-btn">👴</button><span class="cat-label">เกษียณ</span>
+                  </div>
+              </div>
+              <div id="savingsDetailList">
+                  <div style="text-align:center; color:#ccc; font-size:0.9rem;">ยังไม่มีรายการออม</div>
+              </div>
           </div>
 
           <!-- Transactions -->
@@ -418,9 +504,9 @@
               
               <!-- Quick Add -->
               <div class="category-picker-container">
-                  <button class="cat-nav-btn" onclick="document.getElementById('cat-scroll').scrollLeft -= 50"><i class="fas fa-chevron-left"></i></button>
+                  <div class="cat-nav-btn" onclick="document.getElementById('cat-scroll').scrollLeft -= 50"><i class="fas fa-chevron-left"></i></div>
                   <div id="cat-scroll" class="category-scroll"></div> <!-- Injected by JS -->
-                  <button class="cat-nav-btn" onclick="document.getElementById('cat-scroll').scrollLeft += 50"><i class="fas fa-chevron-right"></i></button>
+                  <div class="cat-nav-btn" onclick="document.getElementById('cat-scroll').scrollLeft += 50"><i class="fas fa-chevron-right"></i></div>
               </div>
 
               <!-- List -->
@@ -469,54 +555,6 @@
       </div>
   </div>
 
-  <!-- Sidebar & Overlay -->
-  <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
-  <div class="sidebar" id="sideMenu">
-      <div class="sidebar-header">
-          <div class="sidebar-title"><i class="fas fa-bars"></i> เมนูหลัก</div>
-          <i class="fas fa-times" onclick="toggleMenu()" style="cursor:pointer; font-size:1.2rem; color:var(--text-muted);"></i>
-      </div>
-      
-      <div class="sidebar-content">
-          <!-- User Info (Hidden by default) -->
-          <div id="sidebarUserInfo" class="sidebar-user" style="display:none;">
-               <img id="sidebarAvatar" src="" class="sidebar-avatar" alt="Avatar">
-               <div id="sidebarName" style="font-weight:700; font-size:1.1rem; margin-bottom:5px;">User</div>
-               <div style="font-size:0.8rem; color:var(--text-muted);">Logged in via Google</div>
-          </div>
-
-          <!-- Auth Buttons -->
-          <button id="sidebarBtnLogin" class="btn-sidebar btn-google" onclick="loginGoogle()">
-              <i class="fab fa-google"></i> เข้าสู่ระบบ
-          </button>
-          
-          <button id="sidebarBtnLogout" class="btn-sidebar btn-logout" onclick="logout()" style="display:none;">
-              <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
-          </button>
-
-          <!-- Data Management -->
-          <div style="margin-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px;">
-              <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px; font-weight:600;">จัดการข้อมูล</div>
-              
-              <button class="btn-sidebar" onclick="exportToExcel()" style="background:#d1fae5; color:#065f46;">
-                  <i class="fas fa-file-excel"></i> ส่งออก Excel
-              </button>
-              
-              <button class="btn-sidebar" onclick="exportJSON()" style="background:#f1f5f9; color:#475569;">
-                  <i class="fas fa-download"></i> สำรองข้อมูล (Backup)
-              </button>
-              
-              <button class="btn-sidebar" onclick="document.getElementById('restoreInput').click()" style="background:#f1f5f9; color:#475569;">
-                  <i class="fas fa-upload"></i> กู้คืนข้อมูล (Restore)
-              </button>
-          </div>
-      </div>
-      
-      <div style="margin-top:auto; text-align:center; font-size:0.75rem; color:var(--text-muted);">
-          v 2.5 (Instant Calcs)
-      </div>
-  </div>
-
   <!-- Inputs -->
   <input type="file" id="receiptInput" accept="image/*" style="display: none;">
   <input type="file" id="restoreInput" accept="application/json" style="display: none;" onchange="importJSON(this)">
@@ -560,7 +598,6 @@
       <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">เลือกช่วงเวลาที่ต้องการล้างข้อมูล</p>
       <select id="clearTarget" class="modern-input" style="margin-bottom:20px;">
           <option value="all">ทั้งหมด (เริ่มต้นใหม่)</option>
-          <!-- Options populated by JS -->
       </select>
       <div style="display:flex; gap:10px;">
           <button class="btn-full" style="background:#fee2e2; color:#dc2626; margin:0;" onclick="performClear()">ยืนยันล้าง</button>
@@ -573,6 +610,9 @@
     <div class="modal-card" style="max-width:400px;">
       <h3 style="margin-top:0;">เครื่องมือ</h3>
       <button class="btn-full" style="background:#d1fae5; color:#065f46;" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+      <button class="btn-full" style="background:#f1f5f9; color:#475569;" onclick="exportJSON()"><i class="fas fa-download"></i> Backup</button>
+      <button class="btn-full" style="background:#f1f5f9; color:#475569;" onclick="document.getElementById('restoreInput').click()"><i class="fas fa-upload"></i> Restore</button>
+      <hr style="margin:15px 0; border:none; border-top:1px solid #eee;">
       <button class="btn-full" style="background:#fee2e2; color:#dc2626;" onclick="openClearModal()"><i class="fas fa-trash-alt"></i> ล้างข้อมูล</button>
       <button class="btn-full" style="margin-top:10px; background:transparent; color:#888;" onclick="closeModal('toolsModal')">ปิด</button>
     </div>
@@ -641,7 +681,6 @@
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // --- YOUR FIREBASE CONFIG ---
     const YOUR_FIREBASE_CONFIG = {
       apiKey: "AIzaSyDUliKbJO1YyUNjZdBvkBULaWlEaBzmcAA",
       authDomain: "budget1-ed2f4.firebaseapp.com",
@@ -677,52 +716,32 @@
             };
 
             onAuthStateChanged(auth, (user) => {
-                const btnLogin = document.getElementById('sidebarBtnLogin');
-                const btnLogin2 = document.getElementById('btnLogin');
-                const btnLogout = document.getElementById('sidebarBtnLogout');
-                const btnLogout2 = document.getElementById('btnLogout');
+                const btnLogin = document.getElementById('btnLogin');
+                const btnLogout = document.getElementById('btnLogout');
                 const avatar = document.getElementById('mainAvatar');
-                const sideAvatar = document.getElementById('sidebarAvatar');
                 const role = document.getElementById('userRole');
-                const sideName = document.getElementById('sidebarName');
-                const sideInfo = document.getElementById('sidebarUserInfo');
                 const syncBadge = document.getElementById('syncStatus');
-
-                const toggle = (el, show, style='flex') => { if(el) el.style.display = show ? style : 'none'; };
-                const toggleClass = (el, cls, add) => { if(el) add ? el.classList.add(cls) : el.classList.remove(cls); };
 
                 if (user) {
                     userId = user.uid;
                     useCloud = !user.isAnonymous;
                     
                     if (!user.isAnonymous) {
-                        if(syncBadge) { syncBadge.innerHTML = '<i class="fas fa-cloud"></i> Online'; syncBadge.style.background = '#dcfce7'; syncBadge.style.color = '#166534'; }
-                        
-                        toggle(btnLogin, false); toggle(btnLogin2, false); 
-                        toggle(btnLogout, true); toggleClass(btnLogout2, 'hidden', false);
-                        toggle(sideInfo, true, 'block');
-
-                        if(user.photoURL) { 
-                            if(avatar) { avatar.src = user.photoURL; avatar.style.display = 'block'; }
-                            if(sideAvatar) sideAvatar.src = user.photoURL;
-                        }
-                        if(role) role.innerText = user.displayName || "User";
-                        if(sideName) sideName.innerText = user.displayName || "User";
-                        
+                        syncBadge.innerHTML = '<i class="fas fa-cloud"></i> Online';
+                        syncBadge.style.background = '#dcfce7'; syncBadge.style.color = '#166534';
+                        btnLogin.classList.add('hidden');
+                        btnLogout.classList.remove('hidden');
+                        if(user.photoURL) { avatar.src = user.photoURL; avatar.style.display = 'block'; }
+                        role.innerText = user.displayName || "User";
                         startDataListener();
-                    } else {
-                        if(syncBadge) syncBadge.innerHTML = '<i class="fas fa-wifi"></i> Offline';
                     }
                 } else {
                     useCloud = false;
-                    if(syncBadge) { syncBadge.innerHTML = '<i class="fas fa-wifi"></i> Offline'; syncBadge.style.background = '#e2e8f0'; syncBadge.style.color = '#64748b'; }
-                    
-                    toggle(btnLogin, true); toggle(btnLogin2, true); 
-                    toggle(btnLogout, false); toggleClass(btnLogout2, 'hidden', true); 
-                    toggle(sideInfo, false);
-                    
-                    if(avatar) avatar.style.display = 'none';
-                    if(role) role.innerText = "Personal Wallet";
+                    syncBadge.innerHTML = '<i class="fas fa-wifi"></i> Offline';
+                    btnLogin.classList.remove('hidden');
+                    btnLogout.classList.add('hidden');
+                    avatar.style.display = 'none';
+                    role.innerText = "Personal Wallet";
                 }
             });
         } catch (e) { console.log("Offline Mode"); }
@@ -736,8 +755,7 @@
                 const data = docSnap.data();
                 if (data && data.monthlyData) {
                     window.monthlyData = data.monthlyData;
-                    if(window.renderHome && document.getElementById('view-home').classList.contains('active')) window.renderHome();
-                    else if(window.renderMonthDetail) window.renderMonthDetail();
+                    window.initDataAndRender();
                 }
             } else {
                 saveDataToCloud();
@@ -768,14 +786,33 @@
         {icon: '💡', label: 'บิลต่างๆ'}, {icon: '💸', label: 'ลงทุน'}
     ];
 
-    // Data Init
-    window.monthlyData = JSON.parse(localStorage.getItem('yearlyBudget_v1')) || months.map(() => ({ salary: 0, extra: 0, savings: 0, budget: 0, details: [] }));
-    window.monthlyData = window.monthlyData.map(m => ({ ...m, savings: m.savings || 0, budget: m.budget || 0 }));
+    // --- Init ---
+    window.monthlyData = JSON.parse(localStorage.getItem('yearlyBudget_v1')) || months.map(() => ({ salary: 0, extra: 0, extraList: [], savings: [], budget: 0, details: [] }));
+    
+    // Migration & Render Wrapper
+    window.initDataAndRender = function() {
+        window.monthlyData = window.monthlyData.map(m => {
+            let newData = { ...m };
+            if (typeof m.savings === 'number') newData.savings = m.savings > 0 ? [{ desc: 'เงินออมทั่วไป', amount: m.savings }] : [];
+            else if (!Array.isArray(m.savings)) newData.savings = [];
+            
+            // Migrate Extra
+            if (typeof m.extra === 'number' && m.extra > 0 && (!m.extraList || m.extraList.length === 0)) {
+                newData.extraList = [{ desc: 'รายได้พิเศษ', amount: m.extra }];
+                newData.extra = 0; // Clear old field
+            } else if (!Array.isArray(m.extraList)) {
+                newData.extraList = [];
+            }
+            return newData;
+        });
+
+        if(document.getElementById('view-home').classList.contains('active')) window.renderHome();
+        else window.renderMonthDetail();
+    }
     
     // State
     window.currentMonthIndex = 0;
-
-    // --- Init ---
+    
     const savedTheme = localStorage.getItem('app_theme');
     if(savedTheme) document.documentElement.style.setProperty('--primary', savedTheme);
     const savedBg = localStorage.getItem('custom_bg');
@@ -788,16 +825,14 @@
     function calculateStats(m) {
         const dInc = m.details.filter(d => d.type === 'income').reduce((s, d) => s + (Number(d.amount)||0), 0);
         const dExp = m.details.filter(d => d.type === 'expense').reduce((s, d) => s + (Number(d.amount)||0), 0);
-        const totalInc = (Number(m.salary)||0) + (Number(m.extra)||0) + dInc;
+        const extraInc = (m.extraList || []).reduce((s, item) => s + (Number(item.amount)||0), 0);
+        
+        const totalInc = (Number(m.salary)||0) + extraInc + dInc;
         const totalExp = dExp;
+        const saving = m.savings.reduce((s, sav) => s + (Number(sav.amount)||0), 0);
+        const budget = Number(m.budget)||0;
         const balance = totalInc - totalExp;
-        
-        // Savings Logic: Cannot exceed balance
-        let saving = Number(m.savings)||0;
-        // Clamp logic disabled for input freedom, but calculation uses clamped for free balance?
-        // User requested: "deduct savings from remaining balance"
         const freeBalance = balance - saving;
-        
         let progress = 0;
         if(m.budget > 0) progress = (totalExp / m.budget) * 100;
         return { totalInc, totalExp, balance, freeBalance, progress, saving };
@@ -815,41 +850,12 @@
         window.requestAnimationFrame(step);
     }
     
-    // Global Save (Hoisted)
     window.saveData = function() {
         localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData));
         if(window.saveDataToCloud) window.saveDataToCloud();
     }
-    
     window.saveDataSilent = function() {
         localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData));
-    }
-
-    // --- Helper: Refresh Month UI (The Magic Fix) ---
-    // Updates only numbers without re-rendering inputs
-    window.refreshMonthStatsUI = function() {
-        const idx = window.currentMonthIndex;
-        const m = window.monthlyData[idx];
-        const stats = calculateStats(m);
-
-        // Update Month Dashboard Stats
-        document.getElementById('monthGrandBalance').innerText = stats.balance.toLocaleString();
-        document.getElementById('monthGrandIncome').innerText = stats.totalInc.toLocaleString();
-        document.getElementById('monthGrandExpense').innerText = stats.totalExp.toLocaleString();
-        document.getElementById('monthGrandSavings').innerText = stats.saving.toLocaleString();
-        document.getElementById('monthFreeBalance').innerText = stats.freeBalance.toLocaleString();
-        
-        // Progress Bar
-        const progBar = document.getElementById('monthProgressBar');
-        if(progBar) {
-            progBar.style.width = Math.min(stats.progress, 100) + '%';
-            progBar.style.background = stats.progress > 100 ? 'var(--danger)' : 'var(--success)';
-            document.getElementById('monthProgressText').innerText = m.budget > 0 ? `ใช้ไป ${Math.round(stats.progress)}% ของงบ ${Number(m.budget).toLocaleString()}` : 'ยังไม่ได้ตั้งงบประมาณ';
-        }
-
-        // Color Logic for Free Balance
-        const freeEl = document.getElementById('monthFreeBalance');
-        if(freeEl) freeEl.style.color = stats.freeBalance >= 0 ? 'var(--text-main)' : 'var(--danger)';
     }
 
     // --- View: Home ---
@@ -859,15 +865,19 @@
         let html = '';
         let gInc = 0, gExp = 0, gSave = 0;
         const yearlyExpMap = {};
+        const savingsMap = {};
 
         window.monthlyData.forEach((m, idx) => {
             const stats = calculateStats(m);
             gInc += stats.totalInc; gExp += stats.totalExp; gSave += stats.saving;
             
-            // Collect Top Expenses
             m.details.filter(d=>d.type==='expense').forEach(d => {
                 let k = d.desc.trim() || 'อื่นๆ';
                 yearlyExpMap[k] = (yearlyExpMap[k]||0) + Number(d.amount);
+            });
+            m.savings.forEach(s => {
+                let k = s.desc.trim() || 'ออมทั่วไป';
+                savingsMap[k] = (savingsMap[k]||0) + Number(s.amount);
             });
 
             html += `
@@ -895,9 +905,37 @@
         document.getElementById('grandExpense').innerText = gExp.toLocaleString();
         document.getElementById('grandSavings').innerText = gSave.toLocaleString();
         
-        // Render Top 5
         const top5 = Object.entries(yearlyExpMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
         document.getElementById('yearTopExpList').innerHTML = top5.length ? top5.map(i=>`<span class="top-pill">${i[0]} ${i[1].toLocaleString()}</span>`).join('') : '<span style="color:#aaa; font-size:0.8rem;">ไม่มีข้อมูล</span>';
+        if(window.renderSavingsPortfolio) window.renderSavingsPortfolio(savingsMap, 'savingsDoughnut', 'savingsLegend');
+    }
+    
+    window.renderSavingsPortfolio = function(map, canvasId, legendId) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        const legend = document.getElementById(legendId);
+        const entries = Object.entries(map).sort((a,b)=>b[1]-a[1]);
+        if (entries.length === 0) { legend.innerHTML = '<span style="color:#aaa; font-size:0.8rem;">ยังไม่มีข้อมูล</span>'; return; }
+        
+        const colors = ['#11cdef', '#2dce89', '#5e72e4', '#fb6340', '#f5365c'];
+        
+        // Store chart instance to window to destroy later
+        const chartKey = canvasId + '_chart';
+        if(window[chartKey]) window[chartKey].destroy();
+        
+        window[chartKey] = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: entries.map(e=>e[0]),
+                datasets: [{ data: entries.map(e=>e[1]), backgroundColor: colors, borderWidth: 0, cutout: '70%' }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: true } } }
+        });
+        legend.innerHTML = entries.map((e, i) => `
+            <div class="sp-item">
+                <span><span class="sp-color" style="background:${colors[i%colors.length]}"></span>${e[0]}</span>
+                <b>${e[1].toLocaleString()}</b>
+            </div>
+        `).join('');
     }
 
     // --- View: Month Detail ---
@@ -913,25 +951,24 @@
         const stats = calculateStats(m);
 
         document.getElementById('detailMonthName').innerText = months[idx];
+        document.getElementById('monthGrandBalance').innerText = stats.balance.toLocaleString();
+        document.getElementById('monthGrandIncome').innerText = stats.totalInc.toLocaleString();
+        document.getElementById('monthGrandExpense').innerText = stats.totalExp.toLocaleString();
+        document.getElementById('monthGrandSavings').innerText = stats.saving.toLocaleString();
         
-        // Initial Stat render
-        window.refreshMonthStatsUI();
+        const progBar = document.getElementById('monthProgressBar');
+        progBar.style.width = Math.min(stats.progress, 100) + '%';
+        progBar.style.background = stats.progress > 100 ? 'var(--danger)' : 'var(--success)';
+        document.getElementById('monthProgressText').innerText = m.budget > 0 ? `ใช้ไป ${Math.round(stats.progress)}% ของงบ ${Number(m.budget).toLocaleString()}` : 'ยังไม่ได้ตั้งงบประมาณ';
 
-        // Inputs (Set value)
         document.getElementById('inpSalary').value = m.salary || '';
-        document.getElementById('inpExtra').value = m.extra || '';
-        document.getElementById('inpBudget').value = m.budget || '';
-        document.getElementById('inpSavings').value = m.savings || '';
+        // Budget input removed
 
-        // Copy Button logic
         const copyContainer = document.getElementById('copyPrevBtnContainer');
         if (idx > 0 && m.details.length === 0) {
             copyContainer.innerHTML = `<button class="btn-full" style="background:#f1f5f9; color:var(--primary); font-size:0.9rem;" onclick="copyFromPrev(${idx})"><i class="fas fa-copy"></i> คัดลอกรายการเดือนก่อน</button>`;
-        } else {
-            copyContainer.innerHTML = '';
-        }
+        } else { copyContainer.innerHTML = ''; }
 
-        // Category Picker
         const catScroll = document.getElementById('cat-scroll');
         catScroll.innerHTML = categories.map(c => 
             `<div class="cat-item" onclick="addWithIconCurrent('${c.icon} ${c.label}')">
@@ -939,8 +976,33 @@
                 <span class="cat-label">${c.label}</span>
             </div>`
         ).join('');
+        
+        renderList(m.extraList, 'extraIncomeList', 'updateExtraDetailCurrent', 'removeExtraDetailCurrent', '💸');
+        renderList(m.savings, 'savingsDetailList', 'updateSavingDetailCurrent', 'removeSavingDetailCurrent', '🐷');
+        renderTransactionList(m);
+        
+        // Month Savings Portfolio
+        const monSavMap = {};
+        m.savings.forEach(s => { let k=s.desc.trim()||'ทั่วไป'; monSavMap[k]=(monSavMap[k]||0)+Number(s.amount); });
+        window.renderSavingsPortfolio(monSavMap, 'monthSavingsDoughnut', 'monthSavingsLegend');
+    }
+    
+    // Generic List Render
+    window.renderList = function(arr, elemId, updateFn, removeFn, icon) {
+        const list = document.getElementById(elemId);
+        if (!arr || arr.length === 0) { list.innerHTML = '<div style="text-align:center; color:#ccc; font-size:0.9rem;">ไม่มีรายการ</div>'; return; }
+        list.innerHTML = arr.map((item, i) => `
+            <div class="detail-row">
+                <span style="font-size:1.2rem;">${icon}</span>
+                <input class="desc-input" type="text" placeholder="รายการ..." value="${item.desc}" oninput="${updateFn}(${i}, 'desc', this.value)">
+                <div class="detail-divider"></div>
+                <input class="amt-input" type="number" placeholder="0" value="${item.amount}" oninput="${updateFn}(${i}, 'amount', this.value)">
+                <i class="fas fa-times" style="color:#e2e8f0; cursor:pointer;" onclick="${removeFn}(${i})"></i>
+            </div>
+        `).join('');
+    }
 
-        // Details List
+    window.renderTransactionList = function(m) {
         const list = document.getElementById('monthDetailList');
         list.innerHTML = m.details.map((d, dIdx) => {
             const isInc = d.type === 'income';
@@ -958,65 +1020,83 @@
         }).join('');
     }
 
-    // --- Actions (Scoped to Current Month) ---
+    // --- Actions ---
     window.updateCurrentMonthBase = (field, val) => {
-        const m = window.monthlyData[window.currentMonthIndex];
-        
-        // Savings Constraint Logic: If saving > balance? 
-        // Let's allow typing but cap visual or logic? Or soft limit?
-        // User asked: "determine that savings must not exceed remaining balance"
-        // Let's implement a hard cap check only when field is 'savings'
-        
-        let numVal = Number(val);
-        
-        if (field === 'savings') {
-             const stats = calculateStats(m); // Get stats BEFORE new saving applied fully
-             // Balance available for saving is (Total Income - Total Expense)
-             // We shouldn't cap it while typing (e.g. typing 1000 when balance 500 -> 1 -> 10 -> 100 -> 1000)
-             // because it interrupts input. 
-             // Best UX: Allow typing, but show warning or cap on save? 
-             // Or simply let calculateStats handle negative free balance.
-             // But user asked to "determine... not exceed".
-             // Let's cap the *data* but maybe input stays? No, sync them.
-             
-             const currentBalance = (Number(m.salary)||0) + (Number(m.extra)||0) + 
-                m.details.filter(d => d.type === 'income').reduce((s, d) => s + (Number(d.amount)||0), 0) -
-                m.details.filter(d => d.type === 'expense').reduce((s, d) => s + (Number(d.amount)||0), 0);
-             
-             if (numVal > currentBalance) {
-                 // Optional: Visual warning instead of blocking? 
-                 // Blocking is annoying. Let's just allow it but highlight red in FreeBalance
-             }
-        }
-
-        m[field] = numVal;
+        window.monthlyData[window.currentMonthIndex][field] = Number(val);
         window.saveData(); 
-        window.refreshMonthStatsUI(); // INSTANT UPDATE
+        updateMonthStatsUI();
     }
     
+    // Extra Income Actions
+    window.addExtraIncomeItem = () => {
+        if(!window.monthlyData[window.currentMonthIndex].extraList) window.monthlyData[window.currentMonthIndex].extraList = [];
+        window.monthlyData[window.currentMonthIndex].extraList.push({ desc: '', amount: '' });
+        window.saveData(); renderMonthDetail();
+    }
+    window.addWithIconExtra = (label) => {
+        if(!window.monthlyData[window.currentMonthIndex].extraList) window.monthlyData[window.currentMonthIndex].extraList = [];
+        window.monthlyData[window.currentMonthIndex].extraList.push({ desc: label, amount: '' });
+        window.saveData(); renderMonthDetail();
+    }
+    window.updateExtraDetailCurrent = (idx, field, val) => {
+        window.monthlyData[window.currentMonthIndex].extraList[idx][field] = field==='amount' ? Number(val) : val;
+        window.saveDataSilent(); updateMonthStatsUI();
+    }
+    window.removeExtraDetailCurrent = (idx) => {
+        window.monthlyData[window.currentMonthIndex].extraList.splice(idx, 1);
+        window.saveData(); renderMonthDetail();
+    }
+    
+    // Savings Actions
+    window.addSavingItemCurrent = () => {
+        window.monthlyData[window.currentMonthIndex].savings.push({ desc: '', amount: '' });
+        window.saveData(); renderMonthDetail();
+    }
+    window.addWithIconSavings = (label) => {
+        window.monthlyData[window.currentMonthIndex].savings.push({ desc: label, amount: '' });
+        window.saveData(); renderMonthDetail();
+    }
+    window.updateSavingDetailCurrent = (sIdx, field, val) => {
+        window.monthlyData[window.currentMonthIndex].savings[sIdx][field] = field==='amount' ? Number(val) : val;
+        window.saveDataSilent(); updateMonthStatsUI();
+    }
+    window.removeSavingDetailCurrent = (sIdx) => {
+        window.monthlyData[window.currentMonthIndex].savings.splice(sIdx, 1);
+        window.saveData(); renderMonthDetail();
+    }
+    
+    function updateMonthStatsUI() {
+        const stats = calculateStats(window.monthlyData[window.currentMonthIndex]);
+        document.getElementById('monthGrandBalance').innerText = stats.balance.toLocaleString();
+        document.getElementById('monthGrandIncome').innerText = stats.totalInc.toLocaleString();
+        document.getElementById('monthGrandExpense').innerText = stats.totalExp.toLocaleString();
+        document.getElementById('monthGrandSavings').innerText = stats.saving.toLocaleString();
+        const progBar = document.getElementById('monthProgressBar');
+        if(progBar) {
+             progBar.style.width = Math.min(stats.progress, 100) + '%';
+             progBar.style.background = stats.progress > 100 ? 'var(--danger)' : 'var(--success)';
+        }
+    }
+
+    // Transaction Actions
     window.updateDetailCurrent = (dIdx, field, val) => {
         const m = window.monthlyData[window.currentMonthIndex];
         m.details[dIdx][field] = field==='amount' ? Number(val) : val;
-        window.saveDataSilent(); 
-        window.refreshMonthStatsUI(); // INSTANT UPDATE
+        window.saveDataSilent(); updateMonthStatsUI();
     }
-    
     window.addDetailCurrent = (type) => {
         window.monthlyData[window.currentMonthIndex].details.push({ type, desc: '', amount: '' });
         window.saveData(); renderMonthDetail();
     }
-    
     window.addWithIconCurrent = (icon) => {
         window.monthlyData[window.currentMonthIndex].details.push({ type: 'expense', desc: icon + ' ', amount: '' });
         window.saveData(); renderMonthDetail();
     }
-
     window.toggleDetailTypeCurrent = (dIdx) => {
         const d = window.monthlyData[window.currentMonthIndex].details[dIdx];
         d.type = d.type === 'income' ? 'expense' : 'income';
         window.saveData(); renderMonthDetail();
     }
-
     window.removeDetailCurrent = (dIdx) => {
         window.monthlyData[window.currentMonthIndex].details.splice(dIdx, 1);
         window.saveData(); renderMonthDetail();
@@ -1030,7 +1110,6 @@
             window.saveData(); renderMonthDetail();
         }
     }
-    
     window.triggerScanCurrent = () => { document.getElementById('receiptInput').click(); }
 
     // --- Nav ---
@@ -1052,7 +1131,6 @@
     window.handleReceiptScan = async (input) => {
         const key = localStorage.getItem('gemini_api_key') || "AIzaSyD-wO4EzjPsLNrXC0v8J4jqTunMKWMJRjw";
         if(!input.files[0]) return;
-        
         document.getElementById('loadingOverlay').style.display='flex';
         const r = new FileReader();
         r.onload = async (e) => {
@@ -1066,7 +1144,7 @@
                 const json = JSON.parse(d.candidates[0].content.parts[0].text.replace(/```json/g,'').replace(/```/g,'').trim());
                 if(json.amount) {
                     window.monthlyData[window.currentMonthIndex].details.push({type:json.type, desc:json.desc, amount:json.amount});
-                    saveData(); renderMonthDetail();
+                    window.saveData(); renderMonthDetail();
                 }
             } catch(e) { alert("Scan Failed"); }
             finally { document.getElementById('loadingOverlay').style.display='none'; input.value=''; }
@@ -1074,7 +1152,6 @@
         r.readAsDataURL(input.files[0]);
     }
     
-    // Theme & Mode
     function saveApiKey() { localStorage.setItem('gemini_api_key', document.getElementById('apiKeyInput').value); alert("Saved"); }
     function setDisplayMode(mode) { localStorage.setItem('display_mode', mode); applyThemeMode(); }
     function applyThemeMode() {
@@ -1090,45 +1167,24 @@
     window.openToolsModal = () => document.getElementById('toolsModal').classList.add('show');
     window.openSettingsModal = () => document.getElementById('settingsModal').classList.add('show');
     window.closeModal = (id) => document.getElementById(id).classList.remove('show');
-    window.toggleMenu = () => { document.getElementById('sideMenu').classList.toggle('active'); document.getElementById('menuOverlay').classList.toggle('active'); }
     
-    // Open Clear Modal
     window.openClearModal = () => {
         const sel = document.getElementById('clearTarget');
         sel.innerHTML = '<option value="all">ทั้งหมด (เริ่มต้นใหม่)</option>';
-        months.forEach((m, i) => {
-            sel.innerHTML += `<option value="${i}">${m}</option>`;
-        });
+        months.forEach((m, i) => { sel.innerHTML += `<option value="${i}">${m}</option>`; });
         document.getElementById('clearDataModal').classList.add('show');
     }
-
-    // Perform Clear
     window.performClear = () => {
         const val = document.getElementById('clearTarget').value;
-        if (val === 'all') {
-            if(confirm('ยืนยันล้างข้อมูลทั้งหมด?')) {
-                window.monthlyData = months.map(() => ({ salary: 0, extra: 0, savings: 0, budget: 0, details: [] }));
-            }
-        } else {
-            const idx = parseInt(val);
-            window.monthlyData[idx] = { salary: 0, extra: 0, savings: 0, budget: 0, details: [] };
-        }
+        if (val === 'all') { if(confirm('ยืนยันล้างข้อมูลทั้งหมด?')) window.monthlyData = months.map(() => ({ salary: 0, extra: 0, savings: [], budget: 0, details: [] })); }
+        else { const idx = parseInt(val); window.monthlyData[idx] = { salary: 0, extra: 0, savings: [], budget: 0, details: [] }; }
         window.saveData();
-        
-        // Refresh views
         if(document.getElementById('view-home').classList.contains('active')) window.renderHome();
-        else if(document.getElementById('view-month').classList.contains('active') && (val === 'all' || parseInt(val) === window.currentMonthIndex)) {
-            window.renderMonthDetail();
-        }
-        
-        window.closeModal('clearDataModal');
-        window.closeModal('toolsModal');
+        else if(val === 'all' || parseInt(val) === window.currentMonthIndex) window.renderMonthDetail();
+        window.closeModal('clearDataModal'); window.closeModal('toolsModal');
     }
     
-    // Scroll Logic
-    window.scrollContainer = (id, offset) => {
-        document.getElementById(id).scrollLeft += offset;
-    }
+    window.scrollContainer = (id, offset) => { document.getElementById(id).scrollLeft += offset; }
     
     // AI
     window.analyzeBudgetWithAI = async () => {
@@ -1164,7 +1220,7 @@
         } else {
             const dInc = window.monthlyData.map(m=>calculateStats(m).totalInc);
             const dExp = window.monthlyData.map(m=>calculateStats(m).totalExp);
-            const dSave = window.monthlyData.map(m=>Number(m.savings)||0);
+            const dSave = window.monthlyData.map(m=>calculateStats(m).saving);
             if(type === 'line') {
                 myChart = new Chart(ctx, { type: 'line', data: { labels, datasets: [{label:'เงินออม', data:dSave, borderColor:'#11cdef', backgroundColor:'rgba(17,205,239,0.2)', fill:true}] }, options: { responsive:true, maintainAspectRatio:false } });
             } else {
@@ -1181,32 +1237,24 @@
     }
     window.importJSON = (input) => {
         const r = new FileReader();
-        r.onload = (e) => { window.monthlyData = JSON.parse(e.target.result); saveData(); renderHome(); alert("Restore Success"); };
+        r.onload = (e) => { window.monthlyData = JSON.parse(e.target.result); saveData(); window.initDataAndRender(); alert("Restore Success"); };
         r.readAsText(input.files[0]);
     }
     window.exportToExcel = () => {
        let csv = "\uFEFFเดือน,ประเภท,รายการ,จำนวนเงิน\n";
        window.monthlyData.forEach((m, idx) => {
          if(m.salary) csv += `${months[idx]},รายรับ,เงินเดือน,${m.salary}\n`;
-         if(m.extra) csv += `${months[idx]},รายรับ,พิเศษ,${m.extra}\n`;
-         if(m.savings) csv += `${months[idx]},เงินออม,จัดสรรเงินออม,${m.savings}\n`;
+         // Export Extra List
+         if(m.extraList) m.extraList.forEach(e => csv += `${months[idx]},รายรับ,${e.desc},${e.amount}\n`);
+         m.savings.forEach(s => csv += `${months[idx]},เงินออม,${s.desc},${s.amount}\n`);
          m.details.forEach(d => csv += `${months[idx]},${d.type==='income'?'รายรับ':'รายจ่าย'},${d.desc},${d.amount}\n`);
        });
        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
        a.download = "Budget_Yearly.csv"; document.body.appendChild(a); a.click(); a.remove();
     }
     
-    window.clearData = () => {
-        if(confirm('ลบข้อมูลทั้งหมด?')) {
-            window.monthlyData = months.map(() => ({ salary: 0, extra: 0, savings: 0, budget: 0, details: [] }));
-            saveData(); renderHome();
-        }
-    }
-
     // Init
-    renderHome();
+    window.initDataAndRender();
   </script>
 </body>
 </html>
-
-
