@@ -39,7 +39,7 @@
       --bg-card: #ffffff;
       --radius: 24px;
       --radius-sm: 15px;
-      --bottom-nav-height: 85px;
+      --bottom-nav-height: 80px;
       --shadow-soft: 0 10px 25px rgba(0,0,0,0.06);
     }
 
@@ -50,7 +50,7 @@
       margin: 0; padding: 0; min-height: 100vh;
       color: var(--text-main); background: var(--bg-body);
       padding-bottom: calc(var(--bottom-nav-height) + 15px);
-      transition: background 0.3s;
+      transition: background 0.3s, color 0.3s;
       overscroll-behavior-y: none;
       background-size: cover; background-position: center; background-attachment: fixed;
     }
@@ -66,7 +66,7 @@
     .view-section { display: none; }
     .view-section.active { display: block; animation: fadeIn 0.3s ease; }
 
-    /* Cards */
+    /* Dashboard & Cards */
     .dashboard {
       background: var(--bg-card); border-radius: var(--radius); padding: 25px 20px;
       box-shadow: var(--shadow-soft); margin-bottom: 25px; position: relative; overflow: hidden;
@@ -93,21 +93,20 @@
     }
     .btn-back:active { transform: scale(0.9); }
 
-    /* List Item Card */
+    /* List Items */
     .month-summary-card {
         background: var(--bg-card); border-radius: var(--radius); margin-bottom: 12px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.01);
         padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
         cursor: pointer; transition: transform 0.2s;
     }
-    .month-summary-card:active { transform: scale(0.97); }
     .m-left { display: flex; align-items: center; gap: 15px; }
     .m-icon { width: 44px; height: 44px; background: var(--primary-soft); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: 700; }
 
     /* Inputs Modern */
     .modern-input { 
         width: 100%; padding: 14px 16px; border-radius: 15px; border: 1px solid #eef2f6; 
-        background: rgba(0,0,0,0.04); /* Non-white background for visibility */
+        background: rgba(0,0,0,0.04); 
         font-size: 1rem; font-family: 'Sarabun'; color: var(--text-main); outline: none; transition: all 0.2s;
     }
     .night .modern-input { background: rgba(255,255,255,0.06); border-color: #334155; }
@@ -128,7 +127,6 @@
     .badge-inc { background: var(--success); }
     .badge-exp { background: var(--danger); }
     
-    /* Transaction Inputs */
     .desc-input { 
         flex: 1; min-width: 0; border: none; 
         background: rgba(0,0,0,0.04); padding: 10px 14px; border-radius: 12px;
@@ -144,7 +142,7 @@
 
     .btn-del-modern { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--danger-soft); color: var(--danger); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; font-size: 0.8rem; }
 
-    /* Action Grid - Horizontal */
+    /* Action Buttons Area */
     .action-container { margin-top: 35px; margin-bottom: 30px; }
     .action-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
     .btn-action-main { 
@@ -159,7 +157,7 @@
 
     .btn-rounded-pill { padding: 10px 20px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-    /* Bottom Navigation - MODERN ROUNDED TABS */
+    /* Bottom Navigation - FIXED: Small text for mobile comfort */
     .bottom-nav { 
         position: fixed; bottom: 0; left: 0; width: 100%; height: var(--bottom-nav-height); 
         background: var(--bg-card); box-shadow: 0 -10px 30px rgba(0,0,0,0.08); 
@@ -172,14 +170,14 @@
     .nav-item { 
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         gap: 4px; color: var(--text-muted); cursor: pointer; transition: all 0.3s;
-        padding: 8px 12px; border-radius: 25px; width: 18%;
+        padding: 8px 10px; border-radius: 25px; width: 18%;
     }
     .nav-item.active { 
         color: var(--primary); 
         background: var(--primary-soft);
     }
-    .nav-item i { font-size: 1.4rem; }
-    .nav-item span { font-size: 0.7rem; font-weight: 700; }
+    .nav-item i { font-size: 1.2rem; } /* Compact icon */
+    .nav-item span { font-size: 0.6rem; font-weight: 700; } /* Compact text */
 
     /* Selection Styles */
     .modern-select {
@@ -213,7 +211,7 @@
     .btn-chart-pill { flex: 1; padding: 12px; border-radius: 50px; border: 1px solid #ddd; background: transparent; color: var(--text-muted); font-weight: 700; cursor: pointer; }
     .btn-chart-pill.active { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
 
-    /* AI Loader */
+    /* AI Loader Robot */
     .loading { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 4000; display: none; align-items: center; justify-content: center; flex-direction: column; }
     .ai-loader-icon { font-size: 5rem; color: var(--primary); margin-bottom: 15px; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%, 100% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1.1); opacity: 1; } }
@@ -233,7 +231,7 @@
   <!-- AI Loader -->
   <div class="loading" id="loadingOverlay">
     <i class="fas fa-robot ai-loader-icon"></i>
-    <p style="font-weight:800; color:var(--primary); margin-top:20px; font-size:1.1rem;">AI กำลังประมวลผล...</p>
+    <p id="aiLoaderText" style="font-weight:800; color:var(--primary); margin-top:20px; font-size:1.1rem;">AI กำลังคิด...</p>
   </div>
 
   <!-- ================= VIEW: HOME ================= -->
@@ -362,7 +360,7 @@
       <div class="nav-item" onclick="window.openSettingsModal()"><i class="fas fa-cog"></i><span>ตั้งค่า</span></div>
   </div>
 
-  <!-- Shared Modals -->
+  <!-- Modals -->
   <div class="modal" id="chartModal">
     <div class="modal-card">
       <span class="close-btn" onclick="closeModal('chartModal')">&times;</span>
@@ -624,15 +622,46 @@
         window.scrollTo({top:0, behavior:'smooth'});
     };
 
+    // --- Gemini 2.5 Flash API Implementation ---
     window.analyzeBudgetWithAI = async () => {
-        const key = localStorage.getItem('gemini_api_key'); if(!key) return alert("กรุณาใส่ API Key ในหน้าตั้งค่า");
-        document.getElementById('loadingOverlay').style.display='flex';
+        const apiKey = ""; // Environment provided
+        const userKey = localStorage.getItem('gemini_api_key');
+        const finalKey = userKey || apiKey;
+        
+        if(!finalKey) return alert("กรุณาใส่ API Key ในหน้าตั้งค่า");
+        
+        const loader = document.getElementById('loadingOverlay');
+        const loaderText = document.getElementById('aiLoaderText');
+        loaderText.innerText = "AI กำลังวิเคราะห์ข้อมูล...";
+        loader.style.display='flex';
+        
         try {
-            const sum = window.monthlyData.map((m,i)=>`${months[i]}: In=${calculateStats(m).inc}, Out=${calculateStats(m).exp}`).join('\n');
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:`Analyze this budget and give 3 short tips in Thai markdown:\n${sum}`}]}]}) });
-            const d = await res.json(); document.getElementById('aiContent').innerHTML = marked.parse(d.candidates[0].content.parts[0].text);
+            const summary = window.monthlyData.map((m,i)=>`${months[i]}: In=${calculateStats(m).inc}, Out=${calculateStats(m).exp}, Save=${calculateStats(m).save}`).join('\n');
+            
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${finalKey}`, { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({
+                    contents:[{
+                        parts:[{text:`Analyze this annual budget data in Thai Baht and provide 3 actionable, encouraging financial tips in Thai markdown. Data summary:\n${summary}`}]
+                    }]
+                }) 
+            });
+
+            if (!res.ok) throw new Error("API Connection Failed");
+
+            const d = await res.json();
+            const text = d.candidates?.[0]?.content?.parts?.[0]?.text;
+            
+            if (!text) throw new Error("AI returned empty data");
+
+            document.getElementById('aiContent').innerHTML = marked.parse(text);
             document.getElementById('aiModal').classList.add('show');
-        } catch(e) { } finally { document.getElementById('loadingOverlay').style.display='none'; }
+        } catch(e) { 
+            alert("AI Error: ไม่สามารถเชื่อมต่อกับ AI ได้ในขณะนี้ กรุณาตรวจสอบรหัส API Key ของคุณ");
+        } finally { 
+            loader.style.display='none'; 
+        }
     };
 
     window.triggerScanCurrent = () => { document.getElementById('receiptInput').click(); };
@@ -641,16 +670,51 @@
         const input = document.getElementById('receiptInput');
         if(input) {
             input.addEventListener('change', async function(e) {
-                const key = localStorage.getItem('gemini_api_key'); if(!key || !this.files[0]) return;
-                document.getElementById('loadingOverlay').style.display='flex';
+                const apiKey = "";
+                const userKey = localStorage.getItem('gemini_api_key');
+                const finalKey = userKey || apiKey;
+
+                if(!finalKey || !this.files[0]) return;
+                
+                const loader = document.getElementById('loadingOverlay');
+                const loaderText = document.getElementById('aiLoaderText');
+                loaderText.innerText = "กำลังอ่านข้อมูลสลิป...";
+                loader.style.display='flex';
+
                 const reader = new FileReader();
                 reader.onload = async (ev) => {
                     try {
                         const b64 = ev.target.result.split(',')[1];
-                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{role:"user", parts:[{text:"Extract JSON: { \"description\": \"string\", \"amount\": number, \"type\": \"expense\" }"}, {inlineData:{mimeType:"image/jpeg",data:b64}}]}]}) });
-                        const d = await res.json(); const json = JSON.parse(d.candidates[0].content.parts[0].text.replace(/```json/g,'').replace(/```/g,'').trim());
-                        if(json.amount) { window.monthlyData[window.currentMonthIndex].details.push({type:json.type||'expense', desc:json.description, amount:json.amount}); window.saveData(); window.renderMonthDetail(); }
-                    } catch(err) { } finally { document.getElementById('loadingOverlay').style.display='none'; input.value=''; }
+                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${finalKey}`, { 
+                            method:'POST', 
+                            headers:{'Content-Type':'application/json'}, 
+                            body:JSON.stringify({
+                                contents:[{
+                                    role:"user", 
+                                    parts:[
+                                        {text:"Analyze this receipt and extract ONLY a JSON object: { \"description\": \"string\", \"amount\": number, \"type\": \"expense\" }. Description should be in Thai."}, 
+                                        {inlineData:{mimeType:"image/jpeg",data:b64}}
+                                    ]
+                                }]
+                            }) 
+                        });
+
+                        if (!res.ok) throw new Error("Scan API Failed");
+
+                        const d = await res.json(); 
+                        const rawText = d.candidates?.[0]?.content?.parts?.[0]?.text;
+                        const jsonStr = rawText.replace(/```json/g,'').replace(/```/g,'').trim();
+                        const json = JSON.parse(jsonStr);
+                        
+                        if(json.amount) { 
+                            window.monthlyData[window.currentMonthIndex].details.push({type:json.type||'expense', desc:json.description, amount:json.amount}); 
+                            window.saveData(); window.renderMonthDetail(); 
+                        }
+                    } catch(err) { 
+                        alert("สแกนไม่สำเร็จ: AI ไม่สามารถประมวลผลรูปภาพได้");
+                    } finally { 
+                        loader.style.display='none'; input.value=''; 
+                    }
                 }; reader.readAsDataURL(this.files[0]);
             });
         }
