@@ -295,6 +295,12 @@
     .sync-status.show { display: flex; }
     .sync-status.online { background: #dcfce7; color: #166534; }
     .sync-status.offline { background: #fee2e2; color: #991b1b; }
+    
+    /* Loading Robot Animation */
+    .loading { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; flex-direction: column; }
+    .night .loading { background: rgba(15,23,42,0.95); }
+    .ai-loader-icon { font-size: 5rem; color: var(--primary); margin-bottom: 10px; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.7; } }
 
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes spin{to{transform:rotate(360deg)}}
@@ -470,7 +476,7 @@
   <input type="file" id="bgInput" accept="image/*" style="display: none;" onchange="handleBgChange(this)">
 
   <div class="loading" id="loadingOverlay">
-    <div class="spinner"></div><p style="margin-top:15px; font-weight:600;">AI กำลังทำงาน...</p>
+    <i class="fas fa-robot ai-loader-icon"></i><p style="font-weight:500; color:var(--text-muted);">AI กำลังคิด...</p>
   </div>
 
   <!-- Modals -->
@@ -863,6 +869,7 @@
         window.monthlyData[window.currentMonthIndex].details.splice(dIdx, 1);
         window.saveData(); renderMonthDetail();
     }
+
     window.copyFromPrev = (idx) => {
         const prev = window.monthlyData[idx-1];
         if(prev && prev.details.length > 0) {
