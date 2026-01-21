@@ -50,6 +50,9 @@
       padding-bottom: calc(var(--bottom-nav-height) + 20px);
       transition: background 0.3s, color 0.3s;
       overscroll-behavior-y: none;
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
     }
     
     body.night {
@@ -327,6 +330,7 @@
 
   <input type="file" id="receiptInput" accept="image/*" style="display: none;">
   <input type="file" id="restoreInput" accept="application/json" style="display: none;" onchange="importJSON(this)">
+  <input type="file" id="bgInput" accept="image/*" style="display: none;" onchange="window.handleBgChange(this)">
 
   <!-- AI Loader -->
   <div class="loading" id="loadingOverlay">
@@ -356,10 +360,21 @@
         </div>
         <div style="margin-top:20px;">
             <h4>โหมดแสดงผล</h4>
-            <div style="display:flex; gap:10px;">
-                <button onclick="setDisplayMode('light')" style="flex:1; padding:10px; border-radius:12px; border:1px solid #ddd;">สว่าง</button>
-                <button onclick="setDisplayMode('night')" style="flex:1; padding:10px; border-radius:12px; border:1px solid #ddd;">มืด</button>
+            <div style="display:flex; gap:10px; margin-bottom: 15px;">
+                <button onclick="window.setDisplayMode('light')" style="flex:1; padding:10px; border-radius:12px; border:1px solid #ddd;">สว่าง</button>
+                <button onclick="window.setDisplayMode('night')" style="flex:1; padding:10px; border-radius:12px; border:1px solid #ddd;">มืด</button>
+                <button onclick="window.setDisplayMode('auto')" style="flex:1; padding:10px; border-radius:12px; border:1px solid #ddd;">ออโต้</button>
             </div>
+            <h4>สีธีมและพื้นหลัง</h4>
+            <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:10px; margin-bottom:15px;">
+                <div style="width:35px; height:35px; background:#5e72e4; border-radius:50%; cursor:pointer;" onclick="window.setTheme('#5e72e4')"></div>
+                <div style="width:35px; height:35px; background:#2dce89; border-radius:50%; cursor:pointer;" onclick="window.setTheme('#2dce89')"></div>
+                <div style="width:35px; height:35px; background:#fb6340; border-radius:50%; cursor:pointer;" onclick="window.setTheme('#fb6340')"></div>
+                <div style="width:35px; height:35px; background:#f5365c; border-radius:50%; cursor:pointer;" onclick="window.setTheme('#f5365c')"></div>
+                <div style="width:35px; height:35px; background:#11cdef; border-radius:50%; cursor:pointer;" onclick="window.setTheme('#11cdef')"></div>
+            </div>
+            <button class="btn-full" style="background:var(--primary-soft); color:var(--primary); width:100%; border:none; padding:10px; border-radius:12px; margin-bottom:10px;" onclick="document.getElementById('bgInput').click()">เปลี่ยนพื้นหลัง</button>
+            <button class="btn-full" style="background:#eee; color:#888; width:100%; border:none; padding:10px; border-radius:12px;" onclick="window.resetBackground()">คืนค่าพื้นหลังเดิม</button>
         </div>
     </div>
   </div>
@@ -425,6 +440,38 @@
     };
     function escapeHtml(text) { return text ? String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m])) : ""; }
 
+    // --- Theme & Appearance Functions ---
+    window.setDisplayMode = (mode) => {
+        localStorage.setItem('display_mode', mode);
+        applyThemeMode();
+    };
+    function applyThemeMode() {
+        const mode = localStorage.getItem('display_mode') || 'auto';
+        const isNight = mode === 'auto' ? (new Date().getHours() >= 18 || new Date().getHours() < 6) : mode === 'night';
+        document.body.classList.toggle('night', isNight);
+    }
+    window.setTheme = (c) => {
+        document.documentElement.style.setProperty('--primary', c);
+        document.documentElement.style.setProperty('--primary-soft', c + '20');
+        localStorage.setItem('app_theme', c);
+    };
+    window.handleBgChange = (input) => {
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const bg = e.target.result;
+                document.body.style.backgroundImage = `url(${bg})`;
+                localStorage.setItem('custom_bg', bg);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    window.resetBackground = () => {
+        document.body.style.backgroundImage = '';
+        localStorage.removeItem('custom_bg');
+    };
+
     const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
     const categories = [{icon:'🍔',label:'อาหาร'},{icon:'🚗',label:'เดินทาง'},{icon:'🏠',label:'ที่พัก'},{icon:'🛍️',label:'ช้อปปิ้ง'},{icon:'💊',label:'สุขภาพ'},{icon:'🎉',label:'บันเทิง'},{icon:'💡',label:'บิลต่างๆ'},{icon:'💸',label:'ลงทุน'}];
 
@@ -438,6 +485,13 @@
             extraList: Array.isArray(m.extraList) ? m.extraList : [],
             savings: Array.isArray(m.savings) ? m.savings : []
         }));
+        
+        // Initial Theme Loads
+        applyThemeMode();
+        const savedTheme = localStorage.getItem('app_theme'); if(savedTheme) window.setTheme(savedTheme);
+        const savedBg = localStorage.getItem('custom_bg'); if(savedBg) document.body.style.backgroundImage = `url(${savedBg})`;
+        const storedKey = localStorage.getItem('gemini_api_key'); if(storedKey) document.getElementById('apiKeyInput').value = storedKey;
+
         if(document.getElementById('view-home').classList.contains('active')) window.renderHome(); 
         else window.renderMonthDetail();
     };
@@ -605,6 +659,34 @@
     };
 
     window.triggerScanCurrent = () => document.getElementById('receiptInput').click();
+    
+    // Receipt Scan Logic
+    document.getElementById('receiptInput').addEventListener('change', async function(e) {
+        const key = localStorage.getItem('gemini_api_key');
+        if(!key) { alert("กรุณาใส่ API Key"); return; }
+        if(!this.files[0]) return;
+        
+        document.getElementById('loadingOverlay').style.display='flex';
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+            try {
+                const b64 = ev.target.result.split(',')[1];
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({contents:[{role:"user", parts:[{text:"Extract: {\"desc\":\"str\",\"amount\":num,\"type\":\"expense\"}"},{inlineData:{mimeType:"image/jpeg",data:b64}}]}]})
+                });
+                const d = await res.json();
+                const json = JSON.parse(d.candidates[0].content.parts[0].text.replace(/```json/g,'').replace(/```/g,'').trim());
+                if(json.amount) {
+                    window.monthlyData[window.currentMonthIndex].details.push({type:json.type||'expense', desc:json.desc, amount:json.amount});
+                    window.saveData(); window.renderMonthDetail();
+                }
+            } catch(err) { alert("Scan Failed"); }
+            finally { document.getElementById('loadingOverlay').style.display='none'; this.value=''; }
+        };
+        reader.readAsDataURL(this.files[0]);
+    });
+
     window.openToolsModal = () => document.getElementById('toolsModal').classList.add('show');
     window.openSettingsModal = () => document.getElementById('settingsModal').classList.add('show');
     window.saveApiKey = () => { localStorage.setItem('gemini_api_key', document.getElementById('apiKeyInput').value); alert("Saved"); };
@@ -630,7 +712,7 @@
     window.performClear = () => {
         const val = document.getElementById('clearTarget').value;
         if (val === 'all') { if(confirm('ยืนยันล้างทั้งหมด?')) window.monthlyData = months.map(() => ({ salary: 0, extraList: [], savings: [], details: [] })); }
-        else { const idx = parseInt(val); window.monthlyData[idx] = { salary: 0, extraList: [], savings: [], budget: 0, details: [] }; }
+        else { const idx = parseInt(val); window.monthlyData[idx] = { salary: 0, extraList: [], savings: [], details: [] }; }
         window.saveData(); window.initDataAndRender(); window.closeModal('clearDataModal'); window.closeModal('toolsModal');
     };
 
