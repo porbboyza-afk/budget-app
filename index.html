@@ -10,6 +10,9 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MyBudget">
+  <!-- ไอคอนสำหรับ iOS หน้าจอโฮม -->
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2344/2344147.png">
   <meta name="theme-color" content="#5e72e4">
 
   <!-- Libraries -->
@@ -241,11 +244,14 @@
   <!-- ================= VIEW: MONTH DETAIL ================= -->
   <div id="view-month" class="view-section">
       <div class="main-container">
+          
+          <!-- Month Header -->
           <div class="nav-header">
               <button class="btn-back" onclick="switchView('home')"><i class="fas fa-chevron-left"></i></button>
               <h2 class="page-title" id="detailMonthName">มกราคม</h2>
           </div>
 
+          <!-- Month Dashboard -->
           <div class="dashboard">
               <div class="balance-container" style="margin-bottom:15px; padding:0;">
                   <div class="balance-label">คงเหลือใช้จริง (หักออมแล้ว)</div>
@@ -711,8 +717,8 @@
     };
     window.performClear = () => {
         const val = document.getElementById('clearTarget').value;
-        if (val === 'all') { if(confirm('ยืนยันล้างทั้งหมด?')) window.monthlyData = months.map(() => ({ salary: 0, extraList: [], savings: [], details: [] })); }
-        else { const idx = parseInt(val); window.monthlyData[idx] = { salary: 0, extraList: [], savings: [], details: [] }; }
+        if (val === 'all') { if(confirm('ยืนยันล้างทั้งหมด?')) window.monthlyData = months.map(() => ({ salary: 0, extraList: [], savings: [], budget: 0, details: [] })); }
+        else { const idx = parseInt(val); window.monthlyData[idx] = { salary: 0, extraList: [], savings: [], budget: 0, details: [] }; }
         window.saveData(); window.initDataAndRender(); window.closeModal('clearDataModal'); window.closeModal('toolsModal');
     };
 
