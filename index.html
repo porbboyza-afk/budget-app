@@ -165,6 +165,18 @@
     .modal.show { display: flex; }
     .modal-card { background: var(--bg-card); width: 100%; max-width: 500px; border-radius: 24px; padding: 25px; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3); max-height: 85vh; overflow-y: auto; }
     .chart-container-wrapper { position: relative; height: 45vh; width: 100%; }
+    .top-expenses-widget { margin-top: 20px; padding-top: 15px; border-top: 1px dashed rgba(0,0,0,0.1); }
+    .top-pill { display: inline-flex; align-items: center; gap: 6px; background: var(--danger-soft); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; color: var(--danger); margin-right: 5px; margin-bottom: 5px; font-weight: 500; white-space: nowrap; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .scroll-wrapper { display: flex; align-items: center; position: relative; }
+    .scroll-btn { background: var(--bg-card); border: 1px solid rgba(0,0,0,0.05); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); font-size: 0.8rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 2; flex-shrink: 0; }
+    
+    /* New Rounded Button Styles */
+    .btn-rounded-pill { padding: 8px 16px; border-radius: 50px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .btn-rounded-pill:active { transform: translateY(1px); box-shadow: none; }
+    .btn-del-modern { width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--danger-soft); color: var(--danger); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+    .btn-del-modern:hover { background: var(--danger); color: white; }
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
   </style>
@@ -206,7 +218,16 @@
                   <div style="font-size:0.8rem; font-weight:600; color:var(--info); margin-bottom:8px;"><i class="fas fa-chart-pie"></i> พอร์ตเงินออม (ปี)</div>
                   <div class="savings-portfolio">
                       <div class="sp-chart-container"><canvas id="savingsDoughnut"></canvas></div>
-                      <div id="savingsLegend" class="sp-list"><span style="color:#aaa; font-size:0.8rem;">ไม่มีข้อมูล</span></div>
+                      <div id="savingsLegend" class="sp-list"></div>
+                  </div>
+              </div>
+
+              <div class="top-expenses-widget">
+                  <div style="font-size:0.8rem; font-weight:600; color:var(--warning); margin-bottom:8px;"><i class="fas fa-trophy"></i> รายจ่ายสูงสุดปีนี้</div>
+                  <div class="scroll-wrapper">
+                      <button class="scroll-btn left" onclick="window.scrollContainer('yearTopExpList', -100)"><i class="fas fa-chevron-left"></i></button>
+                      <div id="yearTopExpList" class="hide-scrollbar" style="overflow-x: auto; flex: 1; padding-bottom: 5px; white-space: nowrap;"></div>
+                      <button class="scroll-btn right" onclick="window.scrollContainer('yearTopExpList', 100)"><i class="fas fa-chevron-right"></i></button>
                   </div>
               </div>
           </div>
@@ -253,7 +274,7 @@
           <div style="background:var(--bg-card); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-soft); margin-bottom:20px; border:1px solid var(--success-soft);">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                   <h4 style="margin:0; color:var(--success);">รายได้พิเศษ</h4>
-                  <button class="btn-full" style="width:auto; margin:0; padding:6px 12px; font-size:0.8rem; background:var(--success-soft); color:var(--success);" onclick="addExtraIncomeItem()">+ เพิ่ม</button>
+                  <button class="btn-rounded-pill" style="background:var(--success); color:white;" onclick="addExtraIncomeItem()">+ เพิ่ม</button>
               </div>
               <div class="category-scroll" style="margin-bottom:10px;">
                   <div class="cat-item" onclick="addWithIconExtra('ธุรกิจ')"><button class="cat-btn">🏢</button><span class="cat-label">ธุรกิจ</span></div>
@@ -267,7 +288,7 @@
           <div style="background:var(--bg-card); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-soft); margin-bottom:20px; border:1px solid var(--info-soft);">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                   <h4 style="margin:0; color:var(--info);">จัดสรรเงินออม</h4>
-                  <button class="btn-full" style="width:auto; margin:0; padding:6px 12px; font-size:0.8rem; background:var(--info-soft); color:var(--info);" onclick="addSavingItemCurrent()">+ เพิ่ม</button>
+                  <button class="btn-rounded-pill" style="background:var(--info); color:white;" onclick="addSavingItemCurrent()">+ เพิ่ม</button>
               </div>
               <div class="category-scroll" style="margin-bottom:10px;">
                   <div class="cat-item" onclick="addWithIconSavings('ลงทุน')"><button class="cat-btn">💹</button><span class="cat-label">ลงทุน</span></div>
@@ -313,13 +334,38 @@
     <p style="font-weight:500; color:var(--text-muted);">AI กำลังคิด...</p>
   </div>
 
-  <!-- Modals -->
-  <div class="modal" id="chartModal"><div class="modal-card"><span style="position:absolute; top:15px; right:20px; font-size:1.5rem; cursor:pointer;" onclick="closeModal('chartModal')">&times;</span><h3>สถิติ</h3><div class="chart-container-wrapper"><canvas id="chart"></canvas></div></div></div>
+  <!-- Shared Modals -->
+  <div class="modal" id="chartModal"><div class="modal-card"><span style="position:absolute; top:15px; right:20px; font-size:1.5rem; cursor:pointer;" onclick="closeModal('chartModal')">&times;</span><h3>สถิติรายปี</h3><div class="chart-container-wrapper"><canvas id="chart"></canvas></div></div></div>
   <div class="modal" id="aiModal"><div class="modal-card"><span style="position:absolute; top:15px; right:20px; font-size:1.5rem; cursor:pointer;" onclick="closeModal('aiModal')">&times;</span><h3 style="color:var(--primary);"><i class="fas fa-robot"></i> AI Coach</h3><div id="aiContent" style="line-height:1.7;"></div></div></div>
-  <div class="modal" id="toolsModal"><div class="modal-card"><h3>เครื่องมือ</h3><button class="btn-full" style="background:#d1fae5; color:#065f46; padding:12px; border:none; border-radius:12px; width:100%; margin-bottom:10px;" onclick="exportToExcel()">Excel</button><button class="btn-full" style="background:#f1f5f9; padding:12px; border:none; border-radius:12px; width:100%; margin-bottom:10px;" onclick="exportJSON()">Backup</button><button class="btn-full" style="background:#fee2e2; color:#dc2626; padding:12px; border:none; border-radius:12px; width:100%;" onclick="openClearModal()">ล้างข้อมูล</button></div></div>
-  <div class="modal" id="settingsModal"><div class="modal-card"><h3>ตั้งค่า</h3><div id="authSection" style="margin-bottom:20px;"><button id="btnLogin" class="btn-full" style="width:100%; padding:12px; border-radius:12px; border:1px solid #ddd; background:#fff;" onclick="loginGoogle()">Google Login</button><button id="btnLogout" class="btn-full hidden" style="width:100%; padding:12px; border-radius:12px; border:none; background:#fee2e2; color:#dc2626;" onclick="logout()">Logout</button></div><div><h4 style="margin-bottom:5px;">Gemini API Key</h4><div style="display:flex; gap:10px;"><input id="apiKeyInput" type="password" class="modern-input" placeholder="AIza..."><button onclick="saveApiKey()" style="padding:10px; border-radius:12px; background:var(--primary); color:#fff; border:none;">บันทึก</button></div></div><div style="margin-top:20px;"><h4>โหมดแสดงผล</h4><div style="display:flex; gap:10px;"><button onclick="setDisplayMode('light')" style="flex:1; padding:10px; border-radius:12px; border:1px solid #ddd;">สว่าง</button><button onclick="setDisplayMode('night')" style="flex:1; padding:10px; border-radius:12px; border:1px solid #ddd;">มืด</button></div></div></div></div>
+  <div class="modal" id="toolsModal"><div class="modal-card"><h3>เครื่องมือ</h3><button class="btn-full" style="background:#d1fae5; color:#065f46; padding:12px; border:none; border-radius:12px; width:100%; margin-bottom:10px;" onclick="exportToExcel()">Excel</button><button class="btn-full" style="background:#f1f5f9; padding:12px; border:none; border-radius:12px; width:100%; margin-bottom:10px;" onclick="exportJSON()">Backup</button><button class="btn-full" style="background:#fee2e2; color:#dc2626; padding:12px; border:none; border-radius:12px; width:100%;" onclick="openClearModal()">ล้างข้อมูล</button><button class="btn-full" style="margin-top:10px; background:transparent; border:none; color:#888;" onclick="closeModal('toolsModal')">ปิด</button></div></div>
+  <div class="modal" id="settingsModal">
+    <div class="modal-card">
+        <span style="position:absolute; top:15px; right:20px; font-size:1.5rem; cursor:pointer;" onclick="closeModal('settingsModal')">&times;</span>
+        <h3>ตั้งค่า</h3>
+        <div id="authSection" style="margin-bottom:20px;">
+            <button id="btnLogin" class="btn-full" style="width:100%; padding:12px; border-radius:12px; border:1px solid #ddd; background:#fff;" onclick="loginGoogle()">Google Login</button>
+            <button id="btnLogout" class="btn-full hidden" style="width:100%; padding:12px; border-radius:12px; border:none; background:#fee2e2; color:#dc2626;" onclick="logout()">Logout</button>
+        </div>
+        <div>
+            <h4 style="margin-bottom:5px;">Gemini API Key</h4>
+            <div style="display:flex; gap:10px; margin-bottom: 10px;">
+                <input id="apiKeyInput" type="password" class="modern-input" placeholder="AIza...">
+                <button onclick="saveApiKey()" style="padding:10px; border-radius:12px; background:var(--primary); color:#fff; border:none;">บันทึก</button>
+            </div>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size:0.75rem; color:var(--primary); text-decoration:none;">👉 สมัครขอคีย์ฟรีที่นี่</a>
+        </div>
+        <div style="margin-top:20px;">
+            <h4>โหมดแสดงผล</h4>
+            <div style="display:flex; gap:10px;">
+                <button onclick="setDisplayMode('light')" style="flex:1; padding:10px; border-radius:12px; border:1px solid #ddd;">สว่าง</button>
+                <button onclick="setDisplayMode('night')" style="flex:1; padding:10px; border-radius:12px; border:1px solid #ddd;">มืด</button>
+            </div>
+        </div>
+    </div>
+  </div>
+  <div class="modal" id="clearDataModal"><div class="modal-card"><h3>ล้างข้อมูล</h3><p style="color:#888;">ล้างข้อมูลเดือนไหนดี?</p><select id="clearTarget" class="modern-input" style="margin-bottom:15px;"><option value="all">ทั้งหมด</option></select><div style="display:flex; gap:10px;"><button class="btn-full" style="background:#fee2e2; color:#dc2626; flex:1;" onclick="performClear()">ล้างเลย</button><button class="btn-full" style="background:#eee; flex:1;" onclick="closeModal('clearDataModal')">ยกเลิก</button></div></div></div>
 
-  <!-- Firebase Logic -->
+  <!-- Firebase Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -345,9 +391,7 @@
             if(user.photoURL) { document.getElementById('mainAvatar').src = user.photoURL; document.getElementById('mainAvatar').style.display = 'block'; }
             document.getElementById('userRole').innerText = user.displayName;
             startDataListener();
-        } else {
-            useCloud = false; syncBadge.innerHTML = '<i class="fas fa-wifi"></i> Offline';
-        }
+        } else { useCloud = false; syncBadge.innerHTML = '<i class="fas fa-wifi"></i> Offline'; }
     });
 
     function startDataListener() {
@@ -366,23 +410,36 @@
     }
   </script>
 
-  <!-- App Script -->
+  <!-- App Main Script -->
   <script>
+    // --- Global Chart Instances ---
+    window.myYearChart = null; 
+    window.savingsChartObj = null;
+    window.monthSavingsChartObj = null;
+
+    // --- Utils ---
+    window.closeModal = (id) => { document.getElementById(id).classList.remove('show'); };
+    window.scrollContainer = (id, offset) => { 
+        const container = document.getElementById(id);
+        if(container) container.scrollLeft += offset; 
+    };
     function escapeHtml(text) { return text ? String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m])) : ""; }
+
     const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
     const categories = [{icon:'🍔',label:'อาหาร'},{icon:'🚗',label:'เดินทาง'},{icon:'🏠',label:'ที่พัก'},{icon:'🛍️',label:'ช้อปปิ้ง'},{icon:'💊',label:'สุขภาพ'},{icon:'🎉',label:'บันเทิง'},{icon:'💡',label:'บิลต่างๆ'},{icon:'💸',label:'ลงทุน'}];
 
-    window.monthlyData = JSON.parse(localStorage.getItem('yearlyBudget_v1')) || months.map(() => ({ salary: 0, extra: 0, extraList: [], savings: [], details: [] }));
+    window.monthlyData = JSON.parse(localStorage.getItem('yearlyBudget_v1')) || months.map(() => ({ salary: 0, extraList: [], savings: [], details: [] }));
     window.currentMonthIndex = 0;
 
     window.initDataAndRender = function() {
         window.monthlyData = window.monthlyData.map(m => ({
             ...m,
             details: Array.isArray(m.details) ? m.details : [],
-            extraList: Array.isArray(m.extraList) ? m.extraList : (Number(m.extra) > 0 ? [{desc:'รายได้พิเศษ', amount:m.extra}] : []),
-            savings: Array.isArray(m.savings) ? m.savings : (typeof m.savings === 'number' && m.savings > 0 ? [{desc:'เงินออมทั่วไป', amount:m.savings}] : [])
+            extraList: Array.isArray(m.extraList) ? m.extraList : [],
+            savings: Array.isArray(m.savings) ? m.savings : []
         }));
-        if(document.getElementById('view-home').classList.contains('active')) window.renderHome(); else window.renderMonthDetail();
+        if(document.getElementById('view-home').classList.contains('active')) window.renderHome(); 
+        else window.renderMonthDetail();
     };
 
     function calculateStats(m) {
@@ -399,18 +456,21 @@
         saveTimeout = setTimeout(() => { if(window.saveDataToCloud) window.saveDataToCloud(); }, 2000);
     };
 
+    // --- Core Rendering ---
     window.renderHome = () => {
         const list = document.getElementById('homeMonthList');
-        let html = '', gInc = 0, gExp = 0, gSave = 0, savingsMap = {};
+        let html = '', gInc = 0, gExp = 0, gSave = 0, yearlySavingsMap = {}, yearlyExpMap = {};
         const currIdx = new Date().getMonth();
         const currStats = calculateStats(window.monthlyData[currIdx]);
 
         window.monthlyData.forEach((m, i) => {
             const s = calculateStats(m);
             gInc += s.inc; gExp += s.exp; gSave += s.save;
-            m.savings.forEach(v => { let k=v.desc||'ออมทั่วไป'; savingsMap[k]=(savingsMap[k]||0)+Number(v.amount); });
-            html += `<div class="month-summary-card" onclick="openMonth(${i})"><div class="m-left"><div class="m-icon">${i+1}</div><div class="m-info"><h4>${months[i]}</h4><span>เหลือใช้: ${s.free.toLocaleString()}</span></div></div><div class="m-right"><span class="m-bal" style="color:${s.bal>=0?'var(--primary)':'var(--danger)'}">${s.bal.toLocaleString()}</span></div></div>`;
+            m.savings.forEach(v => { let k=v.desc||'ออมทั่วไป'; yearlySavingsMap[k]=(yearlySavingsMap[k]||0)+Number(v.amount); });
+            m.details.filter(d=>d.type==='expense').forEach(d => { let k=d.desc||'อื่นๆ'; yearlyExpMap[k]=(yearlyExpMap[k]||0)+Number(d.amount); });
+            html += `<div class="month-summary-card" onclick="openMonth(${i})"><div class="m-left"><div class="m-icon">${i+1}</div><div class="m-info"><h4>${months[i]}</h4><span>เหลือใช้: ${s.free.toLocaleString()}</span></div></div><div class="m-right"><span class="m-bal" style="color:${s.free>=0?'var(--primary)':'var(--danger)'}">${s.free.toLocaleString()}</span></div></div>`;
         });
+        
         list.innerHTML = html;
         document.getElementById('currMonthName').innerText = months[currIdx];
         document.getElementById('currentMonthBalance').innerText = currStats.free.toLocaleString();
@@ -418,7 +478,11 @@
         document.getElementById('dashExpense').innerText = currStats.exp.toLocaleString();
         document.getElementById('dashSavings').innerText = currStats.save.toLocaleString();
         document.getElementById('grandBalance').innerText = (gInc - gExp - gSave).toLocaleString();
-        renderChart(savingsMap, 'savingsDoughnut', 'savingsLegend');
+        
+        const top5 = Object.entries(yearlyExpMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+        document.getElementById('yearTopExpList').innerHTML = top5.length ? top5.map(i=>`<span class="top-pill">${escapeHtml(i[0])} ${i[1].toLocaleString()}</span>`).join('') : '<span style="color:#aaa; font-size:0.8rem;">ไม่มีข้อมูล</span>';
+        
+        renderPortfolioChart(yearlySavingsMap, 'savingsDoughnut', 'savingsLegend');
     };
 
     window.openMonth = (idx) => { window.currentMonthIndex = idx; switchView('month'); window.renderMonthDetail(); };
@@ -442,39 +506,40 @@
                 <input class="desc-input" value="${escapeHtml(d.desc)}" oninput="updateDetail(${i},'desc',this.value)">
                 <div class="detail-divider"></div>
                 <input class="amt-input" type="number" value="${d.amount}" oninput="updateDetail(${i},'amount',this.value)">
-                <button class="btn-del" onclick="removeDetail(${i})">&times;</button>
+                <button class="btn-del-modern" onclick="removeDetail(${i})"><i class="fas fa-times"></i></button>
             </div>
         `).join('');
 
         document.getElementById('cat-scroll').innerHTML = categories.map(c => `<div class="cat-item" onclick="addWithIcon('${c.icon} ${c.label}')"><button class="cat-btn">${c.icon}</button><span class="cat-label">${c.label}</span></div>`).join('');
         const mSavMap = {}; m.savings.forEach(v => { let k=v.desc||'ทั่วไป'; mSavMap[k]=(mSavMap[k]||0)+Number(v.amount); });
-        renderChart(mSavMap, 'monthSavingsDoughnut', 'monthSavingsLegend');
+        renderPortfolioChart(mSavMap, 'monthSavingsDoughnut', 'monthSavingsLegend');
     };
 
     function renderSubList(arr, id, upFn, rmFn, icon) {
         document.getElementById(id).innerHTML = arr.length ? arr.map((v, i) => `
-            <div class="detail-row"><span>${icon}</span><input class="desc-input" value="${escapeHtml(v.desc)}" oninput="${upFn}(${i},'desc',this.value)"><div class="detail-divider"></div><input class="amt-input" type="number" value="${v.amount}" oninput="${upFn}(${i},'amount',this.value)"><button class="btn-del" onclick="${rmFn}(${i})">&times;</button></div>
+            <div class="detail-row"><span>${icon}</span><input class="desc-input" value="${escapeHtml(v.desc)}" oninput="window.${upFn}(${i},'desc',this.value)"><div class="detail-divider"></div><input class="amt-input" type="number" value="${v.amount}" oninput="window.${upFn}(${i},'amount',this.value)"><button class="btn-del-modern" onclick="window.${rmFn}(${i})"><i class="fas fa-times"></i></button></div>
         `).join('') : '<div style="text-align:center; color:#ccc; font-size:0.8rem;">ไม่มีรายการ</div>';
     }
 
-    window.updateCurrentMonthBase = (f, v) => { window.monthlyData[window.currentMonthIndex][f] = Number(v); window.saveData(); updateStatsOnly(); };
+    // --- Logic Actions ---
+    window.updateCurrentMonthBase = (f, v) => { window.monthlyData[window.currentMonthIndex][f] = Number(v); window.saveData(); updateMonthStatsUI(); };
     window.addExtraIncomeItem = () => { window.monthlyData[window.currentMonthIndex].extraList.push({desc:'', amount:''}); window.saveData(); window.renderMonthDetail(); };
-    window.updateExtra = (i, f, v) => { window.monthlyData[window.currentMonthIndex].extraList[i][f] = f==='amount'?Number(v):v; window.saveData(); updateStatsOnly(); };
+    window.updateExtra = (i, f, v) => { window.monthlyData[window.currentMonthIndex].extraList[i][f] = f==='amount'?Number(v):v; window.saveData(); updateMonthStatsUI(); };
     window.removeExtra = (i) => { window.monthlyData[window.currentMonthIndex].extraList.splice(i, 1); window.saveData(); window.renderMonthDetail(); };
     window.addWithIconExtra = (l) => { window.monthlyData[window.currentMonthIndex].extraList.push({desc:l, amount:''}); window.saveData(); window.renderMonthDetail(); };
 
     window.addSavingItemCurrent = () => { window.monthlyData[window.currentMonthIndex].savings.push({desc:'', amount:''}); window.saveData(); window.renderMonthDetail(); };
-    window.updateSave = (i, f, v) => { window.monthlyData[window.currentMonthIndex].savings[i][f] = f==='amount'?Number(v):v; window.saveData(); updateStatsOnly(); };
+    window.updateSave = (i, f, v) => { window.monthlyData[window.currentMonthIndex].savings[i][f] = f==='amount'?Number(v):v; window.saveData(); updateMonthStatsUI(); };
     window.removeSave = (i) => { window.monthlyData[window.currentMonthIndex].savings.splice(i, 1); window.saveData(); window.renderMonthDetail(); };
     window.addWithIconSavings = (l) => { window.monthlyData[window.currentMonthIndex].savings.push({desc:l, amount:''}); window.saveData(); window.renderMonthDetail(); };
 
     window.addDetailCurrent = (t) => { window.monthlyData[window.currentMonthIndex].details.push({type:t, desc:'', amount:''}); window.saveData(); window.renderMonthDetail(); };
-    window.updateDetail = (i, f, v) => { window.monthlyData[window.currentMonthIndex].details[i][f] = f==='amount'?Number(v):v; window.saveData(); updateStatsOnly(); };
+    window.updateDetail = (i, f, v) => { window.monthlyData[window.currentMonthIndex].details[i][f] = f==='amount'?Number(v):v; window.saveData(); updateMonthStatsUI(); };
     window.removeDetail = (i) => { window.monthlyData[window.currentMonthIndex].details.splice(i, 1); window.saveData(); window.renderMonthDetail(); };
     window.toggleType = (i) => { let d=window.monthlyData[window.currentMonthIndex].details[i]; d.type=d.type==='income'?'expense':'income'; window.saveData(); window.renderMonthDetail(); };
     window.addWithIcon = (ic) => { window.monthlyData[window.currentMonthIndex].details.push({type:'expense', desc:ic+' ', amount:''}); window.saveData(); window.renderMonthDetail(); };
 
-    function updateStatsOnly() {
+    function updateMonthStatsUI() {
         const s = calculateStats(window.monthlyData[window.currentMonthIndex]);
         document.getElementById('monthGrandBalance').innerText = s.free.toLocaleString();
         document.getElementById('monthGrandIncome').innerText = s.inc.toLocaleString();
@@ -482,16 +547,43 @@
         document.getElementById('monthGrandSavings').innerText = s.save.toLocaleString();
     }
 
-    function renderChart(map, canvasId, legendId) {
-        const ctx = document.getElementById(canvasId).getContext('2d');
+    // --- Charting ---
+    function renderPortfolioChart(map, canvasId, legendId) {
+        const canvas = document.getElementById(canvasId);
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
         const entries = Object.entries(map).sort((a,b)=>b[1]-a[1]);
-        if (!entries.length) return;
+        if (!entries.length) { document.getElementById(legendId).innerHTML = '<span style="color:#aaa; font-size:0.8rem;">ไม่มีข้อมูล</span>'; return; }
         const colors = ['#11cdef','#2dce89','#5e72e4','#fb6340','#f5365c'];
-        const chartKey = canvasId + '_chart'; if(window[chartKey]) window[chartKey].destroy();
-        window[chartKey] = new Chart(ctx, { type:'doughnut', data:{ labels:entries.map(e=>e[0]), datasets:[{data:entries.map(e=>e[1]), backgroundColor:colors, borderWidth:0, cutout:'70%'}] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} } });
+        
+        const chartKey = canvasId === 'savingsDoughnut' ? 'savingsChartObj' : 'monthSavingsChartObj';
+        if(window[chartKey]) window[chartKey].destroy();
+        
+        window[chartKey] = new Chart(ctx, { 
+            type:'doughnut', 
+            data:{ labels:entries.map(e=>e[0]), datasets:[{data:entries.map(e=>e[1]), backgroundColor:colors, borderWidth:0, cutout:'70%'}] }, 
+            options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} } 
+        });
         document.getElementById(legendId).innerHTML = entries.map((e,i)=>`<div class="sp-item"><span><span class="sp-color" style="background:${colors[i%5]}"></span>${escapeHtml(e[0])}</span><b>${e[1].toLocaleString()}</b></div>`).join('');
     }
 
+    window.openChartModal = () => {
+        document.getElementById('chartModal').classList.add('show');
+        const ctx = document.getElementById('chart').getContext('2d');
+        if(window.myYearChart) window.myYearChart.destroy();
+        const dataInc = window.monthlyData.map(m => calculateStats(m).inc);
+        const dataExp = window.monthlyData.map(m => calculateStats(m).exp);
+        window.myYearChart = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: months, datasets: [
+                { label: 'รับ', data: dataInc, backgroundColor: '#2dce89', borderRadius: 4 },
+                { label: 'จ่าย', data: dataExp, backgroundColor: '#f5365c', borderRadius: 4 }
+            ]},
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    };
+
+    // --- Navigation & AI ---
     window.switchView = (v) => {
         document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
@@ -501,23 +593,46 @@
     };
 
     window.analyzeBudgetWithAI = async () => {
-        const key = localStorage.getItem('gemini_api_key'); if(!key) return alert("กรุณาใส่ API Key ในหน้าตั้งค่า");
+        const key = localStorage.getItem('gemini_api_key'); if(!key) { alert("กรุณาใส่ API Key ในหน้าตั้งค่า"); return window.openSettingsModal(); }
         document.getElementById('loadingOverlay').style.display='flex';
         try {
-            const summary = window.monthlyData.map((m,i)=>`${months[i]}: In=${calculateStats(m).inc}, Out=${calculateStats(m).exp}`).join('\n');
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:`Analyze this budget and give 3 short tips in Thai markdown:\n${summary}`}]}]}) });
-            const d = await res.json(); document.getElementById('aiContent').innerHTML = marked.parse(d.candidates[0].content.parts[0].text);
+            const sum = window.monthlyData.map((m,i)=>`${months[i]}: In=${calculateStats(m).inc}, Out=${calculateStats(m).exp}`).join('\n');
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:`Analyze this budget and give 3 short tips in Thai markdown:\n${sum}`}]}]}) });
+            const d = await res.json(); 
+            document.getElementById('aiContent').innerHTML = marked.parse(d.candidates?.[0]?.content?.parts?.[0]?.text || "ไม่พบคำตอบ");
             document.getElementById('aiModal').classList.add('show');
         } catch(e) { alert("API Error"); } finally { document.getElementById('loadingOverlay').style.display='none'; }
     };
 
     window.triggerScanCurrent = () => document.getElementById('receiptInput').click();
-    window.closeModal = (id) => document.getElementById(id).classList.remove('show');
     window.openToolsModal = () => document.getElementById('toolsModal').classList.add('show');
     window.openSettingsModal = () => document.getElementById('settingsModal').classList.add('show');
     window.saveApiKey = () => { localStorage.setItem('gemini_api_key', document.getElementById('apiKeyInput').value); alert("Saved"); };
-    window.exportToExcel = () => { let csv="\uFEFFเดือน,ประเภท,รายการ,จำนวนเงิน\n"; window.monthlyData.forEach((m,i)=>{ let mm=months[i]; if(m.salary) csv+=`${mm},รายรับประจำ,เงินเดือน,${m.salary}\n`; m.extraList.forEach(e=>csv+=`${mm},รายรับพิเศษ,${e.desc},${e.amount}\n`); m.savings.forEach(s=>csv+=`${mm},เงินออม,${s.desc},${s.amount}\n`); m.details.forEach(d=>csv+=`${mm},${d.type==='income'?'รายรับ':'รายจ่าย'},${d.desc},${d.amount}\n`); }); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download="Budget.csv"; a.click(); };
     window.exportJSON = () => { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(window.monthlyData)); a.download="backup.json"; a.click(); };
+    window.exportToExcel = () => {
+       let csv = "\uFEFFเดือน,ประเภท,รายการ,จำนวนเงิน\n";
+       window.monthlyData.forEach((m, idx) => {
+         const mm = months[idx];
+         if(m.salary) csv += `${mm},ประจำ,เงินเดือน,${m.salary}\n`;
+         m.extraList.forEach(e => csv += `${mm},พิเศษ,${e.desc},${e.amount}\n`);
+         m.savings.forEach(s => csv += `${mm},เงินออม,${s.desc},${s.amount}\n`);
+         m.details.forEach(d => csv += `${mm},${d.type==='income'?'รายรับ':'รายจ่าย'},${d.desc},${d.amount}\n`);
+       });
+       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = "Budget.csv"; a.click();
+    };
+    
+    window.openClearModal = () => {
+        const sel = document.getElementById('clearTarget');
+        sel.innerHTML = '<option value="all">ทั้งหมด</option>';
+        months.forEach((m, i) => { sel.innerHTML += `<option value="${i}">${m}</option>`; });
+        document.getElementById('clearDataModal').classList.add('show');
+    };
+    window.performClear = () => {
+        const val = document.getElementById('clearTarget').value;
+        if (val === 'all') { if(confirm('ยืนยันล้างทั้งหมด?')) window.monthlyData = months.map(() => ({ salary: 0, extraList: [], savings: [], details: [] })); }
+        else { const idx = parseInt(val); window.monthlyData[idx] = { salary: 0, extraList: [], savings: [], budget: 0, details: [] }; }
+        window.saveData(); window.initDataAndRender(); window.closeModal('clearDataModal'); window.closeModal('toolsModal');
+    };
 
     window.initDataAndRender();
   </script>
