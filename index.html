@@ -310,23 +310,19 @@
 </head>
 <body id="mainBody">
 
-  <!-- ================= VIEW: HOME (YEARLY) ================= -->
+  <!-- ================= VIEW: HOME ================= -->
   <div id="view-home" class="view-section active">
       <div class="main-container">
-          <!-- Yearly Dashboard -->
           <div class="dashboard">
               <div class="dash-header">
                   <div class="user-profile-header">
-                      <!-- No menu button -->
                       <img id="mainAvatar" class="main-avatar" src="" alt="Me">
                       <div class="user-info">
                           <h2 style="margin:0; font-size:1.2rem;">การเงินของฉัน</h2>
                           <div id="userRole" style="font-size:0.8rem; color:var(--text-muted);">Personal Wallet</div>
                       </div>
                   </div>
-                  <div id="syncStatus" class="sync-status">
-                      <i class="fas fa-wifi"></i> Offline
-                  </div>
+                  <div id="syncStatus" class="sync-status"><i class="fas fa-wifi"></i> Offline</div>
               </div>
               
               <div class="balance-container">
@@ -352,16 +348,11 @@
                   </div>
               </div>
               
-              <!-- Savings Portfolio Widget -->
               <div class="top-expenses-widget">
                   <div style="font-size:0.8rem; font-weight:600; color:var(--info); margin-bottom:8px;"><i class="fas fa-chart-pie"></i> พอร์ตเงินออม (ปี)</div>
                   <div class="savings-portfolio">
-                      <div class="sp-chart-container">
-                          <canvas id="savingsDoughnut"></canvas>
-                      </div>
-                      <div id="savingsLegend" class="sp-list">
-                          <span style="color:#aaa; font-size:0.8rem;">ยังไม่มีข้อมูลเงินออม</span>
-                      </div>
+                      <div class="sp-chart-container"><canvas id="savingsDoughnut"></canvas></div>
+                      <div id="savingsLegend" class="sp-list"></div>
                   </div>
               </div>
 
@@ -374,23 +365,18 @@
                   </div>
               </div>
           </div>
-
-          <!-- Month List (Cards) -->
           <div id="homeMonthList"></div>
       </div>
   </div>
 
-  <!-- ================= VIEW: MONTH DETAIL ================= -->
+  <!-- ================= VIEW: MONTH ================= -->
   <div id="view-month" class="view-section">
       <div class="main-container">
-          
-          <!-- Month Header -->
           <div class="nav-header">
               <button class="btn-back" onclick="switchView('home')"><i class="fas fa-chevron-left"></i></button>
               <h2 class="page-title" id="detailMonthName">มกราคม</h2>
           </div>
 
-          <!-- Month Dashboard -->
           <div class="dashboard">
               <div class="balance-container" style="margin-bottom:15px; padding:0;">
                   <div class="balance-label">คงเหลือใช้จริง (หักออมแล้ว)</div>
@@ -400,32 +386,26 @@
                   </div>
                   <div id="monthProgressText" style="font-size:0.8rem; color:var(--text-muted); margin-top:5px;"></div>
               </div>
-              
               <div class="stats-row">
-                  <div class="stat-item">
-                      <span class="stat-label">รายรับ</span>
-                      <span class="stat-val" style="color:var(--success)" id="monthGrandIncome">0</span>
-                  </div>
-                  <div class="stat-item">
-                      <span class="stat-label">รายจ่าย</span>
-                      <span class="stat-val" style="color:var(--danger)" id="monthGrandExpense">0</span>
-                  </div>
-                  <div class="stat-item" style="border-left:1px solid rgba(0,0,0,0.1)">
-                      <span class="stat-label">เงินออม</span>
-                      <span class="stat-val" style="color:var(--info)" id="monthGrandSavings">0</span>
+                  <div class="stat-item"><span class="stat-label">รายรับ</span><span class="stat-val" style="color:var(--success)" id="monthGrandIncome">0</span></div>
+                  <div class="stat-item"><span class="stat-label">รายจ่าย</span><span class="stat-val" style="color:var(--danger)" id="monthGrandExpense">0</span></div>
+                  <div class="stat-item" style="border-left:1px solid rgba(0,0,0,0.1)"><span class="stat-label">เงินออม</span><span class="stat-val" style="color:var(--info)" id="monthGrandSavings">0</span></div>
+              </div>
+               <div class="top-expenses-widget">
+                  <div style="font-size:0.8rem; font-weight:600; color:var(--info); margin-bottom:8px;"><i class="fas fa-chart-pie"></i> พอร์ตเงินออม (เดือน)</div>
+                  <div class="savings-portfolio">
+                      <div class="sp-chart-container"><canvas id="monthSavingsDoughnut"></canvas></div>
+                      <div id="monthSavingsLegend" class="sp-list"></div>
                   </div>
               </div>
           </div>
 
-          <!-- Inputs Section (Cleaned) -->
           <div style="background:var(--bg-card); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-soft); margin-bottom:20px;">
               <h4 style="margin:0 0 15px 0; color:var(--text-main);">รายได้ประจำ</h4>
-              <div class="modern-input-group"><label>เงินเดือน</label><input class="modern-input" type="number" id="inpSalary" placeholder="0" oninput="updateCurrentMonthBase('salary', this.value)"></div>
-              <!-- Removed budget and extra fields -->
+              <div class="modern-input-group"><label>เงินเดือน</label><input class="modern-input" type="number" id="inpSalary" placeholder="0" autocomplete="off" oninput="updateCurrentMonthBase('salary', this.value)"></div>
               <div id="copyPrevBtnContainer" style="margin-top:10px;"></div>
           </div>
           
-          <!-- Extra Income Section -->
           <div style="background:var(--bg-card); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-soft); margin-bottom:20px; border:1px solid var(--success-soft);">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                   <h4 style="margin:0; color:var(--success); display:flex; align-items:center; gap:5px;"><i class="fas fa-coins"></i> รายได้พิเศษ</h4>
@@ -439,12 +419,9 @@
                   <button class="cat-nav-btn" onclick="addWithIconExtra('โบนัส')">🎉</button>
                   <button class="cat-nav-btn" onclick="addWithIconExtra('ดอกเบี้ย')">📈</button>
               </div>
-              <div id="extraIncomeList">
-                  <div style="text-align:center; color:#ccc; font-size:0.9rem;">ไม่มีรายได้พิเศษ</div>
-              </div>
+              <div id="extraIncomeList"></div>
           </div>
 
-          <!-- Savings Section -->
           <div style="background:var(--bg-card); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-soft); margin-bottom:20px; border:1px solid var(--info-soft);">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                   <h4 style="margin:0; color:var(--info); display:flex; align-items:center; gap:5px;"><i class="fas fa-piggy-bank"></i> จัดสรรเงินออม</h4>
@@ -457,81 +434,50 @@
                   <button class="cat-nav-btn" onclick="addWithIconSavings('เที่ยว')">✈️</button>
                   <button class="cat-nav-btn" onclick="addWithIconSavings('เกษียณ')">👴</button>
               </div>
-              <div id="savingsDetailList">
-                  <div style="text-align:center; color:#ccc; font-size:0.9rem;">ยังไม่มีรายการออม</div>
-              </div>
+              <div id="savingsDetailList"></div>
           </div>
 
-          <!-- Transactions -->
           <div style="margin-bottom:20px;">
               <h4 style="margin:0 0 10px 0; color:var(--text-main); display:flex; justify-content:space-between;">
-                  รายการใช้จ่าย
-                  <span style="font-size:0.8rem; color:var(--text-muted); font-weight:400;">ล่าสุด</span>
+                  รายการใช้จ่าย <span style="font-size:0.8rem; color:var(--text-muted); font-weight:400;">ล่าสุด</span>
               </h4>
-              
               <div class="category-picker-container">
                   <div class="cat-nav-btn" onclick="document.getElementById('cat-scroll').scrollLeft -= 50"><i class="fas fa-chevron-left"></i></div>
-                  <div id="cat-scroll" class="category-scroll"></div> <!-- Injected by JS -->
+                  <div id="cat-scroll" class="category-scroll"></div> 
                   <div class="cat-nav-btn" onclick="document.getElementById('cat-scroll').scrollLeft += 50"><i class="fas fa-chevron-right"></i></div>
               </div>
-
               <div class="detail-container" id="monthDetailList"></div>
           </div>
           
           <div class="action-row" style="margin-bottom:20px;">
-            <button class="action-btn btn-inc" onclick="addDetailCurrent('income')">
-                <i class="fas fa-plus"></i> <span>รับ</span>
-            </button>
-            <button class="action-btn btn-exp" onclick="addDetailCurrent('expense')">
-                <i class="fas fa-minus"></i> <span>จ่าย</span>
-            </button>
-            <button class="action-btn btn-scan" onclick="triggerScanCurrent()">
-                <i class="fas fa-camera"></i> <span>สแกน</span>
-            </button>
+            <button class="action-btn btn-inc" onclick="addDetailCurrent('income')"><i class="fas fa-plus"></i> <span>รับ</span></button>
+            <button class="action-btn btn-exp" onclick="addDetailCurrent('expense')"><i class="fas fa-minus"></i> <span>จ่าย</span></button>
+            <button class="action-btn btn-scan" onclick="triggerScanCurrent()"><i class="fas fa-camera"></i> <span>สแกน</span></button>
           </div>
       </div>
   </div>
 
-  <!-- Bottom Navigation -->
   <div class="bottom-nav">
-      <div class="nav-item active" onclick="switchView('home')">
-          <i class="fas fa-home"></i>
-          <span>หน้าหลัก</span>
-      </div>
-      <div class="nav-item" onclick="openChartModal()">
-          <i class="fas fa-chart-pie"></i>
-          <span>กราฟ</span>
-      </div>
-      <div class="nav-item" onclick="analyzeBudgetWithAI()">
-          <i class="fas fa-robot"></i>
-          <span>AI</span>
-      </div>
-      <div class="nav-item" onclick="openToolsModal()">
-          <i class="fas fa-tools"></i>
-          <span>เครื่องมือ</span>
-      </div>
-      <div class="nav-item" onclick="openSettingsModal()">
-          <i class="fas fa-cog"></i>
-          <span>ตั้งค่า</span>
-      </div>
+      <div class="nav-item active" onclick="switchView('home')"><i class="fas fa-home"></i><span>หน้าหลัก</span></div>
+      <div class="nav-item" onclick="openChartModal()"><i class="fas fa-chart-pie"></i><span>กราฟ</span></div>
+      <div class="nav-item" onclick="analyzeBudgetWithAI()"><i class="fas fa-robot"></i><span>AI</span></div>
+      <div class="nav-item" onclick="openToolsModal()"><i class="fas fa-tools"></i><span>เครื่องมือ</span></div>
+      <div class="nav-item" onclick="openSettingsModal()"><i class="fas fa-cog"></i><span>ตั้งค่า</span></div>
   </div>
 
-  <!-- Inputs -->
   <input type="file" id="receiptInput" accept="image/*" style="display: none;">
   <input type="file" id="restoreInput" accept="application/json" style="display: none;" onchange="importJSON(this)">
   <input type="file" id="bgInput" accept="image/*" style="display: none;" onchange="handleBgChange(this)">
 
   <div class="loading" id="loadingOverlay">
-    <div class="spinner"></div>
-    <p style="margin-top:15px; font-weight:600;">AI กำลังทำงาน...</p>
+    <div class="spinner"></div><p style="margin-top:15px; font-weight:600;">AI กำลังทำงาน...</p>
   </div>
 
   <!-- Modals -->
   <div class="modal" id="chartModal">
     <div class="modal-card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h3 style="margin:0;">สถิติภาพรวม</h3>
-        <i class="fas fa-times" style="cursor:pointer; font-size:1.2rem;" onclick="closeModal('chartModal')"></i>
+        <h3 style="margin:0;">สถิติภาพรวม</h3><i class="fas fa-times" style="cursor:pointer; font-size:1.2rem;" onclick="closeModal('chartModal')"></i>
       </div>
       <div class="chart-container-wrapper"><canvas id="chart"></canvas></div>
       <div class="chart-btn-grid">
@@ -545,14 +491,12 @@
   <div class="modal" id="aiModal">
     <div class="modal-card" style="max-height:80vh; overflow-x: hidden;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h3 style="margin:0; color:var(--primary);"><i class="fas fa-robot"></i> AI Coach</h3>
-        <i class="fas fa-times" style="cursor:pointer;" onclick="closeModal('aiModal')"></i>
+        <h3 style="margin:0; color:var(--primary);"><i class="fas fa-robot"></i> AI Coach</h3><i class="fas fa-times" style="cursor:pointer;" onclick="closeModal('aiModal')"></i>
       </div>
       <div id="aiContent" style="line-height:1.7; font-size:0.95rem; overflow-y:auto; overflow-x:hidden; word-wrap:break-word;"></div>
     </div>
   </div>
   
-  <!-- Clear Data Modal -->
   <div class="modal" id="clearDataModal">
     <div class="modal-card" style="max-width: 350px;">
       <h3 style="margin-top:0;">ล้างข้อมูล</h3>
@@ -582,19 +526,12 @@
   <div class="modal" id="settingsModal">
     <div class="modal-card" style="max-width:400px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h3 style="margin:0;">ตั้งค่า</h3>
-            <i class="fas fa-times" style="cursor:pointer;" onclick="closeModal('settingsModal')"></i>
+            <h3 style="margin:0;">ตั้งค่า</h3><i class="fas fa-times" style="cursor:pointer;" onclick="closeModal('settingsModal')"></i>
         </div>
-        
         <div id="authSection" style="margin-bottom:20px; padding-bottom:10px; border-bottom:1px solid #eee;">
-            <button id="btnLogin" class="btn-full" style="background:var(--bg-body); border:1px solid #ddd; color:var(--text-main);" onclick="loginGoogle()">
-                <i class="fab fa-google"></i> เข้าสู่ระบบด้วย Google
-            </button>
-            <button id="btnLogout" class="btn-full hidden" style="background:#fee2e2; color:#dc2626;" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
-            </button>
+            <button id="btnLogin" class="btn-full" style="background:var(--bg-body); border:1px solid #ddd; color:var(--text-main);" onclick="loginGoogle()"><i class="fab fa-google"></i> เข้าสู่ระบบด้วย Google</button>
+            <button id="btnLogout" class="btn-full hidden" style="background:#fee2e2; color:#dc2626;" onclick="logout()"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</button>
         </div>
-        
         <div style="margin-bottom:20px;">
             <h4 style="margin:0 0 5px 0; font-size:0.9rem; color:var(--text-muted);">Gemini API Key</h4>
             <div style="display:flex; gap:10px;">
@@ -603,7 +540,6 @@
             </div>
             <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size:0.75rem; color:var(--primary); text-decoration:none;">👉 สมัครขอคีย์ฟรีที่นี่</a>
         </div>
-
         <div style="margin-bottom:20px;">
             <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--text-muted);">โหมดแสดงผล</h4>
             <div style="display:flex; gap:10px;">
@@ -612,7 +548,6 @@
                 <button class="btn-mode" onclick="setDisplayMode('auto')" id="btn-mode-auto"><i class="fas fa-magic"></i> อัตโนมัติ</button>
             </div>
         </div>
-
         <div style="margin-bottom:20px;">
             <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--text-muted);">สีธีมแอป</h4>
             <div class="color-grid">
@@ -623,35 +558,20 @@
                 <div class="color-swatch" style="background:#11cdef;" onclick="setTheme('#11cdef')"></div>
             </div>
         </div>
-
         <div>
             <h4 style="margin:0 0 10px 0; font-size:0.9rem; color:var(--text-muted);">พื้นหลัง</h4>
-            <button class="btn-full" style="background:var(--primary-soft); color:var(--primary); margin-bottom:5px;" onclick="document.getElementById('bgInput').click()">
-                <i class="fas fa-image"></i> เลือกรูปภาพ
-            </button>
-            <button class="btn-full" style="background:#f1f5f9; color:#64748b;" onclick="resetBackground()">
-                <i class="fas fa-undo"></i> คืนค่าเริ่มต้น
-            </button>
+            <button class="btn-full" style="background:var(--primary-soft); color:var(--primary); margin-bottom:5px;" onclick="document.getElementById('bgInput').click()"><i class="fas fa-image"></i> เลือกรูปภาพ</button>
+            <button class="btn-full" style="background:#f1f5f9; color:#64748b;" onclick="resetBackground()"><i class="fas fa-undo"></i> คืนค่าเริ่มต้น</button>
         </div>
     </div>
   </div>
 
-  <!-- Firebase Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    const YOUR_FIREBASE_CONFIG = {
-      apiKey: "AIzaSyDUliKbJO1YyUNjZdBvkBULaWlEaBzmcAA",
-      authDomain: "budget1-ed2f4.firebaseapp.com",
-      projectId: "budget1-ed2f4",
-      storageBucket: "budget1-ed2f4.firebasestorage.app",
-      messagingSenderId: "312969765873",
-      appId: "1:312969765873:web:db0e163fe587149963da50",
-      measurementId: "G-FXT8WGFGKP"
-    };
-
+    const YOUR_FIREBASE_CONFIG = { apiKey: "AIzaSyDUliKbJO1YyUNjZdBvkBULaWlEaBzmcAA", authDomain: "budget1-ed2f4.firebaseapp.com", projectId: "budget1-ed2f4", storageBucket: "budget1-ed2f4.firebasestorage.app", messagingSenderId: "312969765873", appId: "1:312969765873:web:db0e163fe587149963da50", measurementId: "G-FXT8WGFGKP" };
     let db, auth, userId, appId;
     let useCloud = false;
 
@@ -659,263 +579,149 @@
         if (!YOUR_FIREBASE_CONFIG) return;
         try {
             const app = initializeApp(YOUR_FIREBASE_CONFIG);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            appId = 'budget-app';
-
-            window.loginGoogle = async () => {
-                try {
-                    const provider = new GoogleAuthProvider();
-                    await signInWithPopup(auth, provider);
-                    window.closeModal('settingsModal');
-                } catch(e) { alert("Login Failed: " + e.message); }
-            };
-
-            window.logout = async () => {
-                await signOut(auth);
-                window.location.reload();
-            };
-
+            auth = getAuth(app); db = getFirestore(app); appId = 'budget-app';
+            window.loginGoogle = async () => { try { const p = new GoogleAuthProvider(); await signInWithPopup(auth, p); window.closeModal('settingsModal'); } catch(e) { alert("Login Failed"); } };
+            window.logout = async () => { await signOut(auth); window.location.reload(); };
             onAuthStateChanged(auth, (user) => {
-                const btnLogin = document.getElementById('btnLogin');
-                const btnLogout = document.getElementById('btnLogout');
-                const avatar = document.getElementById('mainAvatar');
-                const role = document.getElementById('userRole');
+                const btnLogin = document.getElementById('btnLogin'); const btnLogout = document.getElementById('btnLogout');
+                const avatar = document.getElementById('mainAvatar'); const role = document.getElementById('userRole');
                 const syncBadge = document.getElementById('syncStatus');
-
                 if (user) {
-                    userId = user.uid;
-                    useCloud = !user.isAnonymous;
+                    userId = user.uid; useCloud = !user.isAnonymous;
                     if (!user.isAnonymous) {
-                        syncBadge.innerHTML = '<i class="fas fa-cloud"></i> Online';
-                        syncBadge.style.background = '#dcfce7'; syncBadge.style.color = '#166534';
-                        btnLogin.classList.add('hidden');
-                        btnLogout.classList.remove('hidden');
+                        syncBadge.innerHTML = '<i class="fas fa-cloud"></i> Online'; syncBadge.style.background = '#dcfce7'; syncBadge.style.color = '#166534';
+                        if(btnLogin) btnLogin.classList.add('hidden'); if(btnLogout) btnLogout.classList.remove('hidden');
                         if(user.photoURL) { avatar.src = user.photoURL; avatar.style.display = 'block'; }
                         role.innerText = user.displayName || "User";
                         startDataListener();
                     }
                 } else {
-                    useCloud = false;
-                    syncBadge.innerHTML = '<i class="fas fa-wifi"></i> Offline';
-                    btnLogin.classList.remove('hidden');
-                    btnLogout.classList.add('hidden');
-                    avatar.style.display = 'none';
-                    role.innerText = "Personal Wallet";
+                    useCloud = false; syncBadge.innerHTML = '<i class="fas fa-wifi"></i> Offline';
+                    if(btnLogin) btnLogin.classList.remove('hidden'); if(btnLogout) btnLogout.classList.add('hidden');
+                    avatar.style.display = 'none'; role.innerText = "Personal Wallet";
                 }
             });
         } catch (e) { console.log("Offline Mode"); }
     }
-
     function startDataListener() {
         if (!db || !userId) return;
-        const docRef = doc(db, 'artifacts', appId, 'users', userId, 'budget_data', 'yearly');
-        onSnapshot(docRef, (docSnap) => {
+        onSnapshot(doc(db, 'artifacts', appId, 'users', userId, 'budget_data', 'yearly'), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 if (data && data.monthlyData) {
-                    window.monthlyData = data.monthlyData;
-                    window.initDataAndRender();
+                    // Update only if not editing to prevent overwrite while typing
+                    const active = document.activeElement;
+                    const isInput = active && (active.tagName === 'INPUT');
+                    if (!isInput) { window.monthlyData = data.monthlyData; window.initDataAndRender(); }
                 }
-            } else {
-                saveDataToCloud();
-            }
+            } else { saveDataToCloud(); }
         });
     }
-
     window.saveDataToCloud = async function() {
         if (useCloud && db && userId) {
-            try {
-                await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'budget_data', 'yearly'), {
-                    monthlyData: window.monthlyData,
-                    lastUpdated: new Date().toISOString()
-                });
-            } catch (e) { console.error("Save Error", e); }
+            try { await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'budget_data', 'yearly'), { monthlyData: window.monthlyData, lastUpdated: new Date().toISOString() }); } catch (e) {}
         }
     }
-
     initFirebase();
   </script>
 
-  <!-- App Logic -->
   <script>
+    function escapeHtml(text) { if (!text) return ""; return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
     const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-    const categories = [
-        {icon: '🍔', label: 'อาหาร'}, {icon: '🚗', label: 'เดินทาง'}, {icon: '🏠', label: 'ที่พัก'},
-        {icon: '🛍️', label: 'ช้อปปิ้ง'}, {icon: '💊', label: 'สุขภาพ'}, {icon: '🎉', label: 'บันเทิง'},
-        {icon: '💡', label: 'บิลต่างๆ'}, {icon: '💸', label: 'ลงทุน'}
-    ];
+    const categories = [{icon: '🍔', label: 'อาหาร'}, {icon: '🚗', label: 'เดินทาง'}, {icon: '🏠', label: 'ที่พัก'}, {icon: '🛍️', label: 'ช้อปปิ้ง'}, {icon: '💊', label: 'สุขภาพ'}, {icon: '🎉', label: 'บันเทิง'}, {icon: '💡', label: 'บิลต่างๆ'}, {icon: '💸', label: 'ลงทุน'}];
 
-    // --- Init ---
     window.monthlyData = JSON.parse(localStorage.getItem('yearlyBudget_v1')) || months.map(() => ({ salary: 0, extra: 0, extraList: [], savings: [], budget: 0, details: [] }));
-    
-    // Migration & Render Wrapper
     window.initDataAndRender = function() {
         window.monthlyData = window.monthlyData.map(m => {
             let newData = { ...m };
             if (typeof m.savings === 'number') newData.savings = m.savings > 0 ? [{ desc: 'เงินออมทั่วไป', amount: m.savings }] : [];
             else if (!Array.isArray(m.savings)) newData.savings = [];
-            
-            // Migrate Extra
-            if (typeof m.extra === 'number' && m.extra > 0 && (!m.extraList || m.extraList.length === 0)) {
-                newData.extraList = [{ desc: 'รายได้พิเศษ', amount: m.extra }];
-                newData.extra = 0; // Clear old field
-            } else if (!Array.isArray(m.extraList)) {
-                newData.extraList = [];
-            }
+            if (typeof m.extra === 'number' && m.extra > 0 && (!m.extraList || m.extraList.length === 0)) { newData.extraList = [{ desc: 'รายได้พิเศษ', amount: m.extra }]; newData.extra = 0; }
+            else if (!Array.isArray(m.extraList)) { newData.extraList = []; }
             return newData;
         });
-
-        if(document.getElementById('view-home').classList.contains('active')) window.renderHome();
-        else window.renderMonthDetail();
+        if(document.getElementById('view-home').classList.contains('active')) window.renderHome(); else window.renderMonthDetail();
     }
-    
-    // State
     window.currentMonthIndex = 0;
     
-    const savedTheme = localStorage.getItem('app_theme');
-    if(savedTheme) document.documentElement.style.setProperty('--primary', savedTheme);
-    const savedBg = localStorage.getItem('custom_bg');
-    if(savedBg) document.body.style.backgroundImage = `url(${savedBg})`;
-    
-    const storedKey = localStorage.getItem('gemini_api_key') || "AIzaSyD-wO4EzjPsLNrXC0v8J4jqTunMKWMJRjw";
-    if(document.getElementById('apiKeyInput')) document.getElementById('apiKeyInput').value = storedKey;
+    // Save Logic with Debounce
+    let saveTimeout;
+    window.saveData = function() {
+        localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData));
+        if(window.saveDataToCloud) { clearTimeout(saveTimeout); saveTimeout = setTimeout(() => { window.saveDataToCloud(); }, 2000); }
+    }
+    window.saveDataSilent = function() { window.saveData(); } // Now alias to saveData but relying on debounce
 
-    // --- Core Logic ---
+    // Setup
+    const savedTheme = localStorage.getItem('app_theme'); if(savedTheme) document.documentElement.style.setProperty('--primary', savedTheme);
+    const savedBg = localStorage.getItem('custom_bg'); if(savedBg) document.body.style.backgroundImage = `url(${savedBg})`;
+    const storedKey = localStorage.getItem('gemini_api_key') || "AIzaSyD-wO4EzjPsLNrXC0v8J4jqTunMKWMJRjw"; if(document.getElementById('apiKeyInput')) document.getElementById('apiKeyInput').value = storedKey;
+
     function calculateStats(m) {
         const dInc = m.details.filter(d => d.type === 'income').reduce((s, d) => s + (Number(d.amount)||0), 0);
         const dExp = m.details.filter(d => d.type === 'expense').reduce((s, d) => s + (Number(d.amount)||0), 0);
         const extraInc = (m.extraList || []).reduce((s, item) => s + (Number(item.amount)||0), 0);
-        
         const totalInc = (Number(m.salary)||0) + extraInc + dInc;
         const totalExp = dExp;
         const saving = m.savings.reduce((s, sav) => s + (Number(sav.amount)||0), 0);
         const budget = Number(m.budget)||0;
         const balance = totalInc - totalExp;
         const freeBalance = balance - saving;
-        let progress = 0;
-        if(m.budget > 0) progress = (totalExp / m.budget) * 100;
+        let progress = 0; if(m.budget > 0) progress = (totalExp / m.budget) * 100;
         return { totalInc, totalExp, balance, freeBalance, progress, saving };
     }
 
     function animateValue(obj, start, end, duration) {
-        if(!obj) return;
-        let startTimestamp = null;
+        if(!obj) return; let startTimestamp = null;
         const step = (timestamp) => {
             if (!startTimestamp) startTimestamp = timestamp;
             const progress = Math.min((timestamp - startTimestamp) / duration, 1);
             obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
             if (progress < 1) window.requestAnimationFrame(step);
-        };
-        window.requestAnimationFrame(step);
-    }
-    
-    window.saveData = function() {
-        localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData));
-        if(window.saveDataToCloud) window.saveDataToCloud();
-    }
-    window.saveDataSilent = function() {
-        localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData));
+        }; window.requestAnimationFrame(step);
     }
 
-    // --- View: Home ---
     window.renderHome = function() {
-        const list = document.getElementById('homeMonthList');
-        if(!list) return;
-        let html = '';
-        let gInc = 0, gExp = 0, gSave = 0;
-        const yearlyExpMap = {};
-        const savingsMap = {};
-        
-        // Find current month stats for Dashboard Highlight
+        const list = document.getElementById('homeMonthList'); if(!list) return;
+        let html = ''; let gInc = 0, gExp = 0, gSave = 0;
+        const yearlyExpMap = {}; const savingsMap = {};
         const currentMonthIdx = new Date().getMonth();
         const currentMonthStats = calculateStats(window.monthlyData[currentMonthIdx]);
 
         window.monthlyData.forEach((m, idx) => {
             const stats = calculateStats(m);
             gInc += stats.totalInc; gExp += stats.totalExp; gSave += stats.saving;
-            
-            m.details.filter(d=>d.type==='expense').forEach(d => {
-                let k = d.desc.trim() || 'อื่นๆ';
-                yearlyExpMap[k] = (yearlyExpMap[k]||0) + Number(d.amount);
-            });
-            m.savings.forEach(s => {
-                let k = s.desc.trim() || 'ออมทั่วไป';
-                savingsMap[k] = (savingsMap[k]||0) + Number(s.amount);
-            });
+            m.details.filter(d=>d.type==='expense').forEach(d => { let k = d.desc.trim() || 'อื่นๆ'; yearlyExpMap[k] = (yearlyExpMap[k]||0) + Number(d.amount); });
+            m.savings.forEach(s => { let k = s.desc.trim() || 'ออมทั่วไป'; savingsMap[k] = (savingsMap[k]||0) + Number(s.amount); });
 
-            html += `
-                <div class="month-summary-card" onclick="openMonth(${idx})">
-                    <div class="m-left">
-                        <div class="m-icon">${idx+1}</div>
-                        <div class="m-info">
-                            <h4>${months[idx]}</h4>
-                            <span>คงเหลือ: ${stats.freeBalance.toLocaleString()}</span>
-                        </div>
-                    </div>
-                    <div class="m-right">
-                        <span class="m-bal" style="color:${stats.balance>=0?'var(--primary)':'var(--danger)'}">${stats.balance.toLocaleString()}</span>
-                        <div style="width:60px; height:4px; background:#f1f5f9; border-radius:2px; margin-top:5px; margin-left:auto; overflow:hidden;">
-                             <div style="height:100%; width:${Math.min(stats.progress, 100)}%; background:${stats.progress > 100 ? 'var(--danger)' : 'var(--success)'}"></div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            html += `<div class="month-summary-card" onclick="openMonth(${idx})"><div class="m-left"><div class="m-icon">${idx+1}</div><div class="m-info"><h4>${months[idx]}</h4><span>คงเหลือ: ${stats.freeBalance.toLocaleString()}</span></div></div><div class="m-right"><span class="m-bal" style="color:${stats.freeBalance>=0?'var(--primary)':'var(--danger)'}">${stats.freeBalance.toLocaleString()}</span><div style="width:60px; height:4px; background:#f1f5f9; border-radius:2px; margin-top:5px; margin-left:auto; overflow:hidden;"><div style="height:100%; width:${Math.min(stats.progress, 100)}%; background:${stats.progress > 100 ? 'var(--danger)' : 'var(--success)'}"></div></div></div></div>`;
         });
         
         list.innerHTML = html;
-        
-        // Update Dashboard with Current Month Focus
         document.getElementById('currMonthName').innerText = months[currentMonthIdx];
         animateValue(document.getElementById('currentMonthBalance'), 0, currentMonthStats.freeBalance, 800);
-        
-        // Stats Boxes (Current Month)
         document.getElementById('dashIncome').innerText = currentMonthStats.totalInc.toLocaleString();
         document.getElementById('dashExpense').innerText = currentMonthStats.totalExp.toLocaleString();
         document.getElementById('dashSavings').innerText = currentMonthStats.saving.toLocaleString();
-
-        // Small Yearly Balance
-        document.getElementById('grandBalance').innerText = (gInc - gExp).toLocaleString();
+        document.getElementById('grandBalance').innerText = (gInc - gExp - gSave).toLocaleString(); // Net Total Lifetime
         
         const top5 = Object.entries(yearlyExpMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
-        document.getElementById('yearTopExpList').innerHTML = top5.length ? top5.map(i=>`<span class="top-pill">${i[0]} ${i[1].toLocaleString()}</span>`).join('') : '<span style="color:#aaa; font-size:0.8rem;">ไม่มีข้อมูล</span>';
+        document.getElementById('yearTopExpList').innerHTML = top5.length ? top5.map(i=>`<span class="top-pill">${escapeHtml(i[0])} ${i[1].toLocaleString()}</span>`).join('') : '<span style="color:#aaa; font-size:0.8rem;">ไม่มีข้อมูล</span>';
         if(window.renderSavingsPortfolio) window.renderSavingsPortfolio(savingsMap, 'savingsDoughnut', 'savingsLegend');
     }
-    
+
     window.renderSavingsPortfolio = function(map, canvasId, legendId) {
         const ctx = document.getElementById(canvasId).getContext('2d');
         const legend = document.getElementById(legendId);
         const entries = Object.entries(map).sort((a,b)=>b[1]-a[1]);
         if (entries.length === 0) { legend.innerHTML = '<span style="color:#aaa; font-size:0.8rem;">ยังไม่มีข้อมูล</span>'; return; }
-        
         const colors = ['#11cdef', '#2dce89', '#5e72e4', '#fb6340', '#f5365c'];
-        
-        // Store chart instance to window to destroy later
-        const chartKey = canvasId + '_chart';
-        if(window[chartKey]) window[chartKey].destroy();
-        
-        window[chartKey] = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: entries.map(e=>e[0]),
-                datasets: [{ data: entries.map(e=>e[1]), backgroundColor: colors, borderWidth: 0, cutout: '70%' }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: true } } }
-        });
-        legend.innerHTML = entries.map((e, i) => `
-            <div class="sp-item">
-                <span><span class="sp-color" style="background:${colors[i%colors.length]}"></span>${e[0]}</span>
-                <b>${e[1].toLocaleString()}</b>
-            </div>
-        `).join('');
+        const chartKey = canvasId + '_chart'; if(window[chartKey]) window[chartKey].destroy();
+        window[chartKey] = new Chart(ctx, { type: 'doughnut', data: { labels: entries.map(e=>e[0]), datasets: [{ data: entries.map(e=>e[1]), backgroundColor: colors, borderWidth: 0, cutout: '70%' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: true } } } });
+        legend.innerHTML = entries.map((e, i) => `<div class="sp-item"><span><span class="sp-color" style="background:${colors[i%colors.length]}"></span>${escapeHtml(e[0])}</span><b>${e[1].toLocaleString()}</b></div>`).join('');
     }
 
-    // --- View: Month Detail ---
-    window.openMonth = function(idx) {
-        window.currentMonthIndex = idx;
-        switchView('month');
-        renderMonthDetail();
-    }
+    window.openMonth = function(idx) { window.currentMonthIndex = idx; switchView('month'); renderMonthDetail(); }
 
     window.renderMonthDetail = function() {
         const idx = window.currentMonthIndex;
@@ -934,7 +740,7 @@
         document.getElementById('monthProgressText').innerText = m.budget > 0 ? `ใช้ไป ${Math.round(stats.progress)}% ของงบ ${Number(m.budget).toLocaleString()}` : 'ยังไม่ได้ตั้งงบประมาณ';
 
         document.getElementById('inpSalary').value = m.salary || '';
-        // Budget input removed
+        document.getElementById('inpBudget').value = m.budget || '';
 
         const copyContainer = document.getElementById('copyPrevBtnContainer');
         if (idx > 0 && m.details.length === 0) {
@@ -942,33 +748,24 @@
         } else { copyContainer.innerHTML = ''; }
 
         const catScroll = document.getElementById('cat-scroll');
-        catScroll.innerHTML = categories.map(c => 
-            `<div class="cat-item" onclick="addWithIconCurrent('${c.icon} ${c.label}')">
-                <button class="cat-btn">${c.icon}</button>
-                <span class="cat-label">${c.label}</span>
-            </div>`
-        ).join('');
+        catScroll.innerHTML = categories.map(c => `<div class="cat-item" onclick="addWithIconCurrent('${c.icon} ${c.label}')"><button class="cat-btn">${c.icon}</button><span class="cat-label">${c.label}</span></div>`).join('');
         
         renderList(m.extraList, 'extraIncomeList', 'updateExtraDetailCurrent', 'removeExtraDetailCurrent', '💸');
         renderList(m.savings, 'savingsDetailList', 'updateSavingDetailCurrent', 'removeSavingDetailCurrent', '🐷');
         renderTransactionList(m);
-        
-        // Month Savings Portfolio
-        const monSavMap = {};
-        m.savings.forEach(s => { let k=s.desc.trim()||'ทั่วไป'; monSavMap[k]=(monSavMap[k]||0)+Number(s.amount); });
+        const monSavMap = {}; m.savings.forEach(s => { let k=s.desc.trim()||'ทั่วไป'; monSavMap[k]=(monSavMap[k]||0)+Number(s.amount); });
         window.renderSavingsPortfolio(monSavMap, 'monthSavingsDoughnut', 'monthSavingsLegend');
     }
     
-    // Generic List Render
     window.renderList = function(arr, elemId, updateFn, removeFn, icon) {
         const list = document.getElementById(elemId);
         if (!arr || arr.length === 0) { list.innerHTML = '<div style="text-align:center; color:#ccc; font-size:0.9rem;">ไม่มีรายการ</div>'; return; }
         list.innerHTML = arr.map((item, i) => `
             <div class="detail-row">
                 <span style="font-size:1.2rem;">${icon}</span>
-                <input class="desc-input" type="text" placeholder="รายการ..." value="${item.desc}" oninput="${updateFn}(${i}, 'desc', this.value)">
+                <input class="desc-input" type="text" placeholder="รายการ..." value="${escapeHtml(item.desc)}" oninput="${updateFn}(${i}, 'desc', this.value)" autocomplete="off">
                 <div class="detail-divider"></div>
-                <input class="amt-input" type="number" placeholder="0" value="${item.amount}" oninput="${updateFn}(${i}, 'amount', this.value)">
+                <input class="amt-input" type="number" placeholder="0" value="${item.amount}" oninput="${updateFn}(${i}, 'amount', this.value)" autocomplete="off">
                 <i class="fas fa-times" style="color:#e2e8f0; cursor:pointer;" onclick="${removeFn}(${i})"></i>
             </div>
         `).join('');
@@ -980,26 +777,21 @@
             const isInc = d.type === 'income';
             return `
               <div class="detail-row">
-                <div class="type-badge ${isInc?'badge-inc':'badge-exp'}" onclick="toggleDetailTypeCurrent(${dIdx})">
-                    ${isInc?'+':'-'}
-                </div>
-                <input class="desc-input" type="text" placeholder="รายการ..." value="${d.desc}" oninput="updateDetailCurrent(${dIdx}, 'desc', this.value)">
+                <div class="type-badge ${isInc?'badge-inc':'badge-exp'}" onclick="toggleDetailTypeCurrent(${dIdx})">${isInc?'+':'-'}</div>
+                <input class="desc-input" type="text" placeholder="รายการ..." value="${escapeHtml(d.desc)}" oninput="updateDetailCurrent(${dIdx}, 'desc', this.value)" autocomplete="off">
                 <div class="detail-divider"></div>
-                <input class="amt-input" type="number" placeholder="0" value="${d.amount}" oninput="updateDetailCurrent(${dIdx}, 'amount', this.value)">
+                <input class="amt-input" type="number" placeholder="0" value="${d.amount}" oninput="updateDetailCurrent(${dIdx}, 'amount', this.value)" autocomplete="off">
                 <i class="fas fa-times" style="color:#e2e8f0; cursor:pointer;" onclick="removeDetailCurrent(${dIdx})"></i>
               </div>
             `;
         }).join('');
     }
 
-    // --- Actions ---
     window.updateCurrentMonthBase = (field, val) => {
         window.monthlyData[window.currentMonthIndex][field] = Number(val);
-        window.saveData(); 
-        updateMonthStatsUI();
+        window.saveData(); updateMonthStatsUI();
     }
     
-    // Extra Income Actions
     window.addExtraIncomeItem = () => {
         if(!window.monthlyData[window.currentMonthIndex].extraList) window.monthlyData[window.currentMonthIndex].extraList = [];
         window.monthlyData[window.currentMonthIndex].extraList.push({ desc: '', amount: '' });
@@ -1019,7 +811,6 @@
         window.saveData(); renderMonthDetail();
     }
     
-    // Savings Actions
     window.addSavingItemCurrent = () => {
         window.monthlyData[window.currentMonthIndex].savings.push({ desc: '', amount: '' });
         window.saveData(); renderMonthDetail();
@@ -1050,7 +841,6 @@
         }
     }
 
-    // Transaction Actions
     window.updateDetailCurrent = (dIdx, field, val) => {
         const m = window.monthlyData[window.currentMonthIndex];
         m.details[dIdx][field] = field==='amount' ? Number(val) : val;
@@ -1073,7 +863,6 @@
         window.monthlyData[window.currentMonthIndex].details.splice(dIdx, 1);
         window.saveData(); renderMonthDetail();
     }
-
     window.copyFromPrev = (idx) => {
         const prev = window.monthlyData[idx-1];
         if(prev && prev.details.length > 0) {
@@ -1084,11 +873,9 @@
     }
     window.triggerScanCurrent = () => { document.getElementById('receiptInput').click(); }
 
-    // --- Nav ---
     window.switchView = (viewName) => {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        
         if (viewName === 'home') {
             document.getElementById('view-home').classList.add('active');
             document.querySelector('.nav-item:nth-child(1)').classList.add('active');
@@ -1099,7 +886,6 @@
         window.scrollTo({top:0, behavior:'smooth'});
     }
 
-    // --- Handlers & Utils ---
     window.handleReceiptScan = async (input) => {
         const key = localStorage.getItem('gemini_api_key') || "AIzaSyD-wO4EzjPsLNrXC0v8J4jqTunMKWMJRjw";
         if(!input.files[0]) return;
@@ -1134,7 +920,6 @@
     applyThemeMode();
     function setTheme(c) { document.documentElement.style.setProperty('--primary', c); document.documentElement.style.setProperty('--primary-soft', c+'20'); }
 
-    // Modals
     window.openChartModal = () => { document.getElementById('chartModal').classList.add('show'); renderChart('bar'); }
     window.openToolsModal = () => document.getElementById('toolsModal').classList.add('show');
     window.openSettingsModal = () => document.getElementById('settingsModal').classList.add('show');
@@ -1149,7 +934,10 @@
     window.performClear = () => {
         const val = document.getElementById('clearTarget').value;
         if (val === 'all') { if(confirm('ยืนยันล้างข้อมูลทั้งหมด?')) window.monthlyData = months.map(() => ({ salary: 0, extra: 0, savings: [], budget: 0, details: [] })); }
-        else { const idx = parseInt(val); window.monthlyData[idx] = { salary: 0, extra: 0, savings: [], budget: 0, details: [] }; }
+        else { 
+            const idx = parseInt(val); 
+            window.monthlyData[idx] = { salary: 0, extra: 0, savings: [], budget: 0, details: [] }; 
+        }
         window.saveData();
         if(document.getElementById('view-home').classList.contains('active')) window.renderHome();
         else if(val === 'all' || parseInt(val) === window.currentMonthIndex) window.renderMonthDetail();
@@ -1158,7 +946,6 @@
     
     window.scrollContainer = (id, offset) => { document.getElementById(id).scrollLeft += offset; }
     
-    // AI
     window.analyzeBudgetWithAI = async () => {
         const key = localStorage.getItem('gemini_api_key') || "AIzaSyD-wO4EzjPsLNrXC0v8J4jqTunMKWMJRjw";
         document.getElementById('loadingOverlay').style.display='flex';
@@ -1175,7 +962,6 @@
         finally { document.getElementById('loadingOverlay').style.display='none'; }
     }
 
-    // Chart
     let myChart = null;
     window.renderChart = (type) => {
         const ctx = document.getElementById('chart').getContext('2d');
@@ -1201,7 +987,6 @@
         }
     }
 
-    // JSON/Excel
     window.exportJSON = () => {
         const a = document.createElement('a');
         a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.monthlyData));
@@ -1209,14 +994,13 @@
     }
     window.importJSON = (input) => {
         const r = new FileReader();
-        r.onload = (e) => { window.monthlyData = JSON.parse(e.target.result); saveData(); window.initDataAndRender(); alert("Restore Success"); };
+        r.onload = (e) => { window.monthlyData = JSON.parse(e.target.result); window.saveData(); window.initDataAndRender(); alert("Restore Success"); };
         r.readAsText(input.files[0]);
     }
     window.exportToExcel = () => {
        let csv = "\uFEFFเดือน,ประเภท,รายการ,จำนวนเงิน\n";
        window.monthlyData.forEach((m, idx) => {
          if(m.salary) csv += `${months[idx]},รายรับ,เงินเดือน,${m.salary}\n`;
-         // Export Extra List
          if(m.extraList) m.extraList.forEach(e => csv += `${months[idx]},รายรับ,${e.desc},${e.amount}\n`);
          m.savings.forEach(s => csv += `${months[idx]},เงินออม,${s.desc},${s.amount}\n`);
          m.details.forEach(d => csv += `${months[idx]},${d.type==='income'?'รายรับ':'รายจ่าย'},${d.desc},${d.amount}\n`);
@@ -1225,7 +1009,6 @@
        a.download = "Budget_Yearly.csv"; document.body.appendChild(a); a.click(); a.remove();
     }
     
-    // Init
     window.initDataAndRender();
   </script>
 </body>
