@@ -50,7 +50,7 @@
       margin: 0; padding: 0; min-height: 100vh;
       color: var(--text-main); background: var(--bg-body);
       padding-bottom: calc(var(--bottom-nav-height) + 15px);
-      transition: background 0.3s, color 0.3s;
+      transition: background 0.3s;
       overscroll-behavior-y: none;
       background-size: cover; background-position: center; background-attachment: fixed;
     }
@@ -87,7 +87,7 @@
     /* Nav & Back Button */
     .nav-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
     .btn-back { 
-        width: 44px; height: 44px; border-radius: 16px; background: var(--bg-card); 
+        width: 48px; height: 48px; border-radius: 16px; background: var(--bg-card); 
         border: none; box-shadow: var(--shadow-soft); display: flex; align-items: center; justify-content: center; 
         color: var(--text-main); cursor: pointer; transition: all 0.2s; font-size: 1.2rem;
     }
@@ -106,12 +106,15 @@
 
     /* Inputs Modern */
     .modern-input { 
-        width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #eef2f6; 
-        background: #fff; font-size: 0.95rem; font-family: 'Sarabun'; color: var(--text-main); outline: none; transition: all 0.2s;
+        width: 100%; padding: 14px 16px; border-radius: 15px; border: 1px solid #eef2f6; 
+        background: rgba(0,0,0,0.04); /* Non-white background for visibility */
+        font-size: 1rem; font-family: 'Sarabun'; color: var(--text-main); outline: none; transition: all 0.2s;
     }
-    .modern-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
+    .night .modern-input { background: rgba(255,255,255,0.06); border-color: #334155; }
+    .modern-input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px var(--primary-soft); }
+    .night .modern-input:focus { background: #1e293b; }
 
-    /* Detail Row & Type Badges */
+    /* Detail Row & Badges */
     .detail-row { 
         display: flex; align-items: center; gap: 8px; margin-bottom: 12px; 
         background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm);
@@ -125,33 +128,31 @@
     .badge-inc { background: var(--success); }
     .badge-exp { background: var(--danger); }
     
+    /* Transaction Inputs */
     .desc-input { 
         flex: 1; min-width: 0; border: none; 
-        background: rgba(0,0,0,0.04); 
-        padding: 10px 14px; border-radius: 12px;
+        background: rgba(0,0,0,0.04); padding: 10px 14px; border-radius: 12px;
         font-size: 0.95rem; color: var(--text-main); outline: none; font-family: 'Sarabun'; 
     }
     .night .desc-input { background: rgba(255,255,255,0.06); }
-
     .amt-input { 
         width: 90px; text-align: right; border: none; 
-        background: rgba(0,0,0,0.04);
-        padding: 10px 12px; border-radius: 12px;
+        background: rgba(0,0,0,0.04); padding: 10px 12px; border-radius: 12px;
         font-weight: 700; font-size: 1rem; color: var(--text-main); outline: none; 
     }
     .night .amt-input { background: rgba(255,255,255,0.06); }
 
     .btn-del-modern { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--danger-soft); color: var(--danger); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; font-size: 0.8rem; }
 
-    /* Action Buttons Area */
+    /* Action Grid - Horizontal */
     .action-container { margin-top: 35px; margin-bottom: 30px; }
     .action-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
     .btn-action-main { 
         padding: 12px; border-radius: 22px; border: none; font-weight: 700; cursor: pointer; 
-        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
         color: white; box-shadow: 0 6px 15px rgba(0,0,0,0.1); height: 85px; transition: all 0.2s;
     }
-    .btn-action-main:active { transform: scale(0.94); box-shadow: none; }
+    .btn-action-main:active { transform: scale(0.94); }
     .btn-action-inc { background: linear-gradient(135deg, #2dce89, #2dcecc); }
     .btn-action-exp { background: linear-gradient(135deg, #f5365c, #f56636); }
     .btn-action-scan { background: #34495e; }
@@ -163,9 +164,10 @@
         position: fixed; bottom: 0; left: 0; width: 100%; height: var(--bottom-nav-height); 
         background: var(--bg-card); box-shadow: 0 -10px 30px rgba(0,0,0,0.08); 
         display: flex; justify-content: space-around; align-items: center; 
-        z-index: 2000; border-top-left-radius: 25px; border-top-right-radius: 25px;
+        z-index: 2000; border-top-left-radius: 30px; border-top-right-radius: 30px;
         padding-bottom: env(safe-area-inset-bottom);
         backdrop-filter: blur(15px);
+        padding-top: 5px;
     }
     .nav-item { 
         display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -182,30 +184,41 @@
     /* Selection Styles */
     .modern-select {
         flex: 1; min-width: 0; border: none; 
-        background: rgba(0,0,0,0.04); 
-        padding: 10px 14px; border-radius: 12px;
+        background: rgba(0,0,0,0.04); padding: 10px 14px; border-radius: 12px;
         font-size: 0.95rem; font-family: 'Sarabun'; font-weight: 500; color: var(--text-main); outline: none;
     }
     .night .modern-select { background: rgba(255,255,255,0.06); color: #fff; }
 
-    /* Modals */
+    /* Modals & Large Close Button */
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 3000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
     .modal.show { display: flex; }
-    .modal-card { background: var(--bg-card); width: 100%; max-width: 480px; border-radius: 35px; padding: 35px 25px; position: relative; box-shadow: 0 25px 60px rgba(0,0,0,0.4); max-height: 85vh; overflow-y: auto; }
+    .modal-card { background: var(--bg-card); width: 100%; max-width: 480px; border-radius: 35px; padding: 45px 25px 25px; position: relative; box-shadow: 0 25px 60px rgba(0,0,0,0.4); max-height: 85vh; overflow-y: auto; }
+    
+    .close-btn { 
+        position: absolute; top: 12px; right: 12px; 
+        width: 46px; height: 46px; 
+        display: flex; align-items: center; justify-content: center;
+        background: #f1f5f9; border-radius: 50%;
+        font-size: 1.5rem; cursor: pointer; color: var(--text-main); 
+        z-index: 3100; transition: background 0.2s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .night .close-btn { background: #334155; color: #fff; }
+    .close-btn:active { background: #e2e8f0; transform: scale(0.9); }
+
     .modal-section { margin-bottom: 25px; padding: 20px; background: rgba(0,0,0,0.02); border-radius: 22px; border: 1px solid rgba(0,0,0,0.02); }
     .modal-section h4 { margin-top: 0; margin-bottom: 15px; font-size: 0.9rem; font-weight: 800; color: var(--primary); text-transform: uppercase; }
     
-    .btn-full { width: 100%; padding: 16px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; transition: all 0.2s; }
+    .btn-full { width: 100%; padding: 16px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; transition: all 0.2s; font-size: 1rem; }
     .btn-chart-pill { flex: 1; padding: 12px; border-radius: 50px; border: 1px solid #ddd; background: transparent; color: var(--text-muted); font-weight: 700; cursor: pointer; }
     .btn-chart-pill.active { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
 
     /* AI Loader */
     .loading { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 4000; display: none; align-items: center; justify-content: center; flex-direction: column; }
-    .night .loading { background: rgba(15,23,42,0.9); }
     .ai-loader-icon { font-size: 5rem; color: var(--primary); margin-bottom: 15px; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%, 100% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1.1); opacity: 1; } }
 
-    /* Portfolio Chart */
+    /* Portfolio Graph */
     .savings-portfolio { margin-top: 15px; display: flex; gap: 15px; align-items: center; }
     .sp-chart-container { width: 85px; height: 85px; flex-shrink: 0; }
     .sp-list { flex: 1; display: flex; flex-direction: column; gap: 5px; }
@@ -350,16 +363,38 @@
   </div>
 
   <!-- Shared Modals -->
-  <div class="modal" id="chartModal"><div class="modal-card"><span class="close-btn" onclick="closeModal('chartModal')">&times;</span><h3 id="modalChartTitle" style="margin-top:0; margin-bottom:20px; font-size:1.2rem;">สถิติการเงิน</h3><div style="display:flex; gap:10px; margin-bottom:25px;"><button class="btn-chart-pill active" id="btn-chart-bar" onclick="window.openChartModal('bar')">แท่ง</button><button class="btn-chart-pill" id="btn-chart-pie" onclick="window.openChartModal('pie')">สัดส่วน</button><button class="btn-chart-pill" id="btn-chart-line" onclick="window.openChartModal('line')">เงินออม</button></div><div class="chart-container-wrapper" style="position:relative; height:40vh;"><canvas id="chart"></canvas></div></div></div>
-  <div class="modal" id="toolsModal"><div class="modal-card"><h3>เครื่องมือ</h3><button class="btn-full" style="background:#d1fae5; color:#065f46; border-radius:50px" onclick="exportToExcel()">ส่งออก Excel</button><button class="btn-full" style="background:#f1f5f9; color:#475569; border-radius:50px" onclick="exportJSON()">สำรองข้อมูล</button><hr style="margin:20px 0; opacity: 0.1;"><button class="btn-full" style="background:#fee2e2; color:#dc2626; border-radius:50px" onclick="openClearModal()">ล้างข้อมูลแแอป</button><button class="btn-full" onclick="closeModal('toolsModal')" style="background:transparent; color:#888; border:1px solid #eee; border-radius:50px;">ปิดหน้าต่าง</button></div></div>
+  <div class="modal" id="chartModal">
+    <div class="modal-card">
+      <span class="close-btn" onclick="closeModal('chartModal')">&times;</span>
+      <h3 id="modalChartTitle" style="margin-top:0; margin-bottom:20px; font-size:1.2rem;">สถิติการเงิน</h3>
+      <div style="display:flex; gap:10px; margin-bottom:25px;">
+          <button class="btn-chart-pill active" id="btn-chart-bar" onclick="window.openChartModal('bar')">แท่ง</button>
+          <button class="btn-chart-pill" id="btn-chart-pie" onclick="window.openChartModal('pie')">สัดส่วน</button>
+          <button class="btn-chart-pill" id="btn-chart-line" onclick="window.openChartModal('line')">เงินออม</button>
+      </div>
+      <div class="chart-container-wrapper" style="position:relative; height:40vh;"><canvas id="chart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="modal" id="toolsModal">
+    <div class="modal-card">
+      <span class="close-btn" onclick="closeModal('toolsModal')">&times;</span>
+      <h3>เครื่องมือ</h3>
+      <button class="btn-full" style="background:#d1fae5; color:#065f46;" onclick="exportToExcel()">ส่งออก Excel</button>
+      <button class="btn-full" style="background:#f1f5f9; color:#475569;" onclick="exportJSON()">สำรองข้อมูล</button>
+      <hr style="margin:20px 0; opacity: 0.1;">
+      <button class="btn-full" style="background:#fee2e2; color:#dc2626;" onclick="openClearModal()">ล้างข้อมูลแอป</button>
+    </div>
+  </div>
+
   <div class="modal" id="settingsModal">
     <div class="modal-card">
         <span class="close-btn" onclick="closeModal('settingsModal')">&times;</span>
         <h3 style="margin-top:0; margin-bottom:25px; font-size:1.2rem;"><i class="fas fa-cog"></i> ตั้งค่าการใช้งาน</h3>
         <div class="modal-section">
             <h4>🛰️ เชื่อมต่อคลาวด์</h4>
-            <button id="btnLogin" class="btn-full" style="background:#fff; border:1px solid #e2e8f0; color:#444; border-radius:50px;" onclick="loginGoogle()"><i class="fab fa-google"></i> Login with Google</button>
-            <button id="btnLogout" class="btn-full hidden" style="background:#fee2e2; color:#dc2626; border-radius:50px;" onclick="logout()">ออกจากระบบ</button>
+            <button id="btnLogin" class="btn-full" style="background:#fff; border:1px solid #e2e8f0; color:#444;" onclick="loginGoogle()"><i class="fab fa-google"></i> Login with Google</button>
+            <button id="btnLogout" class="btn-full hidden" style="background:#fee2e2; color:#dc2626;" onclick="logout()">ออกจากระบบ</button>
         </div>
         <div class="modal-section">
             <h4>🧠 ระบบ AI COACH</h4>
@@ -378,12 +413,20 @@
         </div>
     </div>
   </div>
-  <div class="modal" id="aiModal"><div class="modal-card"><span class="close-btn" onclick="closeModal('aiModal')">&times;</span><h3><i class="fas fa-robot"></i> คำแนะนำจาก AI</h3><div id="aiContent" style="line-height:1.7;"></div></div></div>
-  <div class="modal" id="clearDataModal"><div class="modal-card"><h3>ยืนยันล้างข้อมูล?</h3><div style="display:flex; gap:12px;"><button class="btn-full" style="background:#fee2e2; color:#dc2626; flex:1; border-radius:50px;" onclick="performClear()">ล้างเลย</button><button class="btn-full" style="background:#eee; flex:1; border-radius:50px;" onclick="closeModal('clearDataModal')">ยกเลิก</button></div></div></div>
+
+  <div class="modal" id="aiModal">
+    <div class="modal-card">
+      <span class="close-btn" onclick="closeAiModal()">&times;</span>
+      <h3><i class="fas fa-robot"></i> คำแนะนำจาก AI</h3>
+      <div id="aiContent" style="line-height:1.7;"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="clearDataModal"><div class="modal-card"><h3>ยืนยันล้างข้อมูล?</h3><div style="display:flex; gap:10px;"><button class="btn-full" style="background:#fee2e2; color:#dc2626; flex:1" onclick="performClear()">ล้างเลย</button><button class="btn-full" style="background:#eee; flex:1" onclick="closeModal('clearDataModal')">ยกเลิก</button></div></div></div>
 
   <input type="file" id="receiptInput" accept="image/*" style="display: none;">
 
-  <!-- Firebase Script (Fixed Import URLs) -->
+  <!-- Firebase Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -404,13 +447,13 @@
         const userLabel = document.getElementById('userNameLabel');
         if (user) {
             userId = user.uid; useCloud = true;
-            syncBadge.innerHTML = 'Online'; syncBadge.style.background = '#dcfce7'; syncBadge.style.color = '#166534';
+            syncBadge.innerHTML = '<i class="fas fa-wifi"></i>'; syncBadge.style.background = '#dcfce7'; syncBadge.style.color = '#166534';
             document.getElementById('btnLogin').classList.add('hidden');
             document.getElementById('btnLogout').classList.remove('hidden');
             if(user.photoURL) { document.getElementById('mainAvatar').src = user.photoURL; document.getElementById('mainAvatar').style.display = 'block'; }
             if(userLabel) userLabel.innerText = user.displayName || "ผู้ใช้งาน";
             startDataListener();
-        } else { useCloud = false; syncBadge.innerHTML = 'Offline'; }
+        } else { useCloud = false; syncBadge.innerHTML = '<i class="fas fa-wifi"></i>'; }
     });
 
     function startDataListener() {
@@ -429,13 +472,14 @@
     }
   </script>
 
-  <!-- App Main Logic -->
+  <!-- App Script Logic -->
   <script>
     window.myMainChartObj = null; window.savingsChartObj = null; window.monthSavingsChartObj = null;
     const extraSources = ["OT", "โบนัส", "ขายของ", "ฟรีแลนซ์", "ธุรกิจ", "ของขวัญ", "ครอบครัว", "อื่นๆ"];
     const savingPurposes = ["เงินสำรอง", "ลงทุน", "เกษียณ", "ท่องเที่ยว", "บ้าน/รถ", "การศึกษา", "สุขภาพ", "อื่นๆ"];
 
     window.closeModal = (id) => { document.getElementById(id).classList.remove('show'); };
+    window.closeAiModal = () => { document.getElementById('aiModal').classList.remove('show'); };
     window.scrollContainer = (id, offset) => { const el = document.getElementById(id); if(el) el.scrollLeft += offset; };
     function escapeHtml(text) { return text ? String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m])) : ""; }
 
@@ -617,13 +661,14 @@
     window.exportJSON = () => { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(window.monthlyData)); a.download="budget_backup.json"; a.click(); };
     window.exportToExcel = () => {
        let csv = "\uFEFFเดือน,ประเภท,รายการ,จำนวนเงิน\n";
-       window.monthlyData.forEach((m, i) => {
-         if(m.salary) csv += `${months[i]},รายรับ,เงินเดือน,${m.salary}\n`;
-         m.extraList.forEach(e => csv += `${months[i]},รายรับ,${e.desc},${e.amount}\n`);
-         m.savings.forEach(s => csv += `${months[i]},เงินออม,${s.desc},${s.amount}\n`);
-         m.details.forEach(d => csv += `${months[i]},${d.type==='income'?'รายรับ':'รายจ่าย'},${d.desc},${d.amount}\n`);
+       window.monthlyData.forEach((m, idx) => {
+         const mm = months[idx];
+         if(m.salary) csv += `${mm},รายรับประจำ,เงินเดือน,${m.salary}\n`;
+         m.extraList.forEach(e => csv += `${mm},รายรับพิเศษ,${e.desc},${e.amount}\n`);
+         m.savings.forEach(s => csv += `${mm},เงินออม,${s.desc},${s.amount}\n`);
+         m.details.forEach(d => csv += `${mm},${d.type==='income'?'รายรับ':'รายจ่าย'},${d.desc},${d.amount}\n`);
        });
-       const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download="Budget_Export.csv"; a.click();
+       const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download="Budget_Summary.csv"; a.click();
     };
     window.openClearModal = () => document.getElementById('clearDataModal').classList.add('show');
     window.performClear = () => { if(confirm('ยืนยันล้างทั้งหมด?')) { window.monthlyData = months.map(() => ({ salary: 0, extraList: [], savings: [], details: [] })); window.saveData(); window.initDataAndRender(); window.closeModal('clearDataModal'); window.closeModal('toolsModal'); } };
