@@ -225,6 +225,19 @@
 
     @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
   </style>
+  <!-- Chosen Palette: Indigo & Soft Gray -->
+  <!-- Application Structure Plan:
+       1. Dashboard Overview: Highlights monthly balance and accumulated yearly stats.
+       2. Action Hub: Provides easy access to standard entries and specialized AI functions.
+       3. Detailed Month View: Allows precise control over monthly figures with "Pull Balance" feature.
+       4. Tooling: Consolidated clear, export, and backup functions in Modals.
+  -->
+  <!-- Visualization & Content Choices:
+       - Doughnut Chart (Chart.js): Visualizing yearly savings distribution. Goal: Inform/Organize.
+       - Progress Bar (CSS): Showing budget usage against salary. Goal: Inform.
+       - List Views: Displaying transactional records. Goal: Organize.
+  -->
+  <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
 <body id="mainBody">
 
@@ -264,11 +277,12 @@
               <div class="stats-row">
                   <div class="stat-item"><span class="stat-label">รายรับ</span><span class="stat-val" style="color:var(--success)" id="dashIncome">0</span></div>
                   <div class="stat-item"><span class="stat-label">รายจ่าย</span><span class="stat-val" style="color:var(--danger)" id="dashExpense">0</span></div>
-                  <div class="stat-item" style="border-left:1px solid rgba(0,0,0,0.1)"><span class="stat-label">เงินออม</span><span class="stat-val" style="color:var(--info)" id="dashSavings">0</span></div>
+                  <!-- Shows yearly accumulated savings -->
+                  <div class="stat-item" style="border-left:1px solid rgba(0,0,0,0.1)"><span class="stat-label">เงินออม (ปี)</span><span class="stat-val" style="color:var(--info)" id="dashSavings">0</span></div>
               </div>
               
               <div class="top-expenses-widget" style="margin-top:25px;">
-                  <div style="font-size:0.85rem; font-weight:800; color:var(--info); margin-bottom:12px;"><i class="fas fa-chart-pie"></i> พอร์ตเงินออม (ปี)</div>
+                  <div style="font-size:0.85rem; font-weight:800; color:var(--info); margin-bottom:12px;"><i class="fas fa-chart-pie"></i> พอร์ตเงินออมสะสมทั้งปี</div>
                   <div class="savings-portfolio">
                       <div class="sp-chart-container"><canvas id="savingsDoughnut"></canvas></div>
                       <div id="savingsLegend" class="sp-list"></div>
@@ -313,7 +327,11 @@
           </div>
 
           <div class="modal-section" style="background:var(--bg-card); margin-bottom:15px; box-shadow: var(--shadow-soft);">
-              <h4 style="color:var(--text-main); font-size:0.9rem;">💰 รายรับหลักประจำเดือน</h4>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <h4 style="margin:0; color:var(--text-main); font-size:0.9rem;">💰 รายรับหลักประจำเดือน</h4>
+                  <!-- Feature: Pull balance from previous month -->
+                  <button id="btnPullPrev" class="btn-rounded-pill" style="background:#8e44ad; font-size:0.7rem; padding:5px 12px; display:none;" onclick="window.pullPrevBalance()">ดึงยอดเดือนก่อน ✨</button>
+              </div>
               <input class="modern-input" type="number" id="inpSalary" placeholder="ระบุเงินเดือน..." oninput="updateCurrentMonthBase('salary', this.value)">
               <div id="copyPrevBtnContainer" style="margin-top:12px;"></div>
           </div>
@@ -519,8 +537,13 @@
 
         window.monthlyData.forEach((m, i) => {
             const s = calculateStats(m);
-            gInc += s.inc; gExp += s.exp; gSave += s.save;
-            m.savings.forEach(v => { let k=v.desc||'ออมทั่วไป'; savingsMap[k]=(savingsMap[k]||0)+Number(v.amount); });
+            gInc += s.inc; gExp += s.exp; 
+            // 3. Aggregate savings for the dashboard display (total of all months)
+            gSave += s.save; 
+            m.savings.forEach(v => {
+                let k = v.desc || 'ออมทั่วไป';
+                savingsMap[k] = (savingsMap[k] || 0) + Number(v.amount);
+            });
             html += `<div class="month-summary-card" onclick="window.openMonth(${i})"><div class="m-left"><div class="m-icon">${i+1}</div><div class="m-info"><h4>${months[i]}</h4><span style="font-size:0.75rem; color:#888">คงเหลือจริง: ${s.free.toLocaleString()}</span></div></div><div class="m-right"><span class="m-bal" style="color:${s.free>=0?'var(--primary)':'var(--danger)'}">${s.free.toLocaleString()}</span></div></div>`;
         });
         list.innerHTML = html;
@@ -528,8 +551,12 @@
         const elBalance = document.getElementById('currentMonthBalance'); if(elBalance) elBalance.innerText = currStats.free.toLocaleString();
         const elInc = document.getElementById('dashIncome'); if(elInc) elInc.innerText = currStats.inc.toLocaleString();
         const elExp = document.getElementById('dashExpense'); if(elExp) elExp.innerText = currStats.exp.toLocaleString();
-        const elSave = document.getElementById('dashSavings'); if(elSave) elSave.innerText = currStats.save.toLocaleString();
+        
+        // Dashboard labels updated with total annual savings
+        const elSave = document.getElementById('dashSavings'); if(elSave) elSave.innerText = gSave.toLocaleString();
         const elGrand = document.getElementById('grandBalance'); if(elGrand) elGrand.innerText = (gInc - gExp - gSave).toLocaleString();
+        
+        // 3. Portfolio Graph now shows the annual accumulated view
         renderPortfolioChart(savingsMap, 'savingsDoughnut', 'savingsLegend');
     };
 
@@ -543,6 +570,11 @@
         const elGrandSav = document.getElementById('monthGrandSavings'); if(elGrandSav) elGrandSav.innerText = s.save.toLocaleString();
         const elProg = document.getElementById('monthProgressBar'); if(elProg) elProg.style.width = Math.min((s.exp / (s.inc||1)) * 100, 100) + '%';
         const inpSal = document.getElementById('inpSalary'); if(inpSal) inpSal.value = m.salary || '';
+        
+        // Show/Hide Pull Balance button
+        const pullBtn = document.getElementById('btnPullPrev');
+        if(pullBtn) pullBtn.style.display = (window.currentMonthIndex > 0) ? 'block' : 'none';
+
         renderCategorizedList(m.extraList, 'extraIncomeList', 'updateExtra', 'removeExtra', '💸', extraSources);
         renderCategorizedList(m.savings, 'savingsDetailList', 'updateSave', 'removeSave', '🏦', savingPurposes);
         const detailList = document.getElementById('monthDetailList');
@@ -567,6 +599,30 @@
     window.updateDetail = (i, f, v) => { window.monthlyData[window.currentMonthIndex].details[i][f] = f==='amount'?Number(v):v; window.saveData(); updateMonthStatsUI(); };
     window.removeDetail = (i) => { window.monthlyData[window.currentMonthIndex].details.splice(i, 1); window.saveData(); window.renderMonthDetail(); };
     window.toggleType = (i) => { let d=window.monthlyData[window.currentMonthIndex].details[i]; d.type=d.type==='income'?'expense':'income'; window.saveData(); window.renderMonthDetail(); };
+
+    // 2. Pull balance from previous month
+    window.pullPrevBalance = () => {
+        if(window.currentMonthIndex === 0) return;
+        const prevStats = calculateStats(window.monthlyData[window.currentMonthIndex - 1]);
+        const balanceToPull = prevStats.free;
+        if(balanceToPull <= 0) {
+            alert('เดือนที่แล้วไม่มีเงินคงเหลือให้นำมาใช้ครับ');
+            return;
+        }
+        
+        // Find existing record or add new
+        const existingIdx = window.monthlyData[window.currentMonthIndex].extraList.findIndex(e => e.desc === 'ยอดยกมาจากเดือนที่แล้ว ✨');
+        if(existingIdx !== -1) {
+            window.monthlyData[window.currentMonthIndex].extraList[existingIdx].amount = balanceToPull;
+        } else {
+            window.monthlyData[window.currentMonthIndex].extraList.push({
+                desc: 'ยอดยกมาจากเดือนที่แล้ว ✨',
+                amount: balanceToPull
+            });
+        }
+        window.saveData();
+        window.renderMonthDetail();
+    };
 
     function updateMonthStatsUI() {
         const s = calculateStats(window.monthlyData[window.currentMonthIndex]);
@@ -623,7 +679,7 @@
         window.scrollTo({top:0, behavior:'smooth'});
     };
 
-    // --- Gemini API Helper with Backoff ---
+    // --- Gemini API Logic ---
     async function fetchGemini(payload, modelId = "gemini-2.0-flash-lite-preview-02-05") {
         const userKey = localStorage.getItem('gemini_api_key') || appApiKey;
         if (!userKey) throw new Error("กรุณาใส่ API Key ในหน้าตั้งค่า");
@@ -652,7 +708,6 @@
         }
     }
 
-    // AI Coach Feature
     window.analyzeBudgetWithAI = async () => {
         const loader = document.getElementById('loadingOverlay');
         document.getElementById('aiLoaderText').innerText = "AI Coach กำลังวิเคราะห์งบประมาณ ✨";
@@ -672,7 +727,6 @@
         } finally { loader.style.display = 'none'; }
     };
 
-    // AI Receipt Scanner Feature
     window.triggerScanCurrent = () => { document.getElementById('receiptInput').click(); };
 
     window.onload = function() {
