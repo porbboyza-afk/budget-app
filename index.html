@@ -63,6 +63,7 @@
       box-shadow: var(--shadow-soft); margin-bottom: 25px; position: relative; overflow: hidden;
     }
     .dashboard::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, var(--primary), var(--info)); }
+
     .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 
     .balance-container { text-align: center; margin: 15px 0; }
@@ -91,6 +92,15 @@
     .m-left { display: flex; align-items: center; gap: 15px; }
     .m-icon { width: 44px; height: 44px; background: var(--primary-soft); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: 700; }
 
+    /* Inputs */
+    .modern-input {
+      width: 100%; padding: 14px 16px; border-radius: 15px; border: 1px solid #eef2f6;
+      background: rgba(0,0,0,0.04); font-size: 1rem; font-family: 'Sarabun';
+      color: var(--text-main); outline: none; transition: all 0.2s;
+    }
+    .night .modern-input { background: rgba(255,255,255,0.06); border-color: #334155; }
+    .modern-input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px var(--primary-soft); }
+
     /* Detail Rows with Checklist */
     .detail-row {
       display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
@@ -115,13 +125,25 @@
     .badge-inc { background: var(--success); }
     .badge-exp { background: var(--danger); }
 
-    .desc-input { flex: 1; min-width: 0; border: none; background: rgba(0,0,0,0.04); padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; color: var(--text-main); outline: none; font-family: 'Sarabun'; }
-    .amt-input { width: 90px; text-align: right; border: none; background: rgba(0,0,0,0.04); padding: 10px 12px; border-radius: 12px; font-weight: 700; font-size: 1rem; color: var(--text-main); outline: none; }
+    .desc-input {
+      flex: 1; min-width: 0; border: none;
+      background: rgba(0,0,0,0.04); padding: 10px 14px; border-radius: 12px;
+      font-size: 0.95rem; color: var(--text-main); outline: none; font-family: 'Sarabun';
+    }
+    .amt-input {
+      width: 90px; text-align: right; border: none;
+      background: rgba(0,0,0,0.04); padding: 10px 12px; border-radius: 12px;
+      font-weight: 700; font-size: 1rem; color: var(--text-main); outline: none;
+    }
     .btn-del-modern { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--danger-soft); color: var(--danger); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; font-size: 0.8rem; }
 
-    /* Action Grid */
+    /* Action Buttons */
     .action-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 35px; margin-bottom: 30px; }
-    .btn-action-main { padding: 12px; border-radius: 22px; border: none; font-weight: 700; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: white; box-shadow: 0 6px 15px rgba(0,0,0,0.1); height: 85px; transition: transform 0.2s; }
+    .btn-action-main {
+      padding: 12px; border-radius: 22px; border: none; font-weight: 700; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+      color: white; box-shadow: 0 6px 15px rgba(0,0,0,0.1); height: 85px; transition: transform 0.2s;
+    }
     .btn-action-main:active { transform: scale(0.94); }
     .btn-action-inc { background: linear-gradient(135deg, #2dce89, #2dcecc); }
     .btn-action-exp { background: linear-gradient(135deg, #f5365c, #f56636); }
@@ -130,22 +152,43 @@
     .btn-rounded-pill { padding: 10px 20px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
     /* Bottom Nav */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--bottom-nav-height); background: var(--bg-card); box-shadow: 0 -10px 30px rgba(0,0,0,0.08); display: flex; justify-content: space-around; align-items: center; z-index: 2000; border-top-left-radius: 30px; border-top-right-radius: 30px; padding-bottom: env(safe-area-inset-bottom); padding-top: 5px; backdrop-filter: blur(15px); }
-    .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-muted); cursor: pointer; transition: all 0.3s; padding: 8px 10px; border-radius: 25px; width: 18%; }
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; width: 100%; height: var(--bottom-nav-height);
+      background: var(--bg-card); box-shadow: 0 -10px 30px rgba(0,0,0,0.08);
+      display: flex; justify-content: space-around; align-items: center;
+      z-index: 2000; border-top-left-radius: 30px; border-top-right-radius: 30px;
+      padding-bottom: env(safe-area-inset-bottom); padding-top: 5px;
+      backdrop-filter: blur(15px);
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; color: var(--text-muted); cursor: pointer; transition: all 0.3s;
+      padding: 8px 10px; border-radius: 25px; width: 18%;
+    }
     .nav-item.active { color: var(--primary); background: var(--primary-soft); }
     .nav-item i { font-size: 1.2rem; }
     .nav-item span { font-size: 0.6rem; font-weight: 700; }
 
     /* Select */
-    .modern-select { flex: 1; min-width: 0; border: none; background: rgba(0,0,0,0.04); padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; font-family: 'Sarabun'; font-weight: 500; color: var(--text-main); outline: none; }
+    .modern-select {
+      flex: 1; min-width: 0; border: none;
+      background: rgba(0,0,0,0.04); padding: 10px 14px; border-radius: 12px;
+      font-size: 0.95rem; font-family: 'Sarabun'; font-weight: 500; color: var(--text-main); outline: none;
+    }
     .night .modern-select { background: rgba(255,255,255,0.06); color: #fff; }
 
     /* Modals */
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 3000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
     .modal.show { display: flex; }
     .modal-card { background: var(--bg-card); width: 100%; max-width: 480px; border-radius: 35px; padding: 45px 25px 25px; position: relative; box-shadow: 0 25px 60px rgba(0,0,0,0.4); max-height: 85vh; overflow-y: auto; }
-    .close-btn { position: absolute; top: 12px; right: 12px; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border-radius: 50%; font-size: 1.5rem; cursor: pointer; color: var(--text-main); z-index: 3100; transition: background 0.2s; }
+    .close-btn {
+      position: absolute; top: 12px; right: 12px; width: 46px; height: 46px;
+      display: flex; align-items: center; justify-content: center;
+      background: #f1f5f9; border-radius: 50%; font-size: 1.5rem; cursor: pointer;
+      color: var(--text-main); z-index: 3100; transition: background 0.2s;
+    }
     .night .close-btn { background: #334155; color: #fff; }
+    .close-btn:active { background: #e2e8f0; transform: scale(0.9); }
 
     .modal-section { margin-bottom: 25px; padding: 20px; background: rgba(0,0,0,0.02); border-radius: 22px; }
     .modal-section h4 { margin-top: 0; margin-bottom: 15px; font-size: 0.9rem; font-weight: 800; color: var(--primary); text-transform: uppercase; }
@@ -156,6 +199,7 @@
 
     /* AI Loader */
     .loading { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 4000; display: none; align-items: center; justify-content: center; flex-direction: column; }
+    .night .loading { background: rgba(15,23,42,0.9); }
     .ai-loader-icon { font-size: 5rem; color: var(--primary); margin-bottom: 15px; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%, 100% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1.1); opacity: 1; } }
 
@@ -166,26 +210,35 @@
     .sp-item { display: flex; justify-content: space-between; font-size: 0.8rem; }
     .sp-color { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
 
-    /* Section card */
+    /* Section card (used in month detail) */
     .section-card { background: var(--bg-card); border-radius: var(--radius-sm); margin-bottom: 15px; padding: 20px; box-shadow: var(--shadow-soft); }
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
     .section-title { margin: 0; font-size: 0.9rem; font-weight: 800; }
 
     /* Notes */
-    .note-item { background: rgba(0,0,0,0.02); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; border-left: 3px solid var(--primary); }
+    .note-item {
+      background: rgba(0,0,0,0.02); border-radius: 12px; padding: 12px 14px;
+      margin-bottom: 10px; border-left: 3px solid var(--primary);
+    }
+    .night .note-item { background: rgba(255,255,255,0.04); }
     .note-date { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; }
+    .note-text { font-size: 0.9rem; line-height: 1.5; }
     .note-row { display: flex; align-items: flex-start; gap: 8px; }
+
+    /* AI Response */
+    #aiContent h1,#aiContent h2,#aiContent h3 { font-size: 1rem; color: var(--primary); }
+    #aiContent p { line-height: 1.7; }
+    #aiContent ul { padding-left: 20px; }
 
     /* Progress bar */
     .progress-bar-track { width:100%; height:10px; background:#f1f5f9; border-radius:10px; margin-top:18px; overflow:hidden; }
+    .night .progress-bar-track { background: #334155; }
     .progress-bar-fill { height:100%; background:var(--success); transition:width 0.8s ease-out; }
-
-    .modern-input { width: 100%; padding: 14px 16px; border-radius: 15px; border: 1px solid #eef2f6; background: rgba(0,0,0,0.04); font-size: 1rem; font-family: 'Sarabun'; color: var(--text-main); outline: none; transition: all 0.2s; }
   </style>
 </head>
 <body id="mainBody">
 
-  <!-- AI Loader -->
+  <!-- Loading Overlay -->
   <div class="loading" id="loadingOverlay">
     <i class="fas fa-robot ai-loader-icon"></i>
     <p id="aiLoaderText" style="font-weight:800; color:var(--primary); margin-top:20px; font-size:1.1rem;">AI กำลังคิด...</p>
@@ -258,9 +311,17 @@
           <div class="stat-item"><span class="stat-label">รายจ่าย</span><span class="stat-val" style="color:var(--danger)" id="monthGrandExpense">0</span></div>
           <div class="stat-item" style="border-left:1px solid rgba(0,0,0,0.1)"><span class="stat-label">เงินออม</span><span class="stat-val" style="color:var(--info)" id="monthGrandSavings">0</span></div>
         </div>
+
+        <div style="margin-top:20px; padding-top:15px; border-top:1px dashed rgba(0,0,0,0.08);">
+          <div style="font-size:0.85rem; font-weight:800; color:var(--info); margin-bottom:12px;"><i class="fas fa-chart-pie"></i> พอร์ตเงินออมเดือนนี้</div>
+          <div class="savings-portfolio">
+            <div class="sp-chart-container"><canvas id="monthSavingsDoughnut"></canvas></div>
+            <div id="monthSavingsLegend" class="sp-list"></div>
+          </div>
+        </div>
       </div>
 
-      <!-- Salary Section -->
+      <!-- Salary -->
       <div class="section-card">
         <div class="section-header">
           <h4 class="section-title">💰 รายรับหลักประจำเดือน</h4>
@@ -269,7 +330,7 @@
         <input class="modern-input" type="number" id="inpSalary" placeholder="ระบุเงินเดือน..." oninput="updateCurrentMonthBase('salary', this.value)">
       </div>
 
-      <!-- Extra Income Section -->
+      <!-- Extra Income -->
       <div class="section-card" style="border-left:5px solid var(--success);">
         <div class="section-header">
           <h4 class="section-title" style="color:var(--success);">✨ รายได้พิเศษ</h4>
@@ -278,7 +339,7 @@
         <div id="extraIncomeList"></div>
       </div>
 
-      <!-- Savings Section -->
+      <!-- Savings -->
       <div class="section-card" style="border-left:5px solid var(--info);">
         <div class="section-header">
           <h4 class="section-title" style="color:var(--info);">🏦 การออมเงิน</h4>
@@ -289,7 +350,7 @@
 
       <!-- Daily Transactions -->
       <div style="margin-bottom:20px;">
-        <h4 style="margin:0 0 15px 5px; font-size:0.95rem; font-weight:800;">📝 บันทึกรายการรายวัน</h4>
+        <h4 style="margin:0 0 15px 5px; font-size:0.95rem; font-weight:800;">📝 บันทึกรายการ</h4>
         <div id="monthDetailList"></div>
       </div>
 
@@ -302,6 +363,7 @@
         <div id="notesList"></div>
       </div>
 
+      <!-- Action Buttons -->
       <div class="action-grid">
         <button class="btn-action-main btn-action-inc" onclick="addDetailCurrent('income')"><i class="fas fa-plus-circle"></i> รับ</button>
         <button class="btn-action-main btn-action-exp" onclick="addDetailCurrent('expense')"><i class="fas fa-minus-circle"></i> จ่าย</button>
@@ -320,43 +382,85 @@
     <div class="nav-item" onclick="window.openSettingsModal()"><i class="fas fa-cog"></i><span>ตั้งค่า</span></div>
   </div>
 
-  <!-- Modals -->
-  <div class="modal" id="chartModal"><div class="modal-card"><span class="close-btn" onclick="closeModal('chartModal')">&times;</span><h3 id="modalChartTitle">สถิติการเงิน</h3><div style="display:flex; gap:10px; margin-bottom:25px;"><button class="btn-chart-pill active" id="btn-chart-bar" onclick="window.openChartModal('bar')">แท่ง</button><button class="btn-chart-pill" id="btn-chart-pie" onclick="window.openChartModal('pie')">สัดส่วน</button><button class="btn-chart-pill" id="btn-chart-line" onclick="window.openChartModal('line')">เงินออม</button></div><div style="position:relative; height:40vh;"><canvas id="chart"></canvas></div></div></div>
-  <div class="modal" id="toolsModal"><div class="modal-card"><span class="close-btn" onclick="closeModal('toolsModal')">&times;</span><h3>เครื่องมือ</h3><button class="btn-full" style="background:#d1fae5; color:#065f46;" onclick="exportToExcel()">Export Excel</button><button class="btn-full" style="background:#f1f5f9; color:#475569;" onclick="exportJSON()">สำรองข้อมูล</button><hr style="margin:20px 0; opacity:0.1;"><button class="btn-full" style="background:#fee2e2; color:#dc2626;" onclick="openClearModal()">ล้างข้อมูลทั้งหมด</button></div></div>
-  
-  <div class="modal" id="settingsModal">
+  <!-- Charts Modal -->
+  <div class="modal" id="chartModal">
     <div class="modal-card">
-        <span class="close-btn" onclick="closeModal('settingsModal')">&times;</span>
-        <h3 style="margin-top:0; margin-bottom:25px; font-size:1.2rem;"><i class="fas fa-cog"></i> ตั้งค่าการใช้งาน</h3>
-        <div class="modal-section">
-            <h4>🛰️ เชื่อมต่อคลาวด์</h4>
-            <button id="btnLogin" class="btn-full" style="background:#fff; border:1px solid #e2e8f0; color:#444;" onclick="loginGoogle()"><i class="fab fa-google"></i> Login with Google</button>
-            <button id="btnLogout" class="btn-full hidden" style="background:#fee2e2; color:#dc2626;" onclick="logout()">ออกจากระบบ</button>
-        </div>
-        <div class="modal-section">
-            <h4>🧠 AI COACH</h4>
-            <div style="display:flex; gap:12px; margin-bottom:12px;">
-                <input id="apiKeyInput" type="password" class="modern-input" placeholder="ใส่รหัส Gemini API (ถ้ามี)...">
-                <button onclick="saveApiKey()" style="padding:0 22px; border-radius:50px; background:var(--primary); color:#fff; border:none; font-weight:800;">บันทึก</button>
-            </div>
-            <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size:0.75rem; color:var(--primary); text-decoration:none; font-weight:700;">👉 ขอรับรหัส Gemini ฟรี</a>
-        </div>
-        <div class="modal-section">
-            <h4>🌗 โหมดแสดงผล</h4>
-            <div style="display:flex; gap:12px;">
-                <button onclick="window.setDisplayMode('light')" style="flex:1; padding:12px; border-radius:50px; border:1px solid #ddd; background:white; font-weight:800;"><i class="fas fa-sun"></i> สว่าง</button>
-                <button onclick="window.setDisplayMode('night')" style="flex:1; padding:12px; border-radius:50px; border:1px solid #ddd; background:#334155; color:white; font-weight:800;"><i class="fas fa-moon"></i> มืด</button>
-            </div>
-        </div>
+      <span class="close-btn" onclick="closeModal('chartModal')">&times;</span>
+      <h3 id="modalChartTitle" style="margin-top:0; margin-bottom:20px;">สถิติการเงิน</h3>
+      <div style="display:flex; gap:10px; margin-bottom:25px;">
+        <button class="btn-chart-pill active" id="btn-chart-bar" onclick="window.openChartModal('bar')">แท่ง</button>
+        <button class="btn-chart-pill" id="btn-chart-pie" onclick="window.openChartModal('pie')">สัดส่วน</button>
+        <button class="btn-chart-pill" id="btn-chart-line" onclick="window.openChartModal('line')">เงินออม</button>
+      </div>
+      <div style="position:relative; height:40vh;"><canvas id="chart"></canvas></div>
     </div>
   </div>
 
-  <div class="modal" id="aiModal"><div class="modal-card"><span class="close-btn" onclick="closeAiModal()">&times;</span><h3><i class="fas fa-robot"></i> คำแนะนำจาก AI Coach</h3><div id="aiContent"></div></div></div>
-  <div class="modal" id="clearDataModal"><div class="modal-card"><h3>ยืนยันล้างข้อมูล?</h3><div style="display:flex; gap:10px;"><button class="btn-full" style="background:#f5365c; color:white; flex:1;" onclick="performClear()">ล้างเลย</button><button class="btn-full" style="background:#eee; flex:1;" onclick="closeModal('clearDataModal')">ยกเลิก</button></div></div></div>
+  <!-- Tools Modal -->
+  <div class="modal" id="toolsModal">
+    <div class="modal-card">
+      <span class="close-btn" onclick="closeModal('toolsModal')">&times;</span>
+      <h3>เครื่องมือ</h3>
+      <button class="btn-full" style="background:#d1fae5; color:#065f46;" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> ส่งออก CSV</button>
+      <button class="btn-full" style="background:#f1f5f9; color:#475569;" onclick="exportJSON()"><i class="fas fa-download"></i> สำรองข้อมูล</button>
+      <hr style="margin:20px 0; opacity:0.1;">
+      <button class="btn-full" style="background:#fee2e2; color:#dc2626;" onclick="openClearModal()"><i class="fas fa-trash"></i> ล้างข้อมูลทั้งหมด</button>
+    </div>
+  </div>
 
-  <input type="file" id="receiptInput" accept="image/*" style="display: none;">
+  <!-- Settings Modal -->
+  <div class="modal" id="settingsModal">
+    <div class="modal-card">
+      <span class="close-btn" onclick="closeModal('settingsModal')">&times;</span>
+      <h3 style="margin-top:0; margin-bottom:25px;"><i class="fas fa-cog"></i> ตั้งค่า</h3>
+      <div class="modal-section">
+        <h4>🛰️ เชื่อมต่อคลาวด์</h4>
+        <button id="btnLogin" class="btn-full" style="background:#fff; border:1px solid #e2e8f0; color:#444;" onclick="loginGoogle()"><i class="fab fa-google"></i> Login with Google</button>
+        <button id="btnLogout" class="btn-full hidden" style="background:#fee2e2; color:#dc2626;" onclick="logout()">ออกจากระบบ</button>
+      </div>
+      <div class="modal-section">
+        <h4>🧠 AI COACH (Claude/Gemini)</h4>
+        <div style="display:flex; gap:12px; margin-bottom:12px;">
+          <input id="apiKeyInput" type="password" class="modern-input" placeholder="ใส่รหัส Gemini API (ถ้ามี)...">
+          <button onclick="saveApiKey()" style="padding:0 22px; border-radius:50px; background:var(--primary); color:#fff; border:none; font-weight:800;">บันทึก</button>
+        </div>
+        <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size:0.75rem; color:var(--primary); text-decoration:none; font-weight:700;">👉 ขอรับรหัส Gemini ฟรี</a>
+      </div>
+      <div class="modal-section">
+        <h4>🌗 โหมดแสดงผล</h4>
+        <div style="display:flex; gap:12px;">
+          <button onclick="window.setDisplayMode('light')" style="flex:1; padding:12px; border-radius:50px; border:1px solid #ddd; background:white; font-weight:800;"><i class="fas fa-sun"></i> สว่าง</button>
+          <button onclick="window.setDisplayMode('night')" style="flex:1; padding:12px; border-radius:50px; border:1px solid #ddd; background:#334155; color:white; font-weight:800;"><i class="fas fa-moon"></i> มืด</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <!-- Firebase Logic -->
+  <!-- AI Modal -->
+  <div class="modal" id="aiModal">
+    <div class="modal-card">
+      <span class="close-btn" onclick="closeAiModal()">&times;</span>
+      <h3 style="margin-top:0;"><i class="fas fa-robot"></i> คำแนะนำจาก AI Coach</h3>
+      <div id="aiContent" style="line-height:1.7;"></div>
+    </div>
+  </div>
+
+  <!-- Clear Confirm Modal -->
+  <div class="modal" id="clearDataModal">
+    <div class="modal-card">
+      <span class="close-btn" onclick="closeModal('clearDataModal')">&times;</span>
+      <h3>ยืนยันล้างข้อมูล?</h3>
+      <p style="color:var(--text-muted);">ข้อมูลทั้งหมดจะถูกลบถาวร ไม่สามารถกู้คืนได้</p>
+      <div style="display:flex; gap:10px;">
+        <button class="btn-full" style="background:#fee2e2; color:#dc2626; flex:1;" onclick="performClear()">ล้างเลย</button>
+        <button class="btn-full" style="background:#eee; color:#333; flex:1;" onclick="closeModal('clearDataModal')">ยกเลิก</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="receiptInput" accept="image/*" style="display:none;">
+
+  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -376,36 +480,52 @@
       const badge = document.getElementById('cloudBadge');
       if (user) {
         userId = user.uid; useCloud = true;
-        badge.innerHTML = '<i class="fas fa-cloud"></i> ซิงค์แล้ว'; badge.style.background = '#dcfce7'; badge.style.color = '#166534';
+        badge.innerHTML = '<i class="fas fa-cloud"></i> ซิงค์แล้ว';
+        badge.style.background = '#dcfce7'; badge.style.color = '#166534';
         document.getElementById('btnLogin').classList.add('hidden');
         document.getElementById('btnLogout').classList.remove('hidden');
-        if(user.photoURL) { document.getElementById('mainAvatar').src = user.photoURL; document.getElementById('mainAvatar').style.display = 'block'; }
-        document.getElementById('userNameLabel').innerText = user.displayName || "ผู้ใช้งาน";
+        if (user.photoURL) { document.getElementById('mainAvatar').src = user.photoURL; document.getElementById('mainAvatar').style.display = 'block'; }
+        document.getElementById('userNameLabel').innerText = user.displayName || 'ผู้ใช้งาน';
         startDataListener();
-      } else { useCloud = false; badge.innerHTML = '<i class="fas fa-wifi"></i>'; }
+      } else {
+        useCloud = false;
+        badge.innerHTML = '<i class="fas fa-wifi-slash"></i>';
+      }
     });
 
     function startDataListener() {
       onSnapshot(doc(db, 'artifacts', appId, 'users', userId, 'budget_data', 'yearly'), (snap) => {
-        if (snap.exists() && document.activeElement.tagName !== 'INPUT') {
+        // ✨ FIXED: ป้องกันการพิมพ์แล้วตัด โดยเช็คว่ากำลังโฟกัสที่ช่อง Input หรือช่อง Notes หรือไม่
+        const focused = document.activeElement;
+        const isTyping = focused && (
+            ['INPUT', 'TEXTAREA', 'SELECT'].includes(focused.tagName) || 
+            focused.isContentEditable
+        );
+
+        if (snap.exists() && !isTyping) {
           const data = snap.data();
-          if (data.monthlyData) { window.monthlyData = data.monthlyData; window.initDataAndRender(); }
+          if (data.monthlyData) { 
+            window.monthlyData = data.monthlyData; 
+            window.initDataAndRender(); 
+          }
         }
       });
     }
 
     window.saveDataToCloud = async () => {
       if (useCloud && userId) {
-        try { await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'budget_data', 'yearly'), { monthlyData: window.monthlyData, lastUpdated: new Date().toISOString() }); } catch (e) {}
+        try { await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'budget_data', 'yearly'), { monthlyData: window.monthlyData, lastUpdated: new Date().toISOString() }); } catch(e) {}
       }
     };
   </script>
 
-  <!-- App Script Logic -->
+  <!-- App Logic -->
   <script>
-    const appApiKey = ""; 
-    window.myMainChartObj = null; window.savingsChartObj = null;
-    const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+    window.myMainChartObj = null;
+    window.savingsChartObj = null;
+    window.monthSavingsChartObj = null;
+
+    const months = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
     const extraSources = ["OT","โบนัส","ขายของ","ฟรีแลนซ์","ธุรกิจ","ของขวัญ","ครอบครัว","อื่นๆ"];
     const savingPurposes = ["เงินสำรอง","ลงทุน","เกษียณ","ท่องเที่ยว","บ้าน/รถ","การศึกษา","สุขภาพ","อื่นๆ"];
 
@@ -413,104 +533,126 @@
     window.monthlyData = JSON.parse(localStorage.getItem('yearlyBudget_v1')) || months.map(defaultMonth);
     window.currentMonthIndex = 0;
 
-    function escapeHtml(text) { return text ? String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m])) : ""; }
+    function escapeHtml(t) { return t ? String(t).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m])) : ''; }
     function formatDate(iso) { const d = new Date(iso); return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`; }
     window.closeModal = (id) => document.getElementById(id).classList.remove('show');
     window.closeAiModal = () => document.getElementById('aiModal').classList.remove('show');
 
-    window.setDisplayMode = (mode) => { localStorage.setItem('display_mode', mode); applyThemeMode(); };
-    function applyThemeMode() {
-        const mode = localStorage.getItem('display_mode') || 'auto';
-        const isNight = mode === 'auto' ? (new Date().getHours() >= 18 || new Date().getHours() < 6) : mode === 'night';
-        document.body.classList.toggle('night', isNight);
+    window.setDisplayMode = (mode) => { localStorage.setItem('display_mode', mode); applyTheme(); };
+    function applyTheme() {
+      const mode = localStorage.getItem('display_mode') || 'auto';
+      const isNight = mode === 'auto' ? (new Date().getHours() >= 18 || new Date().getHours() < 6) : mode === 'night';
+      document.body.classList.toggle('night', isNight);
     }
 
     function calculateStats(m) {
-      if (!m) return { inc: 0, exp: 0, save: 0, free: 0 };
-      const inc = (Number(m.salary)||0) + (m.extraList||[]).reduce((s,i)=>s+(Number(i.amount)||0), 0) + (m.details||[]).filter(d=>d.type==='income').reduce((s,d)=>s+(Number(d.amount)||0), 0);
-      const exp = (m.details||[]).filter(d=>d.type==='expense').reduce((s,d)=>s+(Number(d.amount)||0), 0);
-      const save = (m.savings||[]).reduce((s,i)=>s+(Number(i.amount)||0), 0);
+      const inc = (Number(m.salary)||0) + (m.extraList||[]).reduce((s,i) => s+(Number(i.amount)||0), 0) + (m.details||[]).filter(d=>d.type==='income').reduce((s,d) => s+(Number(d.amount)||0), 0);
+      const exp = (m.details||[]).filter(d=>d.type==='expense').reduce((s,d) => s+(Number(d.amount)||0), 0);
+      const save = (m.savings||[]).reduce((s,i) => s+(Number(i.amount)||0), 0);
       return { inc, exp, save, free: inc - exp - save };
     }
 
-    window.saveData = () => { localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData)); if(window.saveDataToCloud) window.saveDataToCloud(); };
+    let saveTimeout;
+    window.saveData = () => {
+      localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData));
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => { if (window.saveDataToCloud) window.saveDataToCloud(); }, 2000);
+    };
 
     window.initDataAndRender = function() {
-      if (!Array.isArray(window.monthlyData) || window.monthlyData.length !== 12) {
-        window.monthlyData = months.map(defaultMonth);
-      }
-      window.monthlyData = window.monthlyData.map(m => ({ 
+      window.monthlyData = window.monthlyData.map(m => ({
         ...defaultMonth(), ...m,
         details: (Array.isArray(m.details) ? m.details : []).map(d => ({ ...d, isPaid: d.isPaid || false })),
         extraList: Array.isArray(m.extraList) ? m.extraList : [],
         savings: Array.isArray(m.savings) ? m.savings : [],
-        notes: Array.isArray(m.notes) ? m.notes : []
+        notes: Array.isArray(m.notes) ? m.notes : [],
       }));
-      applyThemeMode();
-      const storedKey = localStorage.getItem('gemini_api_key'); if(storedKey) { const el = document.getElementById('apiKeyInput'); if(el) el.value = storedKey; }
-      if(document.getElementById('view-home').classList.contains('active')) window.renderHome(); else window.renderMonthDetail();
+      applyTheme();
+      const storedKey = localStorage.getItem('gemini_api_key');
+      if (storedKey) { const el = document.getElementById('apiKeyInput'); if(el) el.value = storedKey; }
+      if (document.getElementById('view-home').classList.contains('active')) window.renderHome();
+      else window.renderMonthDetail();
     };
 
     window.renderHome = () => {
-      const list = document.getElementById('homeMonthList'); if(!list) return;
+      const list = document.getElementById('homeMonthList'); if (!list) return;
       let html = '', gInc = 0, gExp = 0, gSave = 0, savingsMap = {};
       const currIdx = new Date().getMonth();
-      
-      months.forEach((name, i) => {
-        const m = window.monthlyData[i];
+
+      window.monthlyData.forEach((m, i) => {
         const s = calculateStats(m); gInc += s.inc; gExp += s.exp; gSave += s.save;
-        if (m.savings) { m.savings.forEach(v => { let k = v.desc || 'ออมทั่วไป'; savingsMap[k] = (savingsMap[k] || 0) + Number(v.amount); }); }
-        html += `<div class="month-summary-card" onclick="window.openMonth(${i})"><div class="m-left"><div class="m-icon">${i+1}</div><div><div style="font-weight:700;">${name}</div><div style="font-size:0.75rem; color:#888;">คงเหลือจริง: ${s.free.toLocaleString()}</div></div></div><span style="font-weight:800; color:${s.free>=0?'var(--primary)':'var(--danger)'}">${s.free.toLocaleString()}</span></div>`;
+        (m.savings||[]).forEach(v => { const k = v.desc||'ออมทั่วไป'; savingsMap[k] = (savingsMap[k]||0) + Number(v.amount); });
+        html += `<div class="month-summary-card" onclick="window.openMonth(${i})">
+          <div class="m-left"><div class="m-icon">${i+1}</div><div><div style="font-weight:700;">${months[i]}</div><div style="font-size:0.75rem; color:#888;">คงเหลือจริง: ${s.free.toLocaleString()}</div></div></div>
+          <span style="font-weight:800; color:${s.free>=0?'var(--primary)':'var(--danger)'};">${s.free.toLocaleString()}</span>
+        </div>`;
       });
+
       list.innerHTML = html;
-      const curr = calculateStats(window.monthlyData[currIdx]);
-      document.getElementById('currMonthName').innerText = months[currIdx];
-      document.getElementById('currentMonthBalance').innerText = curr.free.toLocaleString();
-      document.getElementById('dashIncome').innerText = curr.inc.toLocaleString();
-      document.getElementById('dashExpense').innerText = curr.exp.toLocaleString();
-      document.getElementById('dashSavings').innerText = gSave.toLocaleString();
-      document.getElementById('grandBalance').innerText = (gInc - gExp - gSave).toLocaleString();
+      const currStats = calculateStats(window.monthlyData[currIdx]);
+      setEl('currMonthName', months[currIdx]); setEl('currentMonthBalance', currStats.free.toLocaleString()); setEl('dashIncome', currStats.inc.toLocaleString());
+      setEl('dashExpense', currStats.exp.toLocaleString()); setEl('dashSavings', gSave.toLocaleString()); setEl('grandBalance', (gInc - gExp - gSave).toLocaleString());
       renderPortfolioChart(savingsMap, 'savingsDoughnut', 'savingsLegend');
     };
 
+    function setEl(id, val) { const el = document.getElementById(id); if(el) el.innerText = val; }
+
     window.openMonth = (idx) => { window.currentMonthIndex = idx; window.switchView('month'); };
+
     window.renderMonthDetail = () => {
       const m = window.monthlyData[window.currentMonthIndex]; const s = calculateStats(m);
-      document.getElementById('detailMonthName').innerText = months[window.currentMonthIndex];
-      document.getElementById('monthGrandBalance').innerText = s.free.toLocaleString();
-      document.getElementById('monthGrandIncome').innerText = s.inc.toLocaleString();
-      document.getElementById('monthGrandExpense').innerText = s.exp.toLocaleString();
-      document.getElementById('monthGrandSavings').innerText = s.save.toLocaleString();
-      document.getElementById('monthProgressBar').style.width = Math.min((s.exp / (s.inc||1)) * 100, 100) + '%';
-      document.getElementById('inpSalary').value = m.salary || '';
-      document.getElementById('btnPullPrev').style.display = window.currentMonthIndex > 0 ? 'inline-flex' : 'none';
+      setEl('detailMonthName', months[window.currentMonthIndex]); setEl('monthGrandBalance', s.free.toLocaleString());
+      setEl('monthGrandIncome', s.inc.toLocaleString()); setEl('monthGrandExpense', s.exp.toLocaleString()); setEl('monthGrandSavings', s.save.toLocaleString());
+      const prog = document.getElementById('monthProgressBar'); if (prog) prog.style.width = Math.min((s.exp / (s.inc||1)) * 100, 100) + '%';
+      const sal = document.getElementById('inpSalary'); if (sal) sal.value = m.salary || '';
+      const pullBtn = document.getElementById('btnPullPrev'); if (pullBtn) pullBtn.style.display = window.currentMonthIndex > 0 ? 'inline-flex' : 'none';
 
       renderCategorizedList(m.extraList, 'extraIncomeList', 'updateExtra', 'removeExtra', '💸', extraSources);
       renderCategorizedList(m.savings, 'savingsDetailList', 'updateSave', 'removeSave', '🏦', savingPurposes);
-      
+
       const detailEl = document.getElementById('monthDetailList');
-      if(detailEl) detailEl.innerHTML = m.details.map((d, i) => `
-        <div class="detail-row ${d.isPaid?'paid':''}">
+      if (detailEl) detailEl.innerHTML = (m.details||[]).map((d, i) =>
+        `<div class="detail-row ${d.isPaid?'paid':''}">
           <div class="custom-checkbox ${d.isPaid?'checked':''}" onclick="togglePaid(${i})"></div>
-          <div class="type-badge-circle ${d.type==='income'?'badge-inc':'badge-exp'}" onclick="toggleType(${i})">${d.type==='income'?'+':'-'}</div>
-          <input class="desc-input" value="${escapeHtml(d.desc)}" oninput="updateDetail(${i},'desc',this.value)" placeholder="รายการ...">
+          <div class="type-badge-circle ${d.type==='income'?'badge-inc':'badge-exp'}" onclick="toggleType(${i})" style="cursor:pointer;">${d.type==='income'?'+':'-'}</div>
+          <input class="desc-input" value="${escapeHtml(d.desc)}" placeholder="รายการ..." oninput="updateDetail(${i},'desc',this.value)">
+          <div style="width:1px;height:20px;background:#eee;"></div>
           <input class="amt-input" type="number" value="${d.amount}" oninput="updateDetail(${i},'amount',this.value)">
           <button class="btn-del-modern" onclick="removeDetail(${i})"><i class="fas fa-times"></i></button>
         </div>`).join('');
 
-      const notesEl = document.getElementById('notesList');
-      if(notesEl) notesEl.innerHTML = m.notes.length ? m.notes.map((n, i) => `<div class="note-item"><div class="note-date">${formatDate(n.date)}</div><div class="note-row"><div class="note-text" contenteditable="true" oninput="updateNote(${i},this.innerText)" style="flex:1; outline:none;">${escapeHtml(n.text)}</div><button class="btn-del-modern" onclick="removeNote(${i})"><i class="fas fa-times"></i></button></div></div>`).join('') : '<div style="text-align:center; color:#ccc;">ยังไม่มีโน้ต</div>';
-
-      const mSavMap = {}; (m.savings||[]).forEach(v => { let k=v.desc||'ทั่วไป'; mSavMap[k]=(mSavMap[k]||0)+Number(v.amount); });
+      renderNotes(m.notes||[]);
+      const mSavMap = {}; (m.savings||[]).forEach(v => { const k = v.desc||'ทั่วไป'; mSavMap[k] = (mSavMap[k]||0) + Number(v.amount); });
       renderPortfolioChart(mSavMap, 'monthSavingsDoughnut', 'monthSavingsLegend', true);
     };
 
     function renderCategorizedList(arr, id, upFn, rmFn, icon, options) {
       const el = document.getElementById(id); if(!el) return;
-      el.innerHTML = arr.length ? arr.map((v, i) => `<div class="detail-row"><span>${icon}</span><select class="modern-select" onchange="window.${upFn}(${i},'desc',this.value)"><option value="" disabled ${!v.desc?'selected':''}>เลือก...</option>${options.map(o => `<option value="${o}" ${v.desc===o?'selected':''}>${o}</option>`).join('')}</select><input class="amt-input" type="number" value="${v.amount}" oninput="window.${upFn}(${i},'amount',this.value)"><button class="btn-del-modern" onclick="window.${rmFn}(${i})"><i class="fas fa-times"></i></button></div>`).join('') : '<div style="text-align:center;color:#ccc;font-size:0.8rem;">ยังไม่มีรายการ</div>';
+      el.innerHTML = (arr||[]).length ? arr.map((v, i) =>
+          `<div class="detail-row"><span>${icon}</span><select class="modern-select" onchange="window.${upFn}(${i},'desc',this.value)"><option value="" disabled ${!v.desc?'selected':''}>เลือกรายการ...</option>${options.map(o => `<option value="${o}" ${v.desc===o?'selected':''}>${o}</option>`).join('')}</select>
+            <div style="width:1px;height:20px;background:#eee;"></div><input class="amt-input" type="number" value="${v.amount}" oninput="window.${upFn}(${i},'amount',this.value)"><button class="btn-del-modern" onclick="window.${rmFn}(${i})"><i class="fas fa-times"></i></button></div>`).join('')
+        : '<div style="text-align:center;color:#ccc;font-size:0.8rem;padding:10px;">ยังไม่มีรายการ</div>';
     }
 
-    window.togglePaid = (i) => { window.monthlyData[window.currentMonthIndex].details[i].isPaid = !window.monthlyData[window.currentMonthIndex].details[i].isPaid; window.saveData(); window.renderMonthDetail(); };
+    function renderNotes(notes) {
+      const el = document.getElementById('notesList'); if(!el) return;
+      if (!notes.length) { el.innerHTML = '<div style="text-align:center;color:#ccc;font-size:0.8rem;padding:10px;">ยังไม่มีโน้ต</div>'; return; }
+      el.innerHTML = notes.map((n, i) => `<div class="note-item"><div class="note-date">${formatDate(n.date)}</div><div class="note-row">
+            <div class="note-text" contenteditable="true" oninput="updateNote(${i},this.innerText)" style="flex:1; outline:none;">${escapeHtml(n.text)}</div>
+            <button class="btn-del-modern" onclick="removeNote(${i})" style="margin-left:8px; flex-shrink:0;"><i class="fas fa-times"></i></button></div></div>`).join('');
+    }
+
+    window.addNoteItem = () => { const m = window.monthlyData[window.currentMonthIndex]; if (!m.notes) m.notes = []; m.notes.push({ text: '', date: new Date().toISOString() }); window.saveData(); window.renderMonthDetail(); };
+    window.updateNote = (i, v) => { window.monthlyData[window.currentMonthIndex].notes[i].text = v; window.saveData(); };
+    window.removeNote = (i) => { window.monthlyData[window.currentMonthIndex].notes.splice(i, 1); window.saveData(); window.renderMonthDetail(); };
+
+    function updateMonthStatsUI() {
+      const s = calculateStats(window.monthlyData[window.currentMonthIndex]);
+      setEl('monthGrandBalance', s.free.toLocaleString()); setEl('monthGrandIncome', s.inc.toLocaleString());
+      setEl('monthGrandExpense', s.exp.toLocaleString()); setEl('monthGrandSavings', s.save.toLocaleString());
+      const prog = document.getElementById('monthProgressBar'); if (prog) prog.style.width = Math.min((s.exp / (s.inc||1)) * 100, 100) + '%';
+    }
+
     window.updateCurrentMonthBase = (f, v) => { window.monthlyData[window.currentMonthIndex][f] = Number(v); window.saveData(); updateMonthStatsUI(); };
     window.addExtraIncomeItem = () => { window.monthlyData[window.currentMonthIndex].extraList.push({desc:'',amount:''}); window.saveData(); window.renderMonthDetail(); };
     window.updateExtra = (i,f,v) => { window.monthlyData[window.currentMonthIndex].extraList[i][f] = f==='amount'?Number(v):v; window.saveData(); updateMonthStatsUI(); };
@@ -518,88 +660,65 @@
     window.addSavingItemCurrent = () => { window.monthlyData[window.currentMonthIndex].savings.push({desc:'',amount:''}); window.saveData(); window.renderMonthDetail(); };
     window.updateSave = (i,f,v) => { window.monthlyData[window.currentMonthIndex].savings[i][f] = f==='amount'?Number(v):v; window.saveData(); updateMonthStatsUI(); };
     window.removeSave = (i) => { window.monthlyData[window.currentMonthIndex].savings.splice(i,1); window.saveData(); window.renderMonthDetail(); };
-    window.addDetailCurrent = (t) => { window.monthlyData[window.currentMonthIndex].details.push({type:t, desc:'', amount:'', isPaid:false}); window.saveData(); window.renderMonthDetail(); };
+    window.addDetailCurrent = (t) => { window.monthlyData[window.currentMonthIndex].details.push({type:t,desc:'',amount:'', isPaid:false}); window.saveData(); window.renderMonthDetail(); };
     window.updateDetail = (i,f,v) => { window.monthlyData[window.currentMonthIndex].details[i][f] = f==='amount'?Number(v):v; window.saveData(); updateMonthStatsUI(); };
     window.removeDetail = (i) => { window.monthlyData[window.currentMonthIndex].details.splice(i,1); window.saveData(); window.renderMonthDetail(); };
-    window.toggleType = (i) => { let d=window.monthlyData[window.currentMonthIndex].details[i]; d.type=d.type==='income'?'expense':'income'; window.saveData(); window.renderMonthDetail(); };
-    window.addNoteItem = () => { window.monthlyData[window.currentMonthIndex].notes.push({ text: '', date: new Date().toISOString() }); window.saveData(); window.renderMonthDetail(); };
-    window.updateNote = (i, v) => { window.monthlyData[window.currentMonthIndex].notes[i].text = v; window.saveData(); };
-    window.removeNote = (i) => { window.monthlyData[window.currentMonthIndex].notes.splice(i, 1); window.saveData(); window.renderMonthDetail(); };
+    window.toggleType = (i) => { const d = window.monthlyData[window.currentMonthIndex].details[i]; d.type = d.type==='income'?'expense':'income'; window.saveData(); window.renderMonthDetail(); };
+    window.togglePaid = (i) => { window.monthlyData[window.currentMonthIndex].details[i].isPaid = !window.monthlyData[window.currentMonthIndex].details[i].isPaid; window.saveData(); window.renderMonthDetail(); };
 
     window.pullPrevBalance = () => {
-      if(window.currentMonthIndex === 0) return;
-      const prev = calculateStats(window.monthlyData[window.currentMonthIndex - 1]); if(prev.free<=0) return alert('ไม่มีเงินคงเหลือ');
-      window.monthlyData[window.currentMonthIndex].extraList.push({ desc: 'ยอดยกมาจากเดือนที่แล้ว ✨', amount: prev.free });
+      if (window.currentMonthIndex === 0) return;
+      const prevStats = calculateStats(window.monthlyData[window.currentMonthIndex - 1]);
+      if (prevStats.free <= 0) { alert('เดือนที่แล้วไม่มีเงินคงเหลือ'); return; }
+      window.monthlyData[window.currentMonthIndex].extraList.push({ desc: 'ยอดยกมาจากเดือนที่แล้ว ✨', amount: prevStats.free });
       window.saveData(); window.renderMonthDetail();
     };
 
-    function updateMonthStatsUI() {
-      const s = calculateStats(window.monthlyData[window.currentMonthIndex]);
-      document.getElementById('monthGrandBalance').innerText = s.free.toLocaleString();
-      document.getElementById('monthProgressBar').style.width = Math.min((s.exp / (s.inc||1)) * 100, 100) + '%';
-    }
-
     function renderPortfolioChart(map, canvasId, legendId, isMonth = false) {
       const canvas = document.getElementById(canvasId); if(!canvas) return;
-      const entries = Object.entries(map).sort((a,b)=>b[1]-a[1]);
-      const legend = document.getElementById(legendId);
-      if(!entries.length) { if(legend) legend.innerHTML = '<span style="color:#aaa;">ไม่มีข้อมูล</span>'; return; }
-      const key = isMonth ? 'monthSavingsChartObj' : 'savingsChartObj';
-      if(window[key]) window[key].destroy();
-      window[key] = new Chart(canvas.getContext('2d'), { type:'doughnut', data:{ labels:entries.map(e=>e[0]), datasets:[{data:entries.map(e=>e[1]), backgroundColor:['#11cdef','#2dce89','#5e72e4','#fb6340','#f5365c'], borderWidth:0, cutout:'70%'}] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} } });
-      if(legend) legend.innerHTML = entries.map((e,i)=>`<div class="sp-item"><span><span class="sp-color" style="background:${['#11cdef','#2dce89','#5e72e4','#fb6340','#f5365c'][i%5]}"></span>${escapeHtml(e[0])}</span><b>${e[1].toLocaleString()}</b></div>`).join('');
+      const entries = Object.entries(map).sort((a,b) => b[1]-a[1]); const legend = document.getElementById(legendId);
+      if (!entries.length) { if(legend) legend.innerHTML = '<span style="color:#aaa;font-size:0.8rem;">ไม่มีข้อมูล</span>'; return; }
+      const key = isMonth ? 'monthSavingsChartObj' : 'savingsChartObj'; if (window[key]) window[key].destroy();
+      window[key] = new Chart(canvas.getContext('2d'), { type: 'doughnut', data: { labels: entries.map(e=>e[0]), datasets: [{ data: entries.map(e=>e[1]), backgroundColor: ['#11cdef','#2dce89','#5e72e4','#fb6340','#f5365c'], borderWidth: 0, cutout: '70%' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+      if (legend) legend.innerHTML = entries.map((e,i) => `<div class="sp-item"><span><span class="sp-color" style="background:${['#11cdef','#2dce89','#5e72e4','#fb6340','#f5365c'][i%5]};"></span>${escapeHtml(e[0])}</span><b>${e[1].toLocaleString()}</b></div>`).join('');
     }
 
     window.openChartModal = (type) => {
       document.getElementById('chartModal').classList.add('show');
-      const ctx = document.getElementById('chart').getContext('2d');
-      if(window.myMainChartObj) window.myMainChartObj.destroy();
-      if (type==='bar') {
-        window.myMainChartObj = new Chart(ctx, { type:'bar', data:{ labels:months, datasets:[{ label:'รับ', data:window.monthlyData.map(m=>calculateStats(m).inc), backgroundColor:'#2dce89'}, {label:'จ่าย', data:window.monthlyData.map(m=>calculateStats(m).exp), backgroundColor:'#f5365c'}] }, options:{ responsive:true, maintainAspectRatio:false } });
-      } else if (type==='pie') {
-        const map = {}; window.monthlyData.forEach(m=>(m.details||[]).filter(d=>d.type==='expense').forEach(d=>{ const k=d.desc.trim()||'อื่นๆ'; map[k]=(map[k]||0)+Number(d.amount); }));
-        const ent = Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,8);
-        window.myMainChartObj = new Chart(ctx, { type:'doughnut', data:{ labels:ent.map(e=>e[0]), datasets:[{data:ent.map(e=>e[1]), backgroundColor:['#5e72e4','#2dce89','#fb6340','#f5365c','#11cdef']}] }, options:{ responsive:true, maintainAspectRatio:false } });
-      }
+      document.querySelectorAll('.btn-chart-pill').forEach(b => b.classList.remove('active'));
+      const btn = document.getElementById('btn-chart-' + type); if(btn) btn.classList.add('active');
+      const ctx = document.getElementById('chart').getContext('2d'); if (window.myMainChartObj) window.myMainChartObj.destroy();
+      if (type === 'bar') { setEl('modalChartTitle', 'รายรับ-รายจ่าย รายเดือน'); window.myMainChartObj = new Chart(ctx, { type: 'bar', data: { labels: months, datasets: [{ label: 'รับ', data: window.monthlyData.map(m=>calculateStats(m).inc), backgroundColor: '#2dce89' }, { label: 'จ่าย', data: window.monthlyData.map(m=>calculateStats(m).exp), backgroundColor: '#f5365c' }] }, options: { responsive: true, maintainAspectRatio: false } });
+      } else if (type === 'pie') { setEl('modalChartTitle', 'สัดส่วนรายจ่ายปีนี้'); const map = {}; window.monthlyData.forEach(m => (m.details||[]).filter(d=>d.type==='expense').forEach(d => { const k = d.desc.trim()||'อื่นๆ'; map[k] = (map[k]||0) + Number(d.amount); })); const ent = Object.entries(map).sort((a,b) => b[1]-a[1]).slice(0,8); window.myMainChartObj = new Chart(ctx, { type: 'doughnut', data: { labels: ent.map(e=>e[0]), datasets: [{ data: ent.map(e=>e[1]), backgroundColor: ['#5e72e4','#2dce89','#fb6340','#f5365c','#11cdef'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+      } else if (type === 'line') { setEl('modalChartTitle', 'พอร์ตเงินออมสะสม'); window.myMainChartObj = new Chart(ctx, { type: 'line', data: { labels: months, datasets: [{ label: 'เงินออม', data: window.monthlyData.map(m=>calculateStats(m).save), borderColor: '#11cdef', fill: true, backgroundColor: 'rgba(17, 205, 239, 0.15)', tension: 0.35 }] }, options: { responsive: true, maintainAspectRatio: false } }); }
     };
 
     window.switchView = (v) => {
-      document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
-      if(v==='home') { document.getElementById('view-home').classList.add('active'); document.getElementById('nav-home').classList.add('active'); window.renderHome(); }
+      document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+      if (v === 'home') { document.getElementById('view-home').classList.add('active'); document.getElementById('nav-home').classList.add('active'); window.renderHome(); }
       else { document.getElementById('view-month').classList.add('active'); window.renderMonthDetail(); }
-      window.scrollTo({top:0, behavior:'smooth'});
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     // 🤖 Claude AI Coach (RESTORED)
     window.analyzeBudgetWithAI = async () => {
       const loader = document.getElementById('loadingOverlay'); document.getElementById('aiLoaderText').innerText = 'Claude AI กำลังวิเคราะห์...'; loader.style.display = 'flex';
       try {
-        const summary = window.monthlyData.map((m,i) => {
-          const s = calculateStats(m); return `${months[i]}: รายรับ=${s.inc.toLocaleString()} รายจ่าย=${s.exp.toLocaleString()} ออม=${s.save.toLocaleString()} คงเหลือ=${s.free.toLocaleString()}`;
-        }).join('\n');
-        const response = await fetch('https://soft-dream-e329.porbboyza.workers.dev', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: `คุณเป็น AI Coach ด้านการเงิน วิเคราะห์ข้อมูลนี้และให้คำแนะนำ 3 ข้อสั้นๆ เป็นภาษาไทย:\n\n${summary}` }] })
-        });
-        const data = await response.json();
-        document.getElementById('aiContent').innerHTML = marked.parse(data.content?.[0]?.text || 'ไม่สามารถวิเคราะห์ได้');
-        document.getElementById('aiModal').classList.add('show');
+        const summary = window.monthlyData.map((m,i) => { const s = calculateStats(m); return `${months[i]}: รายรับ=${s.inc.toLocaleString()} รายจ่าย=${s.exp.toLocaleString()} ออม=${s.save.toLocaleString()} คงเหลือ=${s.free.toLocaleString()}`; }).join('\n');
+        const response = await fetch('https://soft-dream-e329.porbboyza.workers.dev', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: `คุณเป็น AI Coach วิเคราะห์ข้อมูลนี้และให้คำแนะนำ 3 ข้อสั้นๆ เป็นภาษาไทย:\n\n${summary}` }] }) });
+        const data = await response.json(); document.getElementById('aiContent').innerHTML = marked.parse(data.content?.[0]?.text || 'ไม่สามารถวิเคราะห์ได้'); document.getElementById('aiModal').classList.add('show');
       } catch(e) { alert('AI Error: ' + e.message); } finally { loader.style.display = 'none'; }
     };
 
     window.triggerScanCurrent = () => document.getElementById('receiptInput').click();
     document.getElementById('receiptInput').addEventListener('change', async function() {
-      if(!this.files[0]) return;
-      const key = localStorage.getItem('gemini_api_key'); if(!key) return alert("ใส่ API Key ในหน้าตั้งค่าก่อนครับ");
-      const l = document.getElementById('loadingOverlay'); l.style.display='flex';
-      const reader = new FileReader();
+      if(!this.files[0]) return; const key = localStorage.getItem('gemini_api_key'); if(!key) return alert("ใส่ API Key ในหน้าตั้งค่าก่อนครับ");
+      const l = document.getElementById('loadingOverlay'); l.style.display='flex'; const reader = new FileReader();
       reader.onload = async (ev) => {
         try {
           const b64 = ev.target.result.split(',')[1];
           const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ contents: [{ role:'user', parts:[{text:"Extract ONLY JSON: { \"description\": \"string\", \"amount\": number, \"type\": \"expense\" }."}, {inlineData:{mimeType:"image/jpeg", data:b64}}] }] }) });
-          const data = await res.json();
-          const json = JSON.parse(data.candidates[0].content.parts[0].text.replace(/```json|```/g,'').trim());
+          const data = await res.json(); const json = JSON.parse(data.candidates[0].content.parts[0].text.replace(/```json|```/g,'').trim());
           if(json.amount) { window.monthlyData[window.currentMonthIndex].details.push({ ...json, isPaid: true }); window.saveData(); window.renderMonthDetail(); }
         } catch(e) { alert("สแกนไม่สำเร็จ"); } finally { l.style.display='none'; }
       }; reader.readAsDataURL(this.files[0]);
