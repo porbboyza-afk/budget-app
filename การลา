@@ -26,9 +26,6 @@
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
-        
-        /* เพิ่มเพื่อป้องกันตารางล้นจอในมือถือ */
-        .table-responsive-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     </style>
 </head>
 <body>
@@ -144,7 +141,6 @@
                     const calculateStats = (type) => {
                         const typeRequests = teacherApprovedRequests.filter(r => r.type === type);
                         const days = typeRequests.reduce((acc, curr) => {
-                            // เพิ่ม Safety Check เพื่อแก้ปัญหา "หน้าจอขาว" เวลาข้อมูลในฐานข้อมูลแหว่ง
                             if (!curr.startDate || !curr.endDate) return acc;
                             
                             const start = new Date(curr.startDate.replace(/(\d{4})/, (m) => parseInt(m) - 543));
@@ -312,15 +308,25 @@
                                 <p className="text-blue-700 font-bold uppercase tracking-widest text-[10px] mt-2 italic font-black">Leave Online Cloud (พ.ศ. {currentYearBE})</p>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-5 font-black mb-10">
-                                {teachersList.map(t => (
-                                    <div key={t.id} onClick={() => { setSelectedTeacher(t); setShowLoginModal(true); }} className={`teacher-card p-5 rounded-[1.5rem] shadow-xl text-left flex flex-col justify-between h-40 group ${t.role === 'admin' ? 'border-blue-500' : ''}`}>
-                                        <div>
-                                            <h3 className="font-extrabold text-slate-900 text-lg leading-tight mb-2 break-words">{t.name}</h3>
-                                            <span className={`inline-block px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${t.role === 'admin' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>{t.pos}</span>
+                                {teachersList.map(t => {
+                                    // HACK: หั่นข้อความชื่อและนามสกุลออกจากกันเพื่อให้ขึ้นบรรทัดใหม่สวยงามเสมอ
+                                    const nameParts = t.name.split(' ');
+                                    const firstName = nameParts[0];
+                                    const lastName = nameParts.slice(1).join(' ');
+
+                                    return (
+                                        <div key={t.id} onClick={() => { setSelectedTeacher(t); setShowLoginModal(true); }} className={`teacher-card p-5 rounded-[1.5rem] shadow-xl text-left flex flex-col justify-between h-40 group ${t.role === 'admin' ? 'border-blue-500' : ''}`}>
+                                            <div>
+                                                <h3 className="font-extrabold text-slate-900 text-lg leading-tight mb-2">
+                                                    <span className="block">{firstName}</span>
+                                                    <span className="block">{lastName}</span>
+                                                </h3>
+                                                <span className={`inline-block px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${t.role === 'admin' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>{t.pos}</span>
+                                            </div>
+                                            <div className="flex justify-end items-center"><Icon name="chevron-right" className="text-slate-300 group-hover:text-blue-600 transition-colors" /></div>
                                         </div>
-                                        <div className="flex justify-end items-center"><Icon name="chevron-right" className="text-slate-300 group-hover:text-blue-600 transition-colors" /></div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                         <div className="mt-auto pt-8 pb-4 text-[10px] text-slate-500 font-bold tracking-widest uppercase">
@@ -514,4 +520,22 @@
                                                 <td className="px-6 md:px-8 py-6 text-center text-red-600 text-lg md:text-xl font-black">{t.sick.days} <span className="text-[10px] md:text-xs text-slate-400">({t.sick.times})</span></td>
                                                 <td className="px-6 md:px-8 py-6 text-center text-blue-600 text-lg md:text-xl font-black">{t.personal.days} <span className="text-[10px] md:text-xs text-slate-400">({t.personal.times})</span></td>
                                                 <td className="px-6 md:px-8 py-6 text-center text-amber-600 text-lg md:text-xl font-black">{t.others.days} <span className="text-[10px] md:text-xs text-slate-400">({t.others.times})</span></td>
-                                                <td className
+                                                <td className="px-6 md:px-8 py-6 text-center bg-slate-50 text-slate-900 text-xl md:text-2xl font-black">{t.total.days} <span className="text-[10px] md:text-xs text-slate-400">({t.total.times})</span></td>
+                                                <td className="px-6 md:px-8 py-6 text-right"><span className="text-[10px] bg-green-100 text-green-600 px-3 py-1 rounded-full uppercase font-black">Verified</span></td>
+                                            </tr>
+                                        ))}
+                                    </tbody></table></div>
+                                </div>
+                            </div>
+                        )}
+                        
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
