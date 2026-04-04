@@ -780,7 +780,7 @@
           return `${months[i]}: รายรับ=${s.inc.toLocaleString()} รายจ่าย=${s.exp.toLocaleString()} ออม=${s.save.toLocaleString()} คงเหลือ=${s.free.toLocaleString()}`;
         }).join('\n');
 
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
+       const response = await fetch('https://soft-dream-e329.porbboyza.workers.dev', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
