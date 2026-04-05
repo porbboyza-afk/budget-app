@@ -911,7 +911,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
+            model: 'claude-haiku-4-5-20251001',
             max_tokens: 1000,
             messages: [{
               role: 'user',
@@ -920,18 +920,11 @@
           })
         });
 
+        const data = await response.json();
         if (!response.ok) {
-          // Fallback to Gemini if Claude fails
-          const geminiKey = localStorage.getItem('gemini_api_key');
-          if (geminiKey) {
-            await analyzeWithGemini(summary, geminiKey);
-          } else {
-            throw new Error('AI ไม่พร้อมใช้งาน กรุณาลองใหม่อีกครั้ง');
-          }
-          return;
+          throw new Error(`Claude API Error: ${response.status} — ${data.error?.message || JSON.stringify(data)}`);
         }
 
-        const data = await response.json();
         const text = data.content?.[0]?.text || 'ไม่สามารถวิเคราะห์ได้';
         document.getElementById('aiContent').innerHTML = formatAIText(text);
         document.getElementById('aiModal').classList.add('show');
