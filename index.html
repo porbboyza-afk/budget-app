@@ -226,7 +226,36 @@
     .night .progress-bar-track { background: #334155; }
     .progress-bar-fill { height:100%; background:var(--success); transition:width 0.8s ease-out; }
 
-    /* Checkbox paid */
+    /* Pocket Budget */
+    .pocket-card {
+      background: var(--bg-card); border-radius: var(--radius); margin-bottom: 15px;
+      box-shadow: var(--shadow-soft); overflow: hidden;
+    }
+    .pocket-header {
+      padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer;
+    }
+    .pocket-title { font-weight: 700; font-size: 1rem; }
+    .pocket-badge {
+      font-size: 0.75rem; font-weight: 700; padding: 4px 10px;
+      border-radius: 50px; background: var(--primary-soft); color: var(--primary);
+    }
+    .pocket-body { padding: 0 20px 16px; border-top: 1px dashed rgba(0,0,0,0.06); }
+    .pocket-progress-track {
+      width: 100%; height: 8px; background: #f1f5f9; border-radius: 10px;
+      margin: 12px 0 6px; overflow: hidden;
+    }
+    .night .pocket-progress-track { background: #334155; }
+    .pocket-progress-fill { height: 100%; border-radius: 10px; transition: width 0.6s ease-out; }
+    .pocket-stats { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px; }
+    .pocket-entry { 
+      display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+      background: rgba(0,0,0,0.02); padding: 8px 12px; border-radius: 12px;
+    }
+    .night .pocket-entry { background: rgba(255,255,255,0.04); }
+    .pocket-entry-date { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; }
+    .pocket-entry-desc { flex: 1; font-size: 0.88rem; }
+    .pocket-entry-amt { font-weight: 700; font-size: 0.9rem; color: var(--danger); white-space: nowrap; }
     .paid-checkbox { display:none; }
     .paid-label {
       width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
@@ -379,10 +408,69 @@
   <!-- Bottom Navigation -->
   <div class="bottom-nav">
     <div class="nav-item active" id="nav-home" onclick="window.switchView('home')"><i class="fas fa-home"></i><span>หน้าหลัก</span></div>
+    <div class="nav-item" id="nav-pocket" onclick="window.switchView('pocket')"><i class="fas fa-wallet"></i><span>งบย่อย</span></div>
     <div class="nav-item" onclick="window.openChartModal('bar')"><i class="fas fa-chart-pie"></i><span>กราฟ</span></div>
     <div class="nav-item" onclick="window.analyzeBudgetWithAI()"><i class="fas fa-robot"></i><span>AI Coach</span></div>
-    <div class="nav-item" onclick="window.openToolsModal()"><i class="fas fa-tools"></i><span>เครื่องมือ</span></div>
     <div class="nav-item" onclick="window.openSettingsModal()"><i class="fas fa-cog"></i><span>ตั้งค่า</span></div>
+  </div>
+
+  <!-- ===== VIEW: POCKET BUDGET ===== -->
+  <div id="view-pocket" class="view-section">
+    <div class="main-container">
+
+      <!-- Header with month selector -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="margin:0; font-size:1.2rem;">💰 งบย่อยระหว่างเดือน</h2>
+        <select id="pocketMonthSelect" class="modern-input" style="width:auto; padding:8px 14px; font-size:0.85rem;" onchange="window.renderPocket()">
+          <option value="0">มกราคม</option><option value="1">กุมภาพันธ์</option>
+          <option value="2">มีนาคม</option><option value="3">เมษายน</option>
+          <option value="4">พฤษภาคม</option><option value="5">มิถุนายน</option>
+          <option value="6">กรกฎาคม</option><option value="7">สิงหาคม</option>
+          <option value="8">กันยายน</option><option value="9">ตุลาคม</option>
+          <option value="10">พฤศจิกายน</option><option value="11">ธันวาคม</option>
+        </select>
+      </div>
+
+      <!-- Summary bar -->
+      <div class="dashboard" style="margin-bottom:20px;">
+        <div class="balance-container" style="margin:0 0 15px;">
+          <div style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">เงินคงเหลือเดือนนี้ (ใช้ได้)</div>
+          <div class="balance-amount" id="pocketFreeBalance" style="font-size:2rem;">0</div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-item"><span class="stat-label">งบทั้งหมด</span><span class="stat-val" style="color:var(--primary)" id="pocketTotalBudget">0</span></div>
+          <div class="stat-item"><span class="stat-label">ใช้ไปแล้ว</span><span class="stat-val" style="color:var(--danger)" id="pocketTotalSpent">0</span></div>
+          <div class="stat-item" style="border-left:1px solid rgba(0,0,0,0.1)"><span class="stat-label">คงเหลือในงบ</span><span class="stat-val" style="color:var(--success)" id="pocketTotalLeft">0</span></div>
+        </div>
+      </div>
+
+      <!-- Pocket list -->
+      <div id="pocketList"></div>
+
+      <!-- Add pocket button -->
+      <button onclick="window.addPocket()" style="
+        width:100%; padding:16px; border-radius:22px; border: 2px dashed var(--primary);
+        background: var(--primary-soft); color:var(--primary); font-weight:800;
+        font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;
+        margin-top:5px;">
+        <i class="fas fa-plus"></i> เพิ่มหมวดงบย่อย
+      </button>
+
+      <div style="height:40px;"></div>
+    </div>
+  </div>
+
+  <!-- Modal: Add expense to pocket -->
+  <div class="modal" id="pocketExpenseModal">
+    <div class="modal-card" style="padding:30px 25px 25px;">
+      <span class="close-btn" onclick="closeModal('pocketExpenseModal')">&times;</span>
+      <h3 style="margin-top:0;" id="pocketExpenseTitle">บันทึกรายจ่าย</h3>
+      <input class="modern-input" id="pocketExpenseDesc" placeholder="รายการ เช่น ข้าวกลางวัน..." style="margin-bottom:12px;">
+      <input class="modern-input" type="number" id="pocketExpenseAmt" placeholder="จำนวนเงิน..." style="margin-bottom:20px;">
+      <button class="btn-full" style="background:var(--danger); color:#fff;" onclick="window.savePocketExpense()">
+        <i class="fas fa-check"></i> บันทึก
+      </button>
+    </div>
   </div>
 
   <!-- Chart Modal -->
@@ -498,10 +586,18 @@
 
     function startDataListener() {
       onSnapshot(doc(db, 'artifacts', appId, 'users', userId, 'budget_data', 'yearly'), (snap) => {
-        if (snap.exists() && document.activeElement.tagName !== 'INPUT') {
-          const data = snap.data();
-          if (data.monthlyData) { window.monthlyData = data.monthlyData; window.initDataAndRender(); }
-        }
+        if (!snap.exists()) return;
+        // ไม่ re-render ถ้ากำลังพิมพ์อยู่ (input, textarea, contenteditable)
+        const active = document.activeElement;
+        const isTyping = active && (
+          active.tagName === 'INPUT' || 
+          active.tagName === 'TEXTAREA' || 
+          active.tagName === 'SELECT' ||
+          active.contentEditable === 'true'
+        );
+        if (isTyping) return;
+        const data = snap.data();
+        if (data.monthlyData) { window.monthlyData = data.monthlyData; window.initDataAndRender(); }
       });
     }
 
@@ -522,9 +618,11 @@
     const extraSources = ["OT","โบนัส","ขายของ","ฟรีแลนซ์","ธุรกิจ","ของขวัญ","ครอบครัว","อื่นๆ"];
     const savingPurposes = ["เงินสำรอง","ลงทุน","เกษียณ","ท่องเที่ยว","บ้าน/รถ","การศึกษา","สุขภาพ","อื่นๆ"];
 
-    const defaultMonth = () => ({ salary: 0, extraList: [], savings: [], details: [], notes: [] });
+    const defaultMonth = () => ({ salary: 0, extraList: [], savings: [], details: [], notes: [], pockets: [] });
     window.monthlyData = JSON.parse(localStorage.getItem('yearlyBudget_v1')) || months.map(defaultMonth);
     window.currentMonthIndex = 0;
+    window.currentPocketMonthIndex = new Date().getMonth();
+    window.currentPocketIndex = null;
 
     // ── Utilities ──────────────────────────────────────────────
     function escapeHtml(t) {
@@ -556,7 +654,8 @@
     window.saveData = () => {
       localStorage.setItem('yearlyBudget_v1', JSON.stringify(window.monthlyData));
       clearTimeout(saveTimeout);
-      saveTimeout = setTimeout(() => { if (window.saveDataToCloud) window.saveDataToCloud(); }, 2000);
+      // debounce 5 วินาที เพื่อไม่ให้ cloud sync กระทบการพิมพ์
+      saveTimeout = setTimeout(() => { if (window.saveDataToCloud) window.saveDataToCloud(); }, 5000);
     };
 
     window.initDataAndRender = function() {
@@ -566,6 +665,7 @@
         extraList: Array.isArray(m.extraList) ? m.extraList : [],
         savings: Array.isArray(m.savings) ? m.savings : [],
         notes: Array.isArray(m.notes) ? m.notes : [],
+        pockets: Array.isArray(m.pockets) ? m.pockets : [],
       }));
       applyTheme();
       const storedKey = localStorage.getItem('gemini_api_key');
@@ -710,7 +810,13 @@
     window.updateSave = (i,f,v) => { window.monthlyData[window.currentMonthIndex].savings[i][f] = f==='amount'?Number(v):v; window.saveData(); updateMonthStatsUI(); };
     window.removeSave = (i) => { window.monthlyData[window.currentMonthIndex].savings.splice(i,1); window.saveData(); window.renderMonthDetail(); };
     window.addDetailCurrent = (t) => { window.monthlyData[window.currentMonthIndex].details.push({type:t,desc:'',amount:''}); window.saveData(); window.renderMonthDetail(); };
-    window.updateDetail = (i,f,v) => { window.monthlyData[window.currentMonthIndex].details[i][f] = f==='amount'?Number(v):v; window.saveData(); updateMonthStatsUI(); };
+    window.updateDetail = (i,f,v) => {
+      window.monthlyData[window.currentMonthIndex].details[i][f] = f==='amount'?Number(v):v;
+      window.saveData();
+      // ถ้าแก้ตัวเลข ให้อัปเดต stats เฉยๆ ไม่ re-render
+      // ถ้าแก้ข้อความ ไม่ต้องทำอะไรเพิ่ม (input ยังอยู่ใน focus)
+      if (f === 'amount') updateMonthStatsUI();
+    };
     window.removeDetail = (i) => { window.monthlyData[window.currentMonthIndex].details.splice(i,1); window.saveData(); window.renderMonthDetail(); };
     window.toggleType = (i) => { const d = window.monthlyData[window.currentMonthIndex].details[i]; d.type = d.type==='income'?'expense':'income'; window.saveData(); window.renderMonthDetail(); };
     window.togglePaid = (i) => { const d = window.monthlyData[window.currentMonthIndex].details[i]; d.paid = !d.paid; window.saveData(); window.renderMonthDetail(); };
@@ -776,6 +882,13 @@
         document.getElementById('view-home').classList.add('active');
         document.getElementById('nav-home').classList.add('active');
         window.renderHome();
+      } else if (v === 'pocket') {
+        document.getElementById('view-pocket').classList.add('active');
+        document.getElementById('nav-pocket').classList.add('active');
+        // set month selector to current month
+        const sel = document.getElementById('pocketMonthSelect');
+        if (sel) sel.value = window.currentPocketMonthIndex;
+        window.renderPocket();
       } else {
         document.getElementById('view-month').classList.add('active');
         window.renderMonthDetail();
@@ -858,6 +971,172 @@
       const geminiKey = localStorage.getItem('gemini_api_key');
       if (!geminiKey) { alert('กรุณาใส่ Gemini API Key ในหน้าตั้งค่า เพื่อใช้ฟีเจอร์สแกนสลิป'); window.openSettingsModal(); return; }
       document.getElementById('receiptInput').click();
+    };
+
+    // ── Pocket Budget ──────────────────────────────────────────
+    window.renderPocket = () => {
+      const sel = document.getElementById('pocketMonthSelect');
+      window.currentPocketMonthIndex = sel ? Number(sel.value) : new Date().getMonth();
+      const m = window.monthlyData[window.currentPocketMonthIndex];
+      const stats = calculateStats(m);
+      const pockets = m.pockets || [];
+
+      // summary
+      const totalBudget = pockets.reduce((s, p) => s + Number(p.budget||0), 0);
+      const totalSpent = pockets.reduce((s, p) => s + (p.entries||[]).reduce((a, e) => a + Number(e.amount||0), 0), 0);
+      setEl('pocketFreeBalance', stats.free.toLocaleString());
+      setEl('pocketTotalBudget', totalBudget.toLocaleString());
+      setEl('pocketTotalSpent', totalSpent.toLocaleString());
+      setEl('pocketTotalLeft', (totalBudget - totalSpent).toLocaleString());
+
+      const colors = ['#5e72e4','#2dce89','#fb6340','#f5365c','#11cdef','#8e44ad','#e67e22','#1abc9c'];
+      const list = document.getElementById('pocketList');
+      if (!list) return;
+
+      if (!pockets.length) {
+        list.innerHTML = '<div style="text-align:center; padding:40px 0; color:var(--text-muted);"><i class="fas fa-wallet" style="font-size:3rem; opacity:0.2; display:block; margin-bottom:15px;"></i>ยังไม่มีหมวดงบย่อย<br><small>กด "เพิ่มหมวดงบย่อย" ด้านล่าง</small></div>';
+        return;
+      }
+
+      list.innerHTML = pockets.map((p, pi) => {
+        const spent = (p.entries||[]).reduce((s, e) => s + Number(e.amount||0), 0);
+        const budget = Number(p.budget||0);
+        const pct = budget > 0 ? Math.min((spent/budget)*100, 100) : 0;
+        const color = colors[pi % colors.length];
+        const left = budget - spent;
+        const isOver = left < 0;
+
+        return `<div class="pocket-card">
+          <div class="pocket-header" onclick="togglePocketBody(${pi})">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div style="width:12px;height:12px;border-radius:50%;background:${color};flex-shrink:0;"></div>
+              <div>
+                <div class="pocket-title">${escapeHtml(p.name||'ไม่มีชื่อ')}</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);">งบ ${budget.toLocaleString()} บาท</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="pocket-badge" style="${isOver?'background:#fee2e2;color:#dc2626;':''}">
+                ${isOver ? '⚠️ เกินงบ' : `เหลือ ${left.toLocaleString()}`}
+              </span>
+              <i class="fas fa-chevron-down" style="color:var(--text-muted); font-size:0.8rem;"></i>
+            </div>
+          </div>
+          <div class="pocket-body" id="pocket-body-${pi}" style="display:none;">
+            <div class="pocket-progress-track">
+              <div class="pocket-progress-fill" style="width:${pct}%; background:${isOver?'var(--danger)':color};"></div>
+            </div>
+            <div class="pocket-stats">
+              <span>ใช้ไป ${spent.toLocaleString()} บาท</span>
+              <span>${pct.toFixed(0)}%</span>
+            </div>
+
+            <!-- Edit name & budget -->
+            <div style="display:flex; gap:8px; margin-bottom:12px;">
+              <input class="modern-input" style="flex:2; padding:10px 14px; font-size:0.9rem;"
+                value="${escapeHtml(p.name||'')}" placeholder="ชื่อหมวด..."
+                onchange="updatePocket(${pi},'name',this.value)">
+              <input class="modern-input" type="number" style="flex:1; padding:10px 14px; font-size:0.9rem;"
+                value="${budget||''}" placeholder="งบ..."
+                onchange="updatePocket(${pi},'budget',this.value)">
+              <button class="btn-del-modern" onclick="removePocket(${pi})" title="ลบหมวดนี้"><i class="fas fa-trash"></i></button>
+            </div>
+
+            <!-- Entries -->
+            <div style="margin-bottom:10px;">
+              ${(p.entries||[]).length
+                ? (p.entries||[]).map((e, ei) => `
+                  <div class="pocket-entry">
+                    <span class="pocket-entry-date">${formatDate(e.date)}</span>
+                    <span class="pocket-entry-desc">${escapeHtml(e.desc||'-')}</span>
+                    <span class="pocket-entry-amt">-${Number(e.amount).toLocaleString()}</span>
+                    <button class="btn-del-modern" onclick="removePocketEntry(${pi},${ei})"><i class="fas fa-times"></i></button>
+                  </div>`).join('')
+                : '<div style="text-align:center;color:#ccc;font-size:0.8rem;padding:8px;">ยังไม่มีรายจ่าย</div>'
+              }
+            </div>
+
+            <button onclick="window.openPocketExpense(${pi})" style="
+              width:100%; padding:10px; border-radius:50px; border:none;
+              background:${color}22; color:${color}; font-weight:800; cursor:pointer;">
+              <i class="fas fa-plus"></i> บันทึกรายจ่าย
+            </button>
+          </div>
+        </div>`;
+      }).join('');
+    };
+
+    window.togglePocketBody = (pi) => {
+      const body = document.getElementById(`pocket-body-${pi}`);
+      if (!body) return;
+      body.style.display = body.style.display === 'none' ? 'block' : 'none';
+    };
+
+    window.addPocket = () => {
+      const m = window.monthlyData[window.currentPocketMonthIndex];
+      if (!m.pockets) m.pockets = [];
+      m.pockets.push({ name: '', budget: 0, entries: [] });
+      window.saveData();
+      window.renderPocket();
+      // auto open the new pocket
+      setTimeout(() => {
+        const bodies = document.querySelectorAll('[id^="pocket-body-"]');
+        if (bodies.length) bodies[bodies.length-1].style.display = 'block';
+      }, 50);
+    };
+
+    window.updatePocket = (pi, field, val) => {
+      const m = window.monthlyData[window.currentPocketMonthIndex];
+      m.pockets[pi][field] = field === 'budget' ? Number(val) : val;
+      window.saveData();
+      window.renderPocket();
+    };
+
+    window.removePocket = (pi) => {
+      if (!confirm('ลบหมวดนี้ทั้งหมด?')) return;
+      window.monthlyData[window.currentPocketMonthIndex].pockets.splice(pi, 1);
+      window.saveData();
+      window.renderPocket();
+    };
+
+    window.openPocketExpense = (pi) => {
+      window.currentPocketIndex = pi;
+      const p = window.monthlyData[window.currentPocketMonthIndex].pockets[pi];
+      setEl('pocketExpenseTitle', `บันทึกรายจ่าย — ${p.name||'ไม่มีชื่อ'}`);
+      document.getElementById('pocketExpenseDesc').value = '';
+      document.getElementById('pocketExpenseAmt').value = '';
+      document.getElementById('pocketExpenseModal').classList.add('show');
+      setTimeout(() => document.getElementById('pocketExpenseDesc').focus(), 100);
+    };
+
+    window.savePocketExpense = () => {
+      const desc = document.getElementById('pocketExpenseDesc').value.trim();
+      const amt = Number(document.getElementById('pocketExpenseAmt').value);
+      if (!amt) { alert('กรุณาใส่จำนวนเงิน'); return; }
+      const m = window.monthlyData[window.currentPocketMonthIndex];
+      m.pockets[window.currentPocketIndex].entries.push({
+        desc: desc || 'ไม่ระบุ',
+        amount: amt,
+        date: new Date().toISOString()
+      });
+      window.saveData();
+      window.closeModal('pocketExpenseModal');
+      window.renderPocket();
+      // re-open the pocket body
+      setTimeout(() => {
+        const body = document.getElementById(`pocket-body-${window.currentPocketIndex}`);
+        if (body) body.style.display = 'block';
+      }, 50);
+    };
+
+    window.removePocketEntry = (pi, ei) => {
+      window.monthlyData[window.currentPocketMonthIndex].pockets[pi].entries.splice(ei, 1);
+      window.saveData();
+      window.renderPocket();
+      setTimeout(() => {
+        const body = document.getElementById(`pocket-body-${pi}`);
+        if (body) body.style.display = 'block';
+      }, 50);
     };
 
     // ── Tools ──────────────────────────────────────────────────
