@@ -26,6 +26,9 @@
     * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0; padding:0; }
     body { font-family:'Inter','Sarabun',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h) + 16px); overscroll-behavior-y:none; }
     .wrap { max-width:600px; margin:0 auto; padding:16px 16px 24px; }
+    .desktop-grid { display: block; } /* mobile: stack normally */
+    .desktop-left, .desktop-right { display: block; }
+    .nav-logo { display: none; } /* mobile: hide sidebar logo */
     .view { display:none; }
     .view.active { display:block; animation:up 0.3s ease; }
     @keyframes up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
@@ -203,7 +206,6 @@
     @media (min-width: 900px) {
       body { padding-bottom: 0; }
 
-      /* Sidebar nav แทน bottom nav */
       .bot-nav {
         position: fixed; top: 0; left: 0; bottom: 0; width: 220px; height: 100vh;
         flex-direction: column; justify-content: flex-start; align-items: flex-start;
@@ -214,29 +216,34 @@
       .nav-item { width: 100%; flex-direction: row; justify-content: flex-start; gap: 12px; padding: 12px 16px; border-radius: 12px; }
       .nav-item i { font-size: 1rem; }
       .nav-item span { font-size: 0.88rem; font-weight: 600; }
-      .nav-logo { display: flex; align-items: center; gap: 8px; padding: 8px 16px 24px; margin-bottom: 8px; border-bottom: 1px solid var(--border); width: 100%; font-size: 1.1rem; font-weight: 800; }
-      .nav-logo span { color: var(--blue); }
+      .nav-logo { display: flex !important; }
 
-      /* Topbar becomes header */
       .topbar { position: fixed; top: 0; left: 220px; right: 0; z-index: 400; background: rgba(10,10,15,0.9); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 14px 32px; }
 
-      /* Main content area */
-      body > .view, body > div[id^="view-"] { margin-left: 220px; padding-top: 64px; }
+      .view.active { margin-left: 220px; padding-top: 64px; }
 
-      /* 2-column layout for home */
-      .desktop-grid { display: grid; grid-template-columns: 380px 1fr; gap: 24px; max-width: 1200px; margin: 0 auto; padding: 24px 32px; }
-      .desktop-left { position: sticky; top: 88px; height: fit-content; }
+      /* 2-column grid — desktop only */
+      .desktop-grid { display: grid !important; grid-template-columns: 360px 1fr; gap: 24px; max-width: 1200px; margin: 0 auto; padding: 24px 32px; align-items: start; }
+      .desktop-left { position: sticky; top: 88px; }
       .desktop-right { min-width: 0; }
-      .wrap { max-width: 100%; padding: 0; }
 
-      /* Bigger cards on desktop */
       .hero { padding: 32px 28px; }
       .h-amt { font-size: 3rem; }
-      .card { border-radius: 18px; }
-      .mc { border-radius: 14px; padding: 16px 20px; }
+      .mc { padding: 16px 20px; }
       .mc-name { font-size: 1rem; }
-      .mc-bal { font-size: 1.05rem; }
 
-      /* AI popup bigger on desktop */
       .ai-fab { right: 32px; bottom: 32px; width: 56px; height: 56px; }
-      .ai-popup { right: 32px; left: auto; width: 400
+      .ai-popup { right: 32px; left: auto; width: 400px; max-height: 600px; bottom: 110px; }
+
+      .modal { align-items: center; padding: 20px; }
+      .modal-card { border-radius: 24px; max-width: 520px; max-height: 80vh; }
+      .mhandle { display: none; }
+
+      .nav-top { padding: 24px 32px 16px; max-width: 100%; }
+      .wrap { max-width: 860px; }
+    }
+  </style>
+</head>
+<body>
+
+<div cl
