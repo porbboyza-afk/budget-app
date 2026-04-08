@@ -239,7 +239,12 @@
       .mc-name { font-size: 1rem; }
 
       .ai-fab { right: 32px; bottom: 32px; width: 56px; height: 56px; }
-      .ai-popup { right: 32px; left: auto; width: 400px; max-height: 600px; bottom: 110px; }
+      .ai-popup { 
+        right: 32px; left: auto; width: 480px; 
+        max-height: calc(100vh - 120px); bottom: 100px;
+        resize: both; overflow: auto;
+        min-width: 320px; min-height: 300px;
+      }
 
       .modal { align-items: center; padding: 20px; }
       .modal-card { border-radius: 24px; max-width: 520px; max-height: 80vh; }
@@ -411,7 +416,7 @@
       <div class="ai-live"></div>
       <div><h4>AI Coach</h4><span>ออนไลน์ตลอด 24 ชม.</span></div>
     </div>
-    <button class="ai-close" onclick="window.toggleAiChat()">&times;</button>
+    <button class="ai-close" onclick="window.closeAiChat()">&times;</button>
   </div>
   <div class="ai-msgs" id="aiMessages">
     <div class="ai-msg bot">สวัสดีครับ! 👋 ผมคือ AI Coach ด้านการเงิน ถามได้เลยครับ เช่น วิเคราะห์การใช้จ่าย หรือวางแผนเดือนหน้า</div>
@@ -575,7 +580,16 @@
   window.openChartModal=(type)=>{document.getElementById('chartModal').classList.add('show');document.querySelectorAll('.chart-pill').forEach(b=>b.classList.remove('active'));const btn=document.getElementById('btn-chart-'+type);if(btn)btn.classList.add('active');const ctx=document.getElementById('chart').getContext('2d');if(window.myMainChartObj)window.myMainChartObj.destroy();const co={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#9090a8'}}}};if(type==='bar'){setEl('modalChartTitle','รายรับ-รายจ่าย รายเดือน');window.myMainChartObj=new Chart(ctx,{type:'bar',data:{labels:months,datasets:[{label:'รับ',data:window.monthlyData.map(m=>calcS(m).inc),backgroundColor:'rgba(0,208,132,0.7)'},{label:'จ่าย',data:window.monthlyData.map(m=>calcS(m).exp),backgroundColor:'rgba(255,77,109,0.7)'}]},options:{...co,scales:{x:{ticks:{color:'#6b6b80'}},y:{ticks:{color:'#6b6b80'}}}}});}else if(type==='pie'){setEl('modalChartTitle','สัดส่วนรายจ่าย');const em={};window.monthlyData.forEach(m=>(m.details||[]).filter(d=>d.type==='expense').forEach(d=>{const k=d.desc.trim()||'อื่นๆ';em[k]=(em[k]||0)+Number(d.amount);}));const ent=Object.entries(em).sort((a,b)=>b[1]-a[1]).slice(0,8);window.myMainChartObj=new Chart(ctx,{type:'doughnut',data:{labels:ent.map(e=>e[0]),datasets:[{data:ent.map(e=>e[1]),backgroundColor:COLORS}]},options:co});}else if(type==='line'){setEl('modalChartTitle','เงินออมสะสม');window.myMainChartObj=new Chart(ctx,{type:'line',data:{labels:months,datasets:[{label:'เงินออม',data:window.monthlyData.map(m=>calcS(m).save),borderColor:'var(--blue)',fill:true,backgroundColor:'rgba(77,159,255,0.08)',tension:0.4}]},options:{...co,scales:{x:{ticks:{color:'#6b6b80'}},y:{ticks:{color:'#6b6b80'}}}}});}};
 
   // AI Chat
-  window.toggleAiChat=()=>{const p=document.getElementById('aiPopup');p.classList.toggle('open');if(p.classList.contains('open'))setTimeout(()=>document.getElementById('aiChatInput').focus(),200);};
+  window.toggleAiChat=()=>{
+    const p=document.getElementById('aiPopup');
+    if(p.classList.contains('open')) window.closeAiChat();
+    else { p.classList.add('open'); setTimeout(()=>document.getElementById('aiChatInput').focus(),200); }
+  };
+  window.closeAiChat=()=>{
+    const p=document.getElementById('aiPopup');
+    p.classList.remove('open');
+    p.classList.remove('keyboard-open');
+  };
 
   function getCtx(){return window.monthlyData.map((m,i)=>{const s=calcS(m);return `${months[i]}: รายรับ=${fmt(s.inc)} รายจ่าย=${fmt(s.exp)} ออม=${fmt(s.save)} คงเหลือ=${fmt(s.free)}`;}).join('\n');}
 
