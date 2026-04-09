@@ -240,7 +240,7 @@
 
       .ai-fab { right: 32px; bottom: 32px; width: 56px; height: 56px; }
       .ai-popup { 
-        right: 32px; left: auto; width: 480px; 
+        right: auto; left: 32px; width: 480px; 
         max-height: calc(100vh - 120px); bottom: 100px;
         resize: both; overflow: auto;
         min-width: 320px; min-height: 300px;
@@ -621,11 +621,18 @@
   window.triggerScanCurrent=()=>{document.getElementById('receiptInput').click();};
 
   window.onload=function(){
-    // Keyboard detection for AI popup
+    // Keyboard detection for AI popup (mobile only)
     const aiInp=document.getElementById('aiChatInput');
     if(aiInp){
-      aiInp.addEventListener('focus',()=>{setTimeout(()=>{const p=document.getElementById('aiPopup');if(p)p.classList.add('keyboard-open');const m=document.getElementById('aiMessages');if(m)m.scrollTop=m.scrollHeight;},300);});
-      aiInp.addEventListener('blur',()=>{const p=document.getElementById('aiPopup');if(p)p.classList.remove('keyboard-open');});
+      aiInp.addEventListener('focus',()=>{
+        if(window.innerWidth>=900)return; // desktop ไม่ต้องทำ
+        setTimeout(()=>{const p=document.getElementById('aiPopup');if(p)p.classList.add('keyboard-open');const m=document.getElementById('aiMessages');if(m)m.scrollTop=m.scrollHeight;},300);
+      });
+      aiInp.addEventListener('blur',()=>{
+        if(window.innerWidth>=900)return;
+        // delay เพื่อไม่รบกวน click event ของปุ่มปิด
+        setTimeout(()=>{const p=document.getElementById('aiPopup');if(p)p.classList.remove('keyboard-open');},200);
+      });
     }
     const input=document.getElementById('receiptInput');
     if(input){
