@@ -1,697 +1,1024 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>MyWealth</title>
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="MyWealth">
-  <meta name="theme-color" content="#0a0a0f">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #0a0a0f; --bg2: #111118; --card: #16161f; --card2: #1c1c28;
-      --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
-      --text: #f0f0f8; --muted: #6b6b80; --muted2: #9090a8;
-      --green: #00d084; --green-s: rgba(0,208,132,0.12);
-      --red: #ff4d6d; --red-s: rgba(255,77,109,0.12);
-      --blue: #4d9fff; --blue-s: rgba(77,159,255,0.12);
-      --gold: #f5c842; --purple: #a78bfa;
-      --nav-h: 75px; --r: 20px; --r-sm: 12px;
-    }
-    * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0; padding:0; }
-    body { font-family:'Inter','Sarabun',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:calc(var(--nav-h) + 16px); overscroll-behavior-y:none; }
-    .wrap { max-width:600px; margin:0 auto; padding:16px 16px 24px; }
-    .desktop-grid { display:block; }
-    .desktop-left, .desktop-right { display:block; }
-    .nav-logo { display:none; font-size:1.1rem; font-weight:800; padding:8px 16px 24px; margin-bottom:8px; border-bottom:1px solid var(--border); width:100%; align-items:center; }
-    .nav-logo span { color:var(--blue); }
-    .view { display:none; }
-    .view.active { display:block; animation:up 0.3s ease; }
-    @keyframes up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-    .hidden { display:none !important; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>MyWealth</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#080810">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Tokens ── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#080810;--bg1:#0f0f1a;--bg2:#141422;--card:#1a1a2e;--card2:#1f1f35;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+  --text:#eeeef8;--sub:#8888aa;--hint:#555570;
+  --green:#00e096;--green2:rgba(0,224,150,0.12);
+  --red:#ff4567;--red2:rgba(255,69,103,0.12);
+  --blue:#4d8fff;--blue2:rgba(77,143,255,0.12);
+  --purple:#9b72ff;--gold:#f5c842;
+  --nav:72px;--r:18px;--r2:12px;
+  --shadow:0 8px 32px rgba(0,0,0,0.4);
+}
+body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overscroll-behavior:none;padding-bottom:calc(var(--nav)+24px)}
+img,svg{display:block}
+.hidden{display:none!important}
 
-    /* Topbar */
-    .topbar { display:flex; justify-content:space-between; align-items:center; padding:16px 16px 0; max-width:600px; margin:0 auto; }
-    .logo { font-size:1.1rem; font-weight:800; letter-spacing:-0.5px; }
-    .logo span { color:var(--blue); }
-    .cloud-pill { font-size:0.68rem; font-weight:700; padding:5px 10px; border-radius:20px; background:var(--card2); color:var(--muted2); border:1px solid var(--border); }
-    .cloud-pill.ok { color:var(--green); border-color:rgba(0,208,132,0.3); background:var(--green-s); }
-    .av { width:32px; height:32px; border-radius:50%; object-fit:cover; display:none; border:2px solid var(--border2); margin-left:8px; }
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 
-    /* Hero */
-    .hero { background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%); border-radius:var(--r); padding:26px 22px; margin-bottom:14px; position:relative; overflow:hidden; border:1px solid var(--border2); }
-    .hero::before { content:''; position:absolute; top:-40px; right:-40px; width:160px; height:160px; border-radius:50%; background:radial-gradient(circle,rgba(77,159,255,0.18) 0%,transparent 70%); }
-    .h-label { font-size:0.73rem; color:rgba(255,255,255,0.45); font-weight:600; margin-bottom:5px; }
-    .h-amt { font-size:2.5rem; font-weight:800; letter-spacing:-1.5px; line-height:1.05; }
-    .h-sub { font-size:0.78rem; color:rgba(255,255,255,0.4); margin-top:8px; }
-    .h-sub b { color:rgba(255,255,255,0.8); }
-    .h-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:rgba(255,255,255,0.06); border-radius:12px; margin-top:18px; overflow:hidden; }
-    .hs { background:rgba(0,0,0,0.25); padding:11px 8px; text-align:center; }
-    .hs-l { font-size:0.62rem; color:rgba(255,255,255,0.38); font-weight:700; text-transform:uppercase; letter-spacing:0.4px; display:block; margin-bottom:3px; }
-    .hs-v { font-size:0.88rem; font-weight:700; }
+/* ── Views ── */
+.view{display:none;animation:fadeUp .28s ease both}
+.view.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
-    /* Section */
-    .sec-t { font-size:0.75rem; font-weight:700; color:var(--muted2); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
-    .card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:18px; margin-bottom:12px; }
-    .card-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-    .card-t { font-size:0.85rem; font-weight:700; }
+/* ── Wrap ── */
+.wrap{max-width:520px;margin:0 auto;padding:0 16px 20px}
 
-    /* Month card */
-    .mc { background:var(--card); border:1px solid var(--border); border-radius:var(--r-sm); padding:13px 15px; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; cursor:pointer; transition:all 0.2s; }
-    .mc:active { transform:scale(0.98); background:var(--card2); }
-    .mc-l { display:flex; align-items:center; gap:11px; }
-    .mc-n { width:36px; height:36px; border-radius:10px; background:var(--card2); border:1px solid var(--border2); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.82rem; color:var(--muted2); }
-    .mc-name { font-weight:600; font-size:0.92rem; }
-    .mc-sub { font-size:0.7rem; color:var(--muted); margin-top:1px; }
-    .mc-bal { font-weight:800; font-size:0.95rem; }
+/* ── Topbar ── */
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:20px 20px 0;max-width:520px;margin:0 auto}
+.app-logo{font-size:1.15rem;font-weight:800;letter-spacing:-.5px}
+.app-logo span{color:var(--blue)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.sync-badge{font-size:.65rem;font-weight:700;padding:5px 10px;border-radius:20px;background:var(--card2);color:var(--sub);border:1px solid var(--border);transition:all .3s}
+.sync-badge.ok{color:var(--green);border-color:rgba(0,224,150,.3);background:var(--green2)}
+.user-av{width:32px;height:32px;border-radius:50%;object-fit:cover;display:none;border:2px solid var(--border2)}
 
-    /* Portfolio */
-    .port-wrap { display:flex; gap:14px; align-items:center; margin-top:8px; }
-    .port-chart { width:78px; height:78px; flex-shrink:0; }
-    .port-list { flex:1; }
-    .port-item { display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; font-size:0.76rem; }
-    .port-dot { width:7px; height:7px; border-radius:50%; margin-right:5px; display:inline-block; }
+/* ── Hero Balance ── */
+.hero{
+  background:linear-gradient(145deg,#1a1a3e 0%,#0d1b4b 60%,#0a0f2e 100%);
+  border-radius:var(--r);padding:24px 20px 20px;margin:16px 0 12px;
+  position:relative;overflow:hidden;border:1px solid var(--border2);
+}
+.hero::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(77,143,255,.2),transparent 70%)}
+.hero::after{content:'';position:absolute;bottom:-40px;left:-20px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(0,224,150,.08),transparent 70%)}
+.hero-label{font-size:.7rem;color:rgba(255,255,255,.45);font-weight:600;letter-spacing:.5px;margin-bottom:4px}
+.hero-amt{font-size:2.6rem;font-weight:800;letter-spacing:-1.5px;line-height:1;transition:color .3s}
+.hero-sub{font-size:.75rem;color:rgba(255,255,255,.38);margin-top:8px}
+.hero-sub b{color:rgba(255,255,255,.75)}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr 1fr;margin-top:16px;gap:1px;background:rgba(255,255,255,.06);border-radius:12px;overflow:hidden}
+.hg-item{background:rgba(0,0,0,.28);padding:10px 8px;text-align:center}
+.hg-label{font-size:.58rem;color:rgba(255,255,255,.36);font-weight:700;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:2px}
+.hg-val{font-size:.85rem;font-weight:700}
 
-    /* Nav top */
-    .nav-top { display:flex; align-items:center; gap:12px; padding:18px 16px 8px; max-width:600px; margin:0 auto; }
-    .btn-back { width:40px; height:40px; border-radius:11px; background:var(--card); border:1px solid var(--border); color:var(--text); font-size:0.95rem; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
-    .page-t { font-size:1.1rem; font-weight:800; }
+/* ── Month Scroll Cards ── */
+.month-scroll{display:flex;gap:10px;overflow-x:auto;padding:4px 0 8px;scroll-snap-type:x mandatory}
+.month-scroll::-webkit-scrollbar{display:none}
+.mcard{
+  flex-shrink:0;width:130px;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r2);padding:14px 12px;cursor:pointer;scroll-snap-align:start;
+  transition:transform .2s,background .2s;
+}
+.mcard:active{transform:scale(.96)}
+.mcard.today{border-color:var(--blue);background:var(--blue2)}
+.mcard-num{font-size:.65rem;color:var(--sub);font-weight:700;margin-bottom:6px}
+.mcard-name{font-size:.82rem;font-weight:700;margin-bottom:6px}
+.mcard-bal{font-size:.9rem;font-weight:800}
 
-    /* Inputs */
-    .inp { width:100%; padding:11px 13px; border-radius:var(--r-sm); border:1px solid var(--border); background:var(--bg2); color:var(--text); font-size:0.92rem; font-family:'Sarabun','Inter'; outline:none; transition:border-color 0.2s; }
-    .inp:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(77,159,255,0.08); }
-    .inp-sm { padding:8px 11px; font-size:0.85rem; border-radius:10px; }
-    .inp-num { text-align:right; width:85px; }
+/* ── Section title ── */
+.sec-title{font-size:.7rem;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px}
 
-    /* Detail rows */
-    .drow { display:flex; align-items:center; gap:7px; margin-bottom:7px; background:var(--bg2); padding:8px 9px; border-radius:var(--r-sm); border:1px solid var(--border); }
-    .drow.paid { opacity:0.45; }
-    .bdg { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.82rem; color:#fff; flex-shrink:0; cursor:pointer; }
-    .b-inc { background:var(--green); } .b-exp { background:var(--red); }
-    .desc-inp { flex:1; min-width:0; background:transparent; border:none; color:var(--text); font-size:0.88rem; font-family:'Sarabun','Inter'; outline:none; padding:3px 0; }
-    .amt-inp { width:80px; text-align:right; background:transparent; border:none; color:var(--text); font-weight:700; font-size:0.88rem; outline:none; }
-    .paid-box { width:24px; height:24px; border-radius:7px; border:1.5px solid var(--border2); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:all 0.2s; font-size:0.68rem; color:#fff; }
-    .paid-box.on { background:var(--green); border-color:var(--green); }
-    .del-btn { width:24px; height:24px; border-radius:50%; border:none; background:var(--red-s); color:var(--red); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.72rem; flex-shrink:0; }
-    .sel { flex:1; background:transparent; border:none; color:var(--text); font-size:0.88rem; font-family:'Sarabun','Inter'; outline:none; }
-    .sel option { background:var(--card2); color:var(--text); }
+/* ── Portfolio mini ── */
+.port-row{display:flex;align-items:center;gap:14px}
+.port-canvas{width:72px;height:72px;flex-shrink:0}
+.port-list{flex:1;display:flex;flex-direction:column;gap:5px}
+.port-item{display:flex;justify-content:space-between;font-size:.73rem}
+.port-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:5px;flex-shrink:0}
 
-    /* Buttons */
-    .btn-pill { padding:8px 16px; border-radius:50px; border:none; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; font-size:0.8rem; transition:all 0.15s; }
-    .btn-pill:active { transform:scale(0.95); }
-    .btn-g { background:var(--green); color:#000; } .btn-b { background:var(--blue); color:#000; }
-    .btn-r { background:var(--red); color:#fff; } .btn-p { background:var(--purple); color:#000; }
-    .btn-full { width:100%; padding:13px; border-radius:50px; border:none; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; font-size:0.92rem; margin-bottom:9px; transition:all 0.15s; }
+/* ── Nav Back ── */
+.page-header{display:flex;align-items:center;gap:12px;padding:18px 16px 8px;max-width:520px;margin:0 auto}
+.btn-back{width:38px;height:38px;border-radius:10px;background:var(--card);border:1px solid var(--border);color:var(--text);font-size:.9rem;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .2s}
+.btn-back:active{background:var(--card2)}
+.page-title{font-size:1.05rem;font-weight:800}
 
-    /* Action Grid */
-    .act-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; margin:18px 0; }
-    .act-btn { border-radius:16px; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; color:#fff; height:76px; font-weight:700; font-size:0.75rem; transition:transform 0.15s; }
-    .act-btn:active { transform:scale(0.93); }
-    .act-btn i { font-size:1.15rem; }
-    .act-inc { background:linear-gradient(135deg,var(--green),#00b8a9); }
-    .act-exp { background:linear-gradient(135deg,var(--red),#ff6b35); }
-    .act-scan { background:linear-gradient(135deg,#6366f1,#8b5cf6); }
+/* ── Tab Bar ── */
+.tab-bar{display:flex;background:var(--card);border-radius:12px;padding:4px;margin:0 16px 16px;max-width:520px;margin-left:auto;margin-right:auto;gap:2px}
+.tab{flex:1;padding:9px 4px;border-radius:9px;border:none;background:transparent;color:var(--sub);font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Prompt',sans-serif}
+.tab.active{background:var(--blue);color:#fff}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fadeUp .22s ease both}
 
-    /* Progress */
-    .prog-t { width:100%; height:5px; background:rgba(255,255,255,0.07); border-radius:10px; overflow:hidden; margin:11px 0 3px; }
-    .prog-f { height:100%; border-radius:10px; transition:width 0.8s ease; }
+/* ── Card ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.card-title{font-size:.82rem;font-weight:700}
 
-    /* Stats Row */
-    .sr-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:var(--border); border-radius:12px; overflow:hidden; margin-top:13px; }
-    .sr { background:var(--card2); padding:11px 8px; text-align:center; }
-    .sr-l { font-size:0.6rem; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:3px; }
-    .sr-v { font-size:0.85rem; font-weight:700; }
+/* ── Stats mini card ── */
+.stats-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.scard{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:12px 10px;text-align:center}
+.scard-label{font-size:.6rem;color:var(--sub);font-weight:700;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px}
+.scard-val{font-size:.9rem;font-weight:800}
 
-    /* Bottom Nav */
-    .bot-nav { position:fixed; bottom:0; left:0; width:100%; height:var(--nav-h); background:rgba(17,17,24,0.94); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; align-items:center; z-index:500; padding-bottom:env(safe-area-inset-bottom); }
-    .nav-item { display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--muted); cursor:pointer; transition:color 0.2s; padding:7px 10px; border-radius:14px; width:19%; }
-    .nav-item.active { color:var(--blue); background:var(--blue-s); }
-    .nav-item i { font-size:1.1rem; } .nav-item span { font-size:0.58rem; font-weight:700; }
+/* ── Progress bar ── */
+.prog-track{width:100%;height:5px;background:rgba(255,255,255,.07);border-radius:10px;overflow:hidden;margin:10px 0 4px}
+.prog-fill{height:100%;border-radius:10px;transition:width .8s ease}
 
-    /* Modals */
-    .modal { display:none; position:fixed; inset:0; z-index:600; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); align-items:flex-end; justify-content:center; }
-    .modal.show { display:flex; }
-    .modal-card { background:var(--card); width:100%; max-width:600px; border-radius:26px 26px 0 0; padding:24px 18px 30px; position:relative; border-top:1px solid var(--border2); max-height:88vh; overflow-y:auto; animation:slideUp 0.3s ease; }
-    @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
-    .mhandle { width:38px; height:4px; background:var(--border2); border-radius:2px; margin:0 auto 18px; }
-    .close-btn { position:absolute; top:18px; right:18px; width:30px; height:30px; background:var(--card2); border:1px solid var(--border); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--muted2); cursor:pointer; font-size:0.95rem; }
-    .msec { background:var(--bg2); border-radius:var(--r-sm); padding:14px; margin-bottom:14px; border:1px solid var(--border); }
-    .msec h4 { font-size:0.75rem; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; }
-    .chart-pill { flex:1; padding:9px; border-radius:50px; border:1px solid var(--border); background:transparent; color:var(--muted2); font-weight:700; font-size:0.78rem; cursor:pointer; }
-    .chart-pill.active { border-color:var(--blue); color:var(--blue); background:var(--blue-s); }
+/* ── Input ── */
+.inp{width:100%;padding:11px 14px;border-radius:var(--r2);border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:.9rem;font-family:'Prompt',sans-serif;outline:none;transition:border-color .2s}
+.inp:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(77,143,255,.1)}
+.inp::placeholder{color:var(--hint)}
+.inp-sm{padding:8px 11px;font-size:.82rem;border-radius:10px}
+.inp-num{text-align:right;width:85px}
 
-    /* Notes */
-    .note-item { background:var(--bg2); border-radius:var(--r-sm); padding:11px; margin-bottom:7px; border:1px solid var(--border); border-left:3px solid var(--blue); }
-    .note-date { font-size:0.66rem; color:var(--muted); margin-bottom:4px; }
-    .note-row { display:flex; gap:7px; align-items:flex-start; }
-    .note-text { flex:1; font-size:0.86rem; line-height:1.5; outline:none; background:transparent; color:var(--text); }
+/* ── Row item ── */
+.row-item{display:flex;align-items:center;gap:8px;background:var(--bg2);padding:9px 10px;border-radius:var(--r2);border:1px solid var(--border);margin-bottom:7px}
+.row-item.paid-row{opacity:.42}
+.badge{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0;cursor:pointer;transition:transform .15s}
+.badge:active{transform:scale(.88)}
+.bi{background:var(--green)}.be{background:var(--red)}
+.row-desc{flex:1;min-width:0;background:transparent;border:none;color:var(--text);font-size:.86rem;font-family:'Prompt',sans-serif;outline:none;padding:2px 0}
+.row-desc::placeholder{color:var(--hint)}
+.row-amt{width:78px;text-align:right;background:transparent;border:none;color:var(--text);font-weight:700;font-size:.86rem;font-family:'Prompt',sans-serif;outline:none}
+.paid-chk{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;font-size:.65rem;color:#fff}
+.paid-chk.on{background:var(--green);border-color:var(--green)}
+.del-btn{width:22px;height:22px;border-radius:50%;border:none;background:var(--red2);color:var(--red);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.65rem;flex-shrink:0;transition:transform .15s}
+.del-btn:active{transform:scale(.85)}
+.sep{width:1px;height:16px;background:var(--border);flex-shrink:0}
+.row-sel{flex:1;min-width:0;background:transparent;border:none;color:var(--text);font-size:.86rem;font-family:'Prompt',sans-serif;outline:none}
+.row-sel option{background:var(--card2);color:var(--text)}
 
-    /* Loading */
-    .loading { position:fixed; inset:0; background:rgba(10,10,15,0.93); z-index:900; display:none; align-items:center; justify-content:center; flex-direction:column; }
-    .load-ring { width:46px; height:46px; border:3px solid var(--border2); border-top-color:var(--blue); border-radius:50%; animation:spin 0.8s linear infinite; margin-bottom:14px; }
-    @keyframes spin { to{transform:rotate(360deg)} }
-    .load-txt { font-size:0.88rem; font-weight:700; color:var(--muted2); }
+/* ── Note item ── */
+.note-item{background:var(--bg2);border-radius:var(--r2);padding:11px;margin-bottom:8px;border:1px solid var(--border);border-left:3px solid var(--blue)}
+.note-date{font-size:.62rem;color:var(--sub);margin-bottom:4px}
+.note-body{display:flex;gap:7px;align-items:flex-start}
+.note-text{flex:1;font-size:.84rem;line-height:1.5;outline:none;background:transparent;color:var(--text)}
 
-    /* Pocket */
-    .pocket-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); margin-bottom:10px; overflow:hidden; }
-    .pocket-hdr { padding:13px 15px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
-    .pocket-body { padding:0 15px 13px; }
-    .pocket-entry { display:flex; align-items:center; gap:7px; padding:7px 0; border-bottom:1px solid var(--border); }
-    .pocket-entry:last-child { border-bottom:none; }
-    .pe-date { font-size:0.66rem; color:var(--muted); white-space:nowrap; }
-    .pe-desc { flex:1; font-size:0.83rem; }
-    .pe-amt { font-weight:700; font-size:0.83rem; color:var(--red); }
-    .over-b { font-size:0.68rem; font-weight:700; padding:3px 8px; border-radius:20px; background:var(--red-s); color:var(--red); }
-    .ok-b { font-size:0.68rem; font-weight:700; padding:3px 8px; border-radius:20px; background:var(--green-s); color:var(--green); }
+/* ── Action buttons ── */
+.act-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:14px 0}
+.act-btn{border-radius:14px;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:#fff;height:72px;font-weight:700;font-size:.7rem;transition:transform .15s;font-family:'Prompt',sans-serif}
+.act-btn:active{transform:scale(.92)}
+.act-btn i{font-size:1.1rem}
+.ab-inc{background:linear-gradient(135deg,var(--green),#00b8a9)}
+.ab-exp{background:linear-gradient(135deg,var(--red),#ff6b35)}
+.ab-scan{background:linear-gradient(135deg,#6366f1,var(--purple))}
 
-    /* AI FAB */
-    .ai-fab { position:fixed; bottom:calc(var(--nav-h)+14px); right:16px; width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,var(--blue),var(--purple)); border:none; color:#fff; font-size:1.2rem; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:490; box-shadow:0 4px 20px rgba(77,159,255,0.35); transition:transform 0.2s; }
-    .ai-fab:active { transform:scale(0.9); }
-    .ai-fab .dot { position:absolute; top:-1px; right:-1px; width:11px; height:11px; background:var(--green); border-radius:50%; border:2px solid var(--bg); }
+/* ── Add button ── */
+.add-btn{width:100%;padding:12px;border-radius:50px;border:1.5px dashed rgba(77,143,255,.3);background:var(--blue2);color:var(--blue);font-weight:700;cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Prompt',sans-serif;transition:all .2s}
+.add-btn:active{opacity:.75}
 
-    /* AI Chat Popup */
-    .ai-popup { position:fixed; bottom:calc(var(--nav-h)+14px); right:14px; left:14px; max-width:560px; margin:0 auto; background:var(--card); border:1px solid var(--border2); border-radius:22px; z-index:700; display:none; flex-direction:column; box-shadow:0 -6px 40px rgba(0,0,0,0.5); max-height:68vh; }
-    .ai-popup.open { display:flex; animation:popUp 0.28s ease; }
-    /* เมื่อ keyboard ขึ้น ให้ popup ขยับขึ้นตาม */
-    @supports (height: 100dvh) {
-      .ai-popup.open { bottom: calc(var(--nav-h) + 14px); }
-    }
-    .ai-popup.keyboard-open { bottom: 8px; max-height: 55vh; }
-    @keyframes popUp { from{opacity:0;transform:translateY(18px) scale(0.96)} to{opacity:1;transform:translateY(0) scale(1)} }
-    .ai-ph { display:flex; align-items:center; justify-content:space-between; padding:13px 16px; border-bottom:1px solid var(--border); flex-shrink:0; }
-    .ai-ph-l { display:flex; align-items:center; gap:9px; }
-    .ai-live { width:7px; height:7px; border-radius:50%; background:var(--green); animation:blink 2s infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-    .ai-ph h4 { font-size:0.88rem; font-weight:700; }
-    .ai-ph span { font-size:0.68rem; color:var(--green); display:block; }
-    .ai-close { background:var(--card2); border:1px solid var(--border); border-radius:50%; width:26px; height:26px; color:var(--muted2); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.88rem; }
-    .ai-msgs { flex:1; overflow-y:auto; padding:12px 14px; display:flex; flex-direction:column; gap:9px; }
-    .ai-msg { max-width:86%; padding:9px 13px; border-radius:15px; font-size:0.83rem; line-height:1.55; }
-    .ai-msg.user { background:var(--blue-s); border:1px solid rgba(77,159,255,0.18); color:var(--text); align-self:flex-end; border-radius:15px 15px 4px 15px; }
-    .ai-msg.bot { background:var(--card2); border:1px solid var(--border); color:var(--text); align-self:flex-start; border-radius:15px 15px 15px 4px; }
-    .ai-msg.typing { display:flex; align-items:center; gap:4px; padding:13px; }
-    .tdot { width:5px; height:5px; border-radius:50%; background:var(--muted); animation:td 1.2s infinite; }
-    .tdot:nth-child(2){animation-delay:0.2s} .tdot:nth-child(3){animation-delay:0.4s}
-    @keyframes td { 0%,100%{opacity:0.3;transform:scale(0.8)} 50%{opacity:1;transform:scale(1.2)} }
-    .ai-qs { display:flex; gap:5px; padding:0 14px 8px; overflow-x:auto; flex-shrink:0; }
-    .ai-qs::-webkit-scrollbar { display:none; }
-    .qb { white-space:nowrap; padding:5px 11px; border-radius:20px; border:1px solid var(--border2); background:var(--card2); color:var(--muted2); font-size:0.73rem; font-weight:600; cursor:pointer; flex-shrink:0; }
-    .qb:active { background:var(--blue-s); color:var(--blue); border-color:var(--blue); }
-    .ai-inp-row { display:flex; gap:7px; padding:9px 12px 13px; border-top:1px solid var(--border); flex-shrink:0; }
-    .ai-inp-row input { flex:1; background:var(--bg2); border:1px solid var(--border); border-radius:50px; padding:9px 15px; color:var(--text); font-size:0.86rem; outline:none; font-family:'Sarabun','Inter'; }
-    .ai-inp-row input:focus { border-color:var(--blue); }
-    .ai-send { width:36px; height:36px; border-radius:50%; border:none; background:linear-gradient(135deg,var(--blue),var(--purple)); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.88rem; flex-shrink:0; }
-    .ai-send:active { transform:scale(0.9); }
+/* ── Pill button ── */
+.pill{padding:7px 14px;border-radius:50px;border:none;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-size:.75rem;font-family:'Prompt',sans-serif;transition:transform .15s}
+.pill:active{transform:scale(.93)}
+.pill-green{background:var(--green);color:#000}
+.pill-blue{background:var(--blue);color:#fff}
+.pill-red{background:var(--red);color:#fff}
+.pill-purple{background:var(--purple);color:#fff}
 
-    /* ── Desktop Layout (≥900px) ── */
-    @media (min-width: 900px) {
-      body { padding-bottom: 0; }
+/* ── Bottom Nav ── */
+.bot-nav{
+  position:fixed;bottom:0;left:0;width:100%;height:var(--nav);
+  background:rgba(10,10,22,.94);backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  display:flex;justify-content:space-around;align-items:center;
+  z-index:200;padding-bottom:env(safe-area-inset-bottom)
+}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--sub);cursor:pointer;padding:7px 12px;border-radius:14px;transition:all .25s;width:19%}
+.nav-item.active{color:var(--blue);background:var(--blue2)}
+.nav-item i{font-size:1.1rem}
+.nav-item span{font-size:.56rem;font-weight:700}
 
-      .bot-nav {
-        position: fixed; top: 0; left: 0; bottom: 0; width: 220px; height: 100vh;
-        flex-direction: column; justify-content: flex-start; align-items: flex-start;
-        padding: 24px 16px; gap: 4px; border-top: none;
-        border-right: 1px solid var(--border); border-radius: 0;
-        background: var(--bg2);
-      }
-      .nav-item { width: 100%; flex-direction: row; justify-content: flex-start; gap: 12px; padding: 12px 16px; border-radius: 12px; }
-      .nav-item i { font-size: 1rem; }
-      .nav-item span { font-size: 0.88rem; font-weight: 600; }
-      .nav-logo { display: flex !important; }
+/* ── Pocket ── */
+.pocket-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;transition:border-color .2s}
+.pocket-hdr{padding:13px 15px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.pocket-body{padding:0 15px 14px;border-top:1px solid var(--border)}
+.pocket-entry{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)}
+.pocket-entry:last-child{border-bottom:none}
+.pe-date{font-size:.62rem;color:var(--sub);white-space:nowrap}
+.pe-desc{flex:1;font-size:.8rem}
+.pe-amt{font-weight:700;font-size:.8rem;color:var(--red)}
+.badge-ok{font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--green2);color:var(--green)}
+.badge-over{font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--red2);color:var(--red)}
 
-      .topbar { position: fixed; top: 0; left: 220px; right: 0; z-index: 400; background: rgba(10,10,15,0.9); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 14px 32px; }
+/* ── Modal ── */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;backdrop-filter:blur(6px);align-items:flex-end;justify-content:center}
+.modal.show{display:flex}
+.modal-box{background:var(--card);width:100%;max-width:520px;border-radius:24px 24px 0 0;padding:20px 18px 28px;border-top:1px solid var(--border2);max-height:88vh;overflow-y:auto;animation:slideUp .28s ease both}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 18px}
+.modal-close{position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:50%;background:var(--card2);border:1px solid var(--border);color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.88rem}
+.msec{background:var(--bg2);border-radius:var(--r2);padding:14px;margin-bottom:12px;border:1px solid var(--border)}
+.msec-title{font-size:.7rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.btn-full{width:100%;padding:13px;border-radius:50px;border:none;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-size:.9rem;margin-bottom:9px;font-family:'Prompt',sans-serif;transition:opacity .2s}
+.btn-full:active{opacity:.8}
+.chart-pill{flex:1;padding:9px 4px;border-radius:50px;border:1px solid var(--border);background:transparent;color:var(--sub);font-weight:700;font-size:.75rem;cursor:pointer;font-family:'Prompt',sans-serif;transition:all .2s}
+.chart-pill.active{border-color:var(--blue);color:var(--blue);background:var(--blue2)}
 
-      .view.active { margin-left: 220px; padding-top: 64px; }
+/* ── Loading ── */
+.loading{position:fixed;inset:0;background:rgba(8,8,16,.92);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column}
+.spin{width:44px;height:44px;border:3px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{font-size:.82rem;font-weight:700;color:var(--sub)}
 
-      /* 2-column grid — desktop only */
-      .desktop-grid { display: grid !important; grid-template-columns: 360px 1fr; gap: 24px; max-width: 1200px; margin: 0 auto; padding: 24px 32px; align-items: start; }
-      .desktop-left { position: sticky; top: 88px; }
-      .desktop-right { min-width: 0; }
+/* ── AI FAB ── */
+.ai-fab{position:fixed;bottom:calc(var(--nav)+14px);right:16px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));border:none;color:#fff;font-size:1.1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:190;box-shadow:0 4px 18px rgba(77,143,255,.4);transition:transform .2s}
+.ai-fab:active{transform:scale(.88)}
+.ai-fab .live-dot{position:absolute;top:0;right:0;width:10px;height:10px;background:var(--green);border-radius:50%;border:2px solid var(--bg);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
 
-      .hero { padding: 32px 28px; }
-      .h-amt { font-size: 3rem; }
-      .mc { padding: 16px 20px; }
-      .mc-name { font-size: 1rem; }
+/* ── AI Popup ── */
+.ai-popup{
+  position:fixed;bottom:calc(var(--nav)+10px);left:12px;right:12px;
+  max-width:520px;margin:0 auto;
+  background:var(--card);border:1px solid var(--border2);border-radius:20px;
+  z-index:280;display:none;flex-direction:column;
+  box-shadow:0 -4px 32px rgba(0,0,0,.5);
+  max-height:66vh;
+}
+.ai-popup.open{display:flex;animation:popUp .26s ease both}
+@keyframes popUp{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.ai-head{display:flex;align-items:center;justify-content:space-between;padding:12px 15px;border-bottom:1px solid var(--border);flex-shrink:0}
+.ai-head-l{display:flex;align-items:center;gap:8px}
+.ai-online{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.ai-head h4{font-size:.85rem;font-weight:700}
+.ai-head span{font-size:.62rem;color:var(--green)}
+.ai-close-btn{background:var(--card2);border:1px solid var(--border);border-radius:50%;width:26px;height:26px;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.ai-msgs{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.ai-msg{max-width:84%;padding:9px 12px;border-radius:14px;font-size:.8rem;line-height:1.55}
+.ai-msg.user{background:var(--blue2);border:1px solid rgba(77,143,255,.2);align-self:flex-end;border-radius:14px 14px 4px 14px}
+.ai-msg.bot{background:var(--card2);border:1px solid var(--border);align-self:flex-start;border-radius:14px 14px 14px 4px}
+.ai-msg.typing{display:flex;align-items:center;gap:4px;padding:12px}
+.tdot{width:5px;height:5px;border-radius:50%;background:var(--sub);animation:td 1.2s infinite}
+.tdot:nth-child(2){animation-delay:.2s}.tdot:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+.ai-qs{display:flex;gap:5px;padding:0 14px 8px;overflow-x:auto;flex-shrink:0}
+.ai-qs::-webkit-scrollbar{display:none}
+.qb{white-space:nowrap;padding:5px 11px;border-radius:20px;border:1px solid var(--border2);background:var(--card2);color:var(--sub);font-size:.7rem;font-weight:600;cursor:pointer;flex-shrink:0;font-family:'Prompt',sans-serif}
+.qb:active{background:var(--blue2);color:var(--blue);border-color:var(--blue)}
+.ai-inp{display:flex;gap:7px;padding:8px 12px 12px;border-top:1px solid var(--border);flex-shrink:0}
+.ai-inp input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:50px;padding:9px 14px;color:var(--text);font-size:.82rem;outline:none;font-family:'Prompt',sans-serif}
+.ai-inp input:focus{border-color:var(--blue)}
+.ai-send{width:34px;height:34px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.82rem;flex-shrink:0}
 
-      .ai-fab { right: 32px; bottom: 32px; width: 56px; height: 56px; }
-      .ai-popup { 
-        right: auto; left: 32px; width: 480px; 
-        max-height: calc(100vh - 120px); bottom: 100px;
-        resize: both; overflow: auto;
-        min-width: 320px; min-height: 300px;
-      }
+/* ── Desktop ≥920px ── */
+@media(min-width:920px){
+  body{padding-bottom:0;display:flex}
+  /* Sidebar */
+  .sidebar{
+    width:230px;flex-shrink:0;height:100vh;position:sticky;top:0;
+    background:var(--bg1);border-right:1px solid var(--border);
+    display:flex;flex-direction:column;padding:24px 14px;gap:4px;
+  }
+  .sidebar-logo{font-size:1.1rem;font-weight:800;padding:6px 12px 20px;border-bottom:1px solid var(--border);margin-bottom:10px;letter-spacing:-.5px}
+  .sidebar-logo span{color:var(--blue)}
+  .sidebar .nav-item{width:100%;flex-direction:row;justify-content:flex-start;gap:11px;border-radius:12px;padding:11px 14px}
+  .sidebar .nav-item span{font-size:.84rem;font-weight:600}
+  .sidebar-bottom{margin-top:auto;padding-top:16px;border-top:1px solid var(--border)}
+  /* Hide mobile nav */
+  .bot-nav{display:none}
+  /* Main */
+  .main-area{flex:1;overflow-y:auto;height:100vh}
+  .topbar{padding:20px 28px 0;max-width:none}
+  .wrap{max-width:none;padding:0 28px 28px}
+  .tab-bar{margin:0 0 16px}
+  .page-header{padding:18px 28px 8px;max-width:none}
+  /* 2-col home */
+  .home-grid{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
+  .home-left{position:sticky;top:20px}
+  /* AI bigger */
+  .ai-popup{left:244px;right:28px;max-width:500px;max-height:72vh;bottom:20px}
+  .ai-fab{right:28px;bottom:28px;width:54px;height:54px}
+  /* Modal center */
+  .modal{align-items:center;padding:20px}
+  .modal-box{border-radius:22px;max-width:480px;max-height:82vh}
+  .modal-handle{display:none}
+}
 
-      .modal { align-items: center; padding: 20px; }
-      .modal-card { border-radius: 24px; max-width: 520px; max-height: 80vh; }
-      .mhandle { display: none; }
-
-      .nav-top { padding: 24px 32px 16px; max-width: 100%; }
-      .wrap { max-width: 860px; }
-    }
-  </style>
+/* ── Animated counter ── */
+.counter{transition:all .4s ease}
+</style>
 </head>
 <body>
 
+<!-- Loading -->
 <div class="loading" id="loadingOverlay">
-  <div class="load-ring"></div>
-  <div class="load-txt" id="aiLoaderText">กำลังโหลด...</div>
+  <div class="spin"></div>
+  <p id="loadText">กำลังโหลด...</p>
 </div>
 
+<!-- Desktop Sidebar (hidden on mobile via CSS) -->
+<div class="sidebar" id="sidebar" style="display:none">
+  <div class="sidebar-logo">My<span>Wealth</span></div>
+  <div class="nav-item active" id="snav-home" onclick="switchView('home')"><i class="fas fa-home"></i><span>หน้าหลัก</span></div>
+  <div class="nav-item" id="snav-pocket" onclick="switchView('pocket')"><i class="fas fa-wallet"></i><span>งบย่อย</span></div>
+  <div class="nav-item" id="snav-chart" onclick="openChartModal('bar')"><i class="fas fa-chart-bar"></i><span>กราฟ</span></div>
+  <div class="nav-item" id="snav-tools" onclick="openToolsModal()"><i class="fas fa-tools"></i><span>เครื่องมือ</span></div>
+  <div class="nav-item" id="snav-settings" onclick="openSettingsModal()"><i class="fas fa-cog"></i><span>ตั้งค่า</span></div>
+  <div class="sidebar-bottom">
+    <div style="display:flex;align-items:center;gap:8px;padding:0 12px">
+      <img id="sideAvatar" style="width:28px;height:28px;border-radius:50%;object-fit:cover;display:none" src="" alt="">
+      <div class="sync-badge" id="syncBadge2" style="font-size:.62rem"><i class="fas fa-wifi-slash"></i></div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Area wrapper (for desktop flex) -->
+<div class="main-area" id="mainArea">
+
+<!-- Topbar -->
 <div class="topbar">
-  <div class="logo">My<span>Wealth</span></div>
-  <div style="display:flex;align-items:center;gap:8px;">
-    <div class="cloud-pill" id="cloudBadge"><i class="fas fa-wifi-slash"></i></div>
-    <img id="mainAvatar" class="av" src="" alt="">
+  <div class="app-logo">My<span>Wealth</span></div>
+  <div class="topbar-right">
+    <div class="sync-badge" id="syncBadge"><i class="fas fa-wifi-slash"></i></div>
+    <img id="userAvatar" class="user-av" src="" alt="">
   </div>
 </div>
 
-<!-- HOME -->
+<!-- ===== HOME ===== -->
 <div id="view-home" class="view active">
-  <div class="desktop-grid">
-    <div class="desktop-left">
-      <div class="wrap" style="padding-bottom:0;">
+  <div class="wrap">
+    <div class="home-grid" id="homeGrid">
+      <div class="home-left" id="homeLeft">
+        <!-- Hero -->
         <div class="hero">
-          <div class="h-label">เงินคงเหลือเดือนนี้ · <span id="currMonthName">...</span></div>
-          <div class="h-amt" id="currentMonthBalance">฿0</div>
-          <div class="h-sub">สะสมทั้งปี <b id="grandBalance">฿0</b></div>
-          <div class="h-stats">
-            <div class="hs"><span class="hs-l">รายรับ</span><div class="hs-v" style="color:var(--green)" id="dashIncome">0</div></div>
-            <div class="hs"><span class="hs-l">รายจ่าย</span><div class="hs-v" style="color:var(--red)" id="dashExpense">0</div></div>
-            <div class="hs"><span class="hs-l">ออม/ปี</span><div class="hs-v" style="color:var(--blue)" id="dashSavings">0</div></div>
+          <div class="hero-label">เงินคงเหลือเดือนนี้ · <span id="heroMonth">...</span></div>
+          <div class="hero-amt" id="heroBalance">฿0</div>
+          <div class="hero-sub">สะสมทั้งปี <b id="heroYear">฿0</b></div>
+          <div class="hero-grid">
+            <div class="hg-item"><span class="hg-label">รายรับ</span><div class="hg-val" style="color:var(--green)" id="heroInc">0</div></div>
+            <div class="hg-item"><span class="hg-label">รายจ่าย</span><div class="hg-val" style="color:var(--red)" id="heroExp">0</div></div>
+            <div class="hg-item"><span class="hg-label">ออม/ปี</span><div class="hg-val" style="color:var(--blue)" id="heroSave">0</div></div>
           </div>
         </div>
+        <!-- Portfolio -->
         <div class="card">
-          <div class="sec-t"><i class="fas fa-chart-pie" style="color:var(--blue);margin-right:5px;"></i>พอร์ตเงินออมสะสม</div>
-          <div class="port-wrap">
-            <div class="port-chart"><canvas id="savingsDoughnut"></canvas></div>
-            <div id="savingsLegend" class="port-list"></div>
+          <div class="sec-title" style="margin-top:0"><i class="fas fa-chart-pie" style="color:var(--blue);margin-right:5px"></i>พอร์ตเงินออมสะสม</div>
+          <div class="port-row">
+            <div class="port-canvas"><canvas id="portChart"></canvas></div>
+            <div id="portLegend" class="port-list"></div>
           </div>
         </div>
       </div>
-    </div>
-    <div class="desktop-right">
-      <div class="wrap">
-        <div class="sec-t" style="margin-top:4px;">รายเดือน</div>
-        <div id="homeMonthList"></div>
+      <div id="homeRight">
+        <!-- Month list -->
+        <div class="sec-title">รายเดือน</div>
+        <div id="monthListCards"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- MONTH DETAIL -->
+<!-- ===== MONTH DETAIL ===== -->
 <div id="view-month" class="view">
-  <div class="nav-top">
-    <button class="btn-back" onclick="window.switchView('home')"><i class="fas fa-arrow-left"></i></button>
-    <h2 class="page-t" id="detailMonthName">มกราคม</h2>
+  <div class="page-header">
+    <button class="btn-back" onclick="switchView('home')"><i class="fas fa-arrow-left"></i></button>
+    <h2 class="page-title" id="monthTitle">มกราคม</h2>
   </div>
-  <div class="wrap" style="padding-top:0;">
-    <div class="card" style="background:linear-gradient(135deg,#1a1a2e,#0f3460);border-color:var(--border2);">
-      <div style="font-size:0.73rem;color:rgba(255,255,255,0.45);margin-bottom:4px;">คงเหลือจริง (หักออมแล้ว)</div>
-      <div class="h-amt" id="monthGrandBalance">฿0</div>
-      <div class="prog-t"><div id="monthProgressBar" class="prog-f" style="width:0%;background:var(--green);"></div></div>
-      <div class="sr-row">
-        <div class="sr"><span class="sr-l">รายรับ</span><span class="sr-v" style="color:var(--green)" id="monthGrandIncome">0</span></div>
-        <div class="sr"><span class="sr-l">รายจ่าย</span><span class="sr-v" style="color:var(--red)" id="monthGrandExpense">0</span></div>
-        <div class="sr"><span class="sr-l">ออม</span><span class="sr-v" style="color:var(--blue)" id="monthGrandSavings">0</span></div>
+  <!-- Stats strip -->
+  <div class="wrap" style="padding-top:0">
+    <div class="stats-strip">
+      <div class="scard"><span class="scard-label">รายรับ</span><div class="scard-val" style="color:var(--green)" id="mInc">0</div></div>
+      <div class="scard"><span class="scard-label">รายจ่าย</span><div class="scard-val" style="color:var(--red)" id="mExp">0</div></div>
+      <div class="scard"><span class="scard-label">คงเหลือ</span><div class="scard-val" style="color:var(--blue)" id="mFree">0</div></div>
+    </div>
+    <div class="card" style="padding:12px 16px">
+      <div style="font-size:.65rem;color:var(--sub);margin-bottom:6px">ค่าใช้จ่าย / รายรับ</div>
+      <div class="prog-track"><div id="mProg" class="prog-fill" style="width:0%;background:var(--green)"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--sub)">
+        <span>ออม: <b id="mSave" style="color:var(--blue)">0</b></span>
+        <span id="mProgPct" style="color:var(--sub)">0%</span>
       </div>
-      <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08);">
-        <div style="font-size:0.68rem;color:rgba(255,255,255,0.38);font-weight:700;margin-bottom:7px;">พอร์ตเงินออมเดือนนี้</div>
-        <div class="port-wrap">
-          <div class="port-chart"><canvas id="monthSavingsDoughnut"></canvas></div>
-          <div id="monthSavingsLegend" class="port-list"></div>
+    </div>
+  </div>
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchTab('t-income')">💰 รายรับ</button>
+    <button class="tab" onclick="switchTab('t-expense')">💸 รายจ่าย</button>
+    <button class="tab" onclick="switchTab('t-save')">🏦 ออม</button>
+    <button class="tab" onclick="switchTab('t-note')">🗒️ โน้ต</button>
+  </div>
+  <div class="wrap" style="padding-top:0">
+    <!-- Tab: Income -->
+    <div id="t-income" class="tab-content active">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">เงินเดือน</div>
+          <button id="btnPull" class="pill pill-purple" style="display:none;font-size:.68rem" onclick="pullPrevBalance()">ดึงยอดเดือนก่อน</button>
+        </div>
+        <input class="inp" type="number" id="inpSalary" placeholder="ระบุเงินเดือน..." oninput="updateBase('salary',this.value)">
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">รายได้พิเศษ</div>
+          <button class="pill pill-green" onclick="addExtra()"><i class="fas fa-plus"></i> เพิ่ม</button>
+        </div>
+        <div id="extraList"></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">รายรับอื่นๆ</div>
+        <div id="incList"></div>
+        <div class="act-row" style="grid-template-columns:1fr;margin-top:8px">
+          <button class="act-btn ab-inc" onclick="addDetail('income')" style="height:48px;border-radius:12px;flex-direction:row;gap:8px"><i class="fas fa-plus"></i> เพิ่มรายรับ</button>
         </div>
       </div>
     </div>
-    <div class="card">
-      <div class="card-hdr">
-        <div class="card-t">💰 รายรับหลัก</div>
-        <button id="btnPullPrev" class="btn-pill btn-p" style="display:none;font-size:0.7rem;" onclick="window.pullPrevBalance()">ดึงยอดเดือนก่อน</button>
+    <!-- Tab: Expense -->
+    <div id="t-expense" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">รายจ่าย</div>
+          <div style="display:flex;gap:6px">
+            <button class="pill pill-red" onclick="addDetail('expense')"><i class="fas fa-plus"></i> เพิ่ม</button>
+            <button class="act-btn ab-scan" onclick="triggerScan()" style="height:34px;width:72px;border-radius:10px;flex-direction:row;gap:5px;font-size:.68rem"><i class="fas fa-camera"></i> สแกน</button>
+          </div>
+        </div>
+        <div id="expList"></div>
       </div>
-      <input class="inp" type="number" id="inpSalary" placeholder="ใส่เงินเดือน..." oninput="updateCurrentMonthBase('salary',this.value)">
     </div>
-    <div class="card" style="border-left:3px solid var(--green);">
-      <div class="card-hdr">
-        <div class="card-t" style="color:var(--green);">✨ รายได้พิเศษ</div>
-        <button class="btn-pill btn-g" onclick="addExtraIncomeItem()">+ เพิ่ม</button>
+    <!-- Tab: Save -->
+    <div id="t-save" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">การออมเงิน</div>
+          <button class="pill pill-blue" onclick="addSaving()"><i class="fas fa-plus"></i> เพิ่ม</button>
+        </div>
+        <div id="saveList"></div>
       </div>
-      <div id="extraIncomeList"></div>
-    </div>
-    <div class="card" style="border-left:3px solid var(--blue);">
-      <div class="card-hdr">
-        <div class="card-t" style="color:var(--blue);">🏦 การออม</div>
-        <button class="btn-pill btn-b" onclick="addSavingItemCurrent()">+ เพิ่ม</button>
+      <div class="card" style="margin-top:4px">
+        <div class="sec-title" style="margin:0 0 8px">พอร์ตออมเดือนนี้</div>
+        <div class="port-row">
+          <div class="port-canvas"><canvas id="mPortChart"></canvas></div>
+          <div id="mPortLegend" class="port-list"></div>
+        </div>
       </div>
-      <div id="savingsDetailList"></div>
     </div>
-    <div style="margin-bottom:12px;">
-      <div class="sec-t">📝 รายการ</div>
-      <div id="monthDetailList"></div>
-    </div>
-    <div class="card" style="border-left:3px solid var(--blue);">
-      <div class="card-hdr">
-        <div class="card-t" style="color:var(--blue);">🗒️ โน้ต</div>
-        <button class="btn-pill btn-b" onclick="addNoteItem()">+ เพิ่ม</button>
+    <!-- Tab: Note -->
+    <div id="t-note" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">โน้ตระหว่างเดือน</div>
+          <button class="pill pill-blue" onclick="addNote()"><i class="fas fa-plus"></i> เพิ่ม</button>
+        </div>
+        <div id="noteList"></div>
       </div>
-      <div id="notesList"></div>
     </div>
-    <div class="act-grid">
-      <button class="act-btn act-inc" onclick="addDetailCurrent('income')"><i class="fas fa-plus-circle"></i>รายรับ</button>
-      <button class="act-btn act-exp" onclick="addDetailCurrent('expense')"><i class="fas fa-minus-circle"></i>รายจ่าย</button>
-      <button class="act-btn act-scan" onclick="window.triggerScanCurrent()"><i class="fas fa-camera"></i>สแกน</button>
-    </div>
-    <div style="height:30px;"></div>
   </div>
 </div>
 
-<!-- POCKET -->
+<!-- ===== POCKET ===== -->
 <div id="view-pocket" class="view">
-  <div class="nav-top">
-    <button class="btn-back" onclick="window.switchView('home')"><i class="fas fa-arrow-left"></i></button>
-    <h2 class="page-t">💰 งบย่อย</h2>
+  <div class="page-header">
+    <button class="btn-back" onclick="switchView('home')"><i class="fas fa-arrow-left"></i></button>
+    <h2 class="page-title">💰 งบย่อย</h2>
   </div>
-  <div class="wrap" style="padding-top:0;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <div style="font-size:0.78rem;color:var(--muted2);">เลือกเดือน</div>
-      <select id="pocketMonthSelect" class="inp" style="width:auto;padding:7px 11px;font-size:0.8rem;" onchange="window.renderPocket()">
+  <div class="wrap" style="padding-top:0">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:.75rem;color:var(--sub)">เลือกเดือน</div>
+      <select id="pocketMonthSel" class="inp" style="width:auto;padding:7px 12px;font-size:.78rem" onchange="renderPocket()">
         <option value="0">มกราคม</option><option value="1">กุมภาพันธ์</option><option value="2">มีนาคม</option><option value="3">เมษายน</option><option value="4">พฤษภาคม</option><option value="5">มิถุนายน</option><option value="6">กรกฎาคม</option><option value="7">สิงหาคม</option><option value="8">กันยายน</option><option value="9">ตุลาคม</option><option value="10">พฤศจิกายน</option><option value="11">ธันวาคม</option>
       </select>
     </div>
-    <div class="card" style="background:linear-gradient(135deg,#1a1a2e,#0f3460);border-color:var(--border2);margin-bottom:12px;">
-      <div style="font-size:0.73rem;color:rgba(255,255,255,0.45);margin-bottom:4px;">เงินคงเหลือเดือนนี้</div>
-      <div class="h-amt" id="pocketFreeBalance" style="font-size:1.9rem;">฿0</div>
-      <div class="sr-row">
-        <div class="sr"><span class="sr-l">งบทั้งหมด</span><span class="sr-v" style="color:var(--blue)" id="pocketTotalBudget">0</span></div>
-        <div class="sr"><span class="sr-l">ใช้ไป</span><span class="sr-v" style="color:var(--red)" id="pocketTotalSpent">0</span></div>
-        <div class="sr"><span class="sr-l">คงเหลือ</span><span class="sr-v" style="color:var(--green)" id="pocketTotalLeft">0</span></div>
+    <div class="hero" style="margin-bottom:14px">
+      <div class="hero-label">เงินคงเหลือเดือนที่เลือก</div>
+      <div class="hero-amt" id="pocketFree" style="font-size:2rem">฿0</div>
+      <div class="hero-grid">
+        <div class="hg-item"><span class="hg-label">งบทั้งหมด</span><div class="hg-val" style="color:var(--blue)" id="pocketBudget">0</div></div>
+        <div class="hg-item"><span class="hg-label">ใช้ไป</span><div class="hg-val" style="color:var(--red)" id="pocketSpent">0</div></div>
+        <div class="hg-item"><span class="hg-label">เหลือ</span><div class="hg-val" style="color:var(--green)" id="pocketLeft">0</div></div>
       </div>
     </div>
     <div id="pocketList"></div>
-    <button onclick="window.addPocket()" style="width:100%;padding:13px;border-radius:15px;border:2px dashed rgba(77,159,255,0.25);background:var(--blue-s);color:var(--blue);font-weight:700;cursor:pointer;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:7px;"><i class="fas fa-plus"></i> เพิ่มหมวดงบย่อย</button>
-    <div style="height:30px;"></div>
+    <button class="add-btn" onclick="addPocket()"><i class="fas fa-plus"></i> เพิ่มหมวดงบย่อย</button>
+    <div style="height:16px"></div>
   </div>
 </div>
 
-<!-- Bottom Nav -->
+</div><!-- end main-area -->
+
+<!-- Bottom Nav (mobile) -->
 <div class="bot-nav">
-  <div class="nav-logo">My<span>Wealth</span></div>
-  <div class="nav-item active" id="nav-home" onclick="window.switchView('home')"><i class="fas fa-home"></i><span>หน้าหลัก</span></div>
-  <div class="nav-item" id="nav-pocket" onclick="window.switchView('pocket')"><i class="fas fa-wallet"></i><span>งบย่อย</span></div>
-  <div class="nav-item" onclick="window.openChartModal('bar')"><i class="fas fa-chart-bar"></i><span>กราฟ</span></div>
-  <div class="nav-item" onclick="window.openToolsModal()"><i class="fas fa-tools"></i><span>เครื่องมือ</span></div>
-  <div class="nav-item" onclick="window.openSettingsModal()"><i class="fas fa-cog"></i><span>ตั้งค่า</span></div>
+  <div class="nav-item active" id="nav-home" onclick="switchView('home')"><i class="fas fa-home"></i><span>หน้าหลัก</span></div>
+  <div class="nav-item" id="nav-pocket" onclick="switchView('pocket')"><i class="fas fa-wallet"></i><span>งบย่อย</span></div>
+  <div class="nav-item" onclick="openChartModal('bar')"><i class="fas fa-chart-bar"></i><span>กราฟ</span></div>
+  <div class="nav-item" onclick="openToolsModal()"><i class="fas fa-tools"></i><span>เครื่องมือ</span></div>
+  <div class="nav-item" onclick="openSettingsModal()"><i class="fas fa-cog"></i><span>ตั้งค่า</span></div>
 </div>
 
 <!-- AI FAB -->
-<button class="ai-fab" onclick="window.toggleAiChat()"><i class="fas fa-robot"></i><div class="dot"></div></button>
+<button class="ai-fab" onclick="toggleAI()"><i class="fas fa-robot"></i><div class="live-dot"></div></button>
 
-<!-- AI Chat Popup -->
+<!-- AI Popup -->
 <div class="ai-popup" id="aiPopup">
-  <div class="ai-ph">
-    <div class="ai-ph-l">
-      <div class="ai-live"></div>
+  <div class="ai-head">
+    <div class="ai-head-l">
+      <div class="ai-online"></div>
       <div><h4>AI Coach</h4><span>ออนไลน์ตลอด 24 ชม.</span></div>
     </div>
-    <button class="ai-close" onclick="window.closeAiChat()">&times;</button>
+    <button class="ai-close-btn" onclick="closeAI()">&times;</button>
   </div>
-  <div class="ai-msgs" id="aiMessages">
-    <div class="ai-msg bot">สวัสดีครับ! 👋 ผมคือ AI Coach ด้านการเงิน ถามได้เลยครับ เช่น วิเคราะห์การใช้จ่าย หรือวางแผนเดือนหน้า</div>
+  <div class="ai-msgs" id="aiMsgs">
+    <div class="ai-msg bot">สวัสดีครับ! 👋 ผมคือ AI Coach ด้านการเงิน ถามอะไรได้เลยครับ</div>
   </div>
   <div class="ai-qs">
-    <button class="qb" onclick="window.sendQuick('วิเคราะห์การเงินของผมปีนี้')">📊 วิเคราะห์ปีนี้</button>
-    <button class="qb" onclick="window.sendQuick('ช่วยวางแผนเดือนหน้าให้หน่อย')">📅 วางแผนเดือนหน้า</button>
-    <button class="qb" onclick="window.sendQuick('ผมควรออมเท่าไหร่ต่อเดือน')">💰 เป้าหมายออม</button>
-    <button class="qb" onclick="window.sendQuick('รายจ่ายอะไรที่ควรลดได้บ้าง')">✂️ ลดรายจ่าย</button>
-    <button class="qb" onclick="window.sendQuick('เดือนไหนใช้เงินเยอะที่สุด')">📈 สรุปรายจ่าย</button>
+    <button class="qb" onclick="quickAsk('วิเคราะห์การเงินปีนี้')">📊 วิเคราะห์ปีนี้</button>
+    <button class="qb" onclick="quickAsk('วางแผนเดือนหน้าให้หน่อย')">📅 วางแผน</button>
+    <button class="qb" onclick="quickAsk('ควรออมเท่าไหร่ต่อเดือน')">💰 เป้าออม</button>
+    <button class="qb" onclick="quickAsk('รายจ่ายที่ควรลด')">✂️ ลดรายจ่าย</button>
   </div>
-  <div class="ai-inp-row">
-    <input id="aiChatInput" placeholder="พิมพ์คำถาม..." onkeydown="if(event.key==='Enter')window.sendAiChat()">
-    <button class="ai-send" onclick="window.sendAiChat()"><i class="fas fa-paper-plane"></i></button>
+  <div class="ai-inp">
+    <input id="aiInput" placeholder="พิมพ์คำถาม..." onkeydown="if(event.key==='Enter')sendAI()">
+    <button class="ai-send" onclick="sendAI()"><i class="fas fa-paper-plane"></i></button>
   </div>
 </div>
 
-<!-- Chart Modal -->
+<!-- Modals -->
 <div class="modal" id="chartModal">
-  <div class="modal-card">
-    <div class="mhandle"></div>
-    <span class="close-btn" onclick="closeModal('chartModal')">&times;</span>
-    <h3 id="modalChartTitle" style="margin-bottom:14px;font-size:1.05rem;">สถิติการเงิน</h3>
-    <div style="display:flex;gap:7px;margin-bottom:18px;">
-      <button class="chart-pill active" id="btn-chart-bar" onclick="window.openChartModal('bar')">แท่ง</button>
-      <button class="chart-pill" id="btn-chart-pie" onclick="window.openChartModal('pie')">สัดส่วน</button>
-      <button class="chart-pill" id="btn-chart-line" onclick="window.openChartModal('line')">เงินออม</button>
+  <div class="modal-box" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('chartModal')">&times;</button>
+    <div style="font-size:1rem;font-weight:800;margin-bottom:14px" id="chartTitle">สถิติ</div>
+    <div style="display:flex;gap:6px;margin-bottom:18px">
+      <button class="chart-pill active" id="cp-bar" onclick="openChartModal('bar')">แท่ง</button>
+      <button class="chart-pill" id="cp-pie" onclick="openChartModal('pie')">สัดส่วน</button>
+      <button class="chart-pill" id="cp-line" onclick="openChartModal('line')">ออม</button>
     </div>
-    <div style="position:relative;height:36vh;"><canvas id="chart"></canvas></div>
+    <div style="position:relative;height:36vh"><canvas id="mainChart"></canvas></div>
   </div>
 </div>
 
-<!-- Tools Modal -->
 <div class="modal" id="toolsModal">
-  <div class="modal-card">
-    <div class="mhandle"></div>
-    <span class="close-btn" onclick="closeModal('toolsModal')">&times;</span>
-    <h3 style="margin-bottom:18px;">เครื่องมือ</h3>
-    <button class="btn-full" style="background:var(--green-s);color:var(--green);" onclick="exportToExcel()"><i class="fas fa-file-csv"></i> ส่งออก CSV</button>
-    <button class="btn-full" style="background:var(--card2);color:var(--muted2);" onclick="exportJSON()"><i class="fas fa-download"></i> สำรองข้อมูล</button>
-    <div style="height:1px;background:var(--border);margin:10px 0;"></div>
-    <button class="btn-full" style="background:var(--red-s);color:var(--red);" onclick="openClearModal()"><i class="fas fa-trash"></i> ล้างข้อมูลทั้งหมด</button>
+  <div class="modal-box" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('toolsModal')">&times;</button>
+    <div style="font-size:1rem;font-weight:800;margin-bottom:16px">เครื่องมือ</div>
+    <button class="btn-full" style="background:var(--green2);color:var(--green)" onclick="exportCSV()"><i class="fas fa-file-csv"></i> ส่งออก CSV</button>
+    <button class="btn-full" style="background:var(--card2);color:var(--sub)" onclick="exportJSON()"><i class="fas fa-download"></i> สำรองข้อมูล</button>
+    <div style="height:1px;background:var(--border);margin:8px 0"></div>
+    <button class="btn-full" style="background:var(--red2);color:var(--red)" onclick="confirmClear()"><i class="fas fa-trash"></i> ล้างข้อมูลทั้งหมด</button>
   </div>
 </div>
 
-<!-- Settings Modal -->
 <div class="modal" id="settingsModal">
-  <div class="modal-card">
-    <div class="mhandle"></div>
-    <span class="close-btn" onclick="closeModal('settingsModal')">&times;</span>
-    <h3 style="margin-bottom:18px;"><i class="fas fa-cog"></i> ตั้งค่า</h3>
+  <div class="modal-box" style="position:relative">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('settingsModal')">&times;</button>
+    <div style="font-size:1rem;font-weight:800;margin-bottom:16px"><i class="fas fa-cog"></i> ตั้งค่า</div>
     <div class="msec">
-      <h4>🛰️ เชื่อมต่อคลาวด์</h4>
-      <button id="btnLogin" class="btn-full" style="background:var(--card2);color:var(--text);border:1px solid var(--border);" onclick="loginGoogle()"><i class="fab fa-google"></i> Login with Google</button>
-      <button id="btnLogout" class="btn-full hidden" style="background:var(--red-s);color:var(--red);" onclick="logout()">ออกจากระบบ</button>
+      <div class="msec-title">🛰️ เชื่อมต่อคลาวด์</div>
+      <button id="btnLogin" class="btn-full" style="background:var(--card2);color:var(--text);border:1px solid var(--border)" onclick="loginGoogle()"><i class="fab fa-google"></i> Login with Google</button>
+      <button id="btnLogout" class="btn-full hidden" style="background:var(--red2);color:var(--red)" onclick="doLogout()">ออกจากระบบ</button>
     </div>
   </div>
 </div>
 
-<!-- Clear Modal -->
-<div class="modal" id="clearDataModal">
-  <div class="modal-card">
-    <div class="mhandle"></div>
-    <h3 style="margin-bottom:8px;">ยืนยันล้างข้อมูล?</h3>
-    <p style="color:var(--muted);margin-bottom:18px;font-size:0.88rem;">ข้อมูลทั้งหมดจะถูกลบถาวร</p>
-    <div style="display:flex;gap:9px;">
-      <button class="btn-full" style="background:var(--red-s);color:var(--red);flex:1;" onclick="performClear()">ล้างเลย</button>
-      <button class="btn-full" style="background:var(--card2);color:var(--muted2);flex:1;" onclick="closeModal('clearDataModal')">ยกเลิก</button>
+<div class="modal" id="clearModal">
+  <div class="modal-box" style="position:relative">
+    <div class="modal-handle"></div>
+    <div style="font-size:1rem;font-weight:800;margin-bottom:8px">ยืนยันล้างข้อมูล?</div>
+    <p style="color:var(--sub);font-size:.82rem;margin-bottom:18px">ข้อมูลทั้งหมดจะถูกลบถาวร ไม่สามารถกู้คืนได้</p>
+    <div style="display:flex;gap:9px">
+      <button class="btn-full" style="background:var(--red2);color:var(--red);flex:1" onclick="doClear()">ล้างเลย</button>
+      <button class="btn-full" style="background:var(--card2);color:var(--sub);flex:1" onclick="closeModal('clearModal')">ยกเลิก</button>
     </div>
   </div>
 </div>
 
-<!-- Pocket Expense Modal -->
-<div class="modal" id="pocketExpenseModal">
-  <div class="modal-card">
-    <div class="mhandle"></div>
-    <h3 style="margin-bottom:14px;" id="pocketExpenseTitle">บันทึกรายจ่าย</h3>
-    <input class="inp" id="pocketExpenseDesc" placeholder="รายการ เช่น ข้าวกลางวัน..." style="margin-bottom:9px;">
-    <input class="inp" type="number" id="pocketExpenseAmt" placeholder="จำนวนเงิน..." style="margin-bottom:16px;">
-    <button class="btn-full" style="background:var(--red);color:#fff;" onclick="window.savePocketExpense()"><i class="fas fa-check"></i> บันทึก</button>
+<div class="modal" id="pocketEntryModal">
+  <div class="modal-box" style="position:relative">
+    <div class="modal-handle"></div>
+    <div style="font-size:.95rem;font-weight:800;margin-bottom:14px" id="pocketEntryTitle">บันทึกรายจ่าย</div>
+    <input class="inp" id="pocketEntryDesc" placeholder="รายการ..." style="margin-bottom:9px">
+    <input class="inp" type="number" id="pocketEntryAmt" placeholder="จำนวนเงิน..." style="margin-bottom:16px">
+    <button class="btn-full" style="background:var(--red);color:#fff" onclick="savePocketEntry()"><i class="fas fa-check"></i> บันทึก</button>
   </div>
 </div>
 
-<input type="file" id="receiptInput" accept="image/*" style="display:none;">
+<input type="file" id="scanInput" accept="image/*" style="display:none">
 
 <!-- Firebase -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-  const FB = { apiKey:"AIzaSyDUliKbJO1YyUNjZdBvkBULaWlEaBzmcAA", authDomain:"budget1-ed2f4.firebaseapp.com", projectId:"budget1-ed2f4", storageBucket:"budget1-ed2f4.firebasestorage.app", messagingSenderId:"312969765873", appId:"1:312969765873:web:db0e163fe587149963da50" };
-  const app=initializeApp(FB); const auth=getAuth(app); const db=getFirestore(app);
-  const AID='budget-app'; let userId,useCloud=false;
-  window.loginGoogle=async()=>{try{await signInWithPopup(auth,new GoogleAuthProvider());window.closeModal('settingsModal');}catch(e){}};
-  window.logout=async()=>{await signOut(auth);window.location.reload();};
-  onAuthStateChanged(auth,(user)=>{
-    const badge=document.getElementById('cloudBadge');
-    if(user){userId=user.uid;useCloud=true;badge.innerHTML='<i class="fas fa-cloud"></i> ซิงค์';badge.classList.add('ok');document.getElementById('btnLogin').classList.add('hidden');document.getElementById('btnLogout').classList.remove('hidden');if(user.photoURL){document.getElementById('mainAvatar').src=user.photoURL;document.getElementById('mainAvatar').style.display='block';}startDataListener();}
-    else{useCloud=false;badge.innerHTML='<i class="fas fa-wifi-slash"></i>';badge.classList.remove('ok');}
+import{initializeApp}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import{getAuth,signInWithPopup,GoogleAuthProvider,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import{getFirestore,doc,setDoc,onSnapshot}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+const FB={apiKey:"AIzaSyDUliKbJO1YyUNjZdBvkBULaWlEaBzmcAA",authDomain:"budget1-ed2f4.firebaseapp.com",projectId:"budget1-ed2f4",storageBucket:"budget1-ed2f4.firebasestorage.app",messagingSenderId:"312969765873",appId:"1:312969765873:web:db0e163fe587149963da50"};
+const app=initializeApp(FB);const auth=getAuth(app);const db=getFirestore(app);
+const AID='budget-app';let uid,cloud=false;
+window.loginGoogle=async()=>{try{await signInWithPopup(auth,new GoogleAuthProvider());closeModal('settingsModal');}catch(e){}};
+window.doLogout=async()=>{await signOut(auth);location.reload();};
+onAuthStateChanged(auth,user=>{
+  const b1=document.getElementById('syncBadge'),b2=document.getElementById('syncBadge2');
+  if(user){
+    uid=user.uid;cloud=true;
+    [b1,b2].forEach(b=>{if(b){b.innerHTML='<i class="fas fa-cloud"></i> ซิงค์';b.classList.add('ok');}});
+    document.getElementById('btnLogin').classList.add('hidden');
+    document.getElementById('btnLogout').classList.remove('hidden');
+    if(user.photoURL){['userAvatar','sideAvatar'].forEach(id=>{const el=document.getElementById(id);if(el){el.src=user.photoURL;el.style.display='block';}});}
+    startListener();
+  } else {
+    cloud=false;
+    [b1,b2].forEach(b=>{if(b){b.innerHTML='<i class="fas fa-wifi-slash"></i>';b.classList.remove('ok');}});
+  }
+});
+function startListener(){
+  onSnapshot(doc(db,'artifacts',AID,'users',uid,'budget_data','yearly'),snap=>{
+    if(!snap.exists())return;
+    const a=document.activeElement;
+    if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'||a.contentEditable==='true'))return;
+    const d=snap.data();
+    if(d.monthlyData){window.monthlyData=d.monthlyData;window.initRender();}
   });
-  function startDataListener(){onSnapshot(doc(db,'artifacts',AID,'users',userId,'budget_data','yearly'),(snap)=>{if(!snap.exists())return;const a=document.activeElement;if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'||a.contentEditable==='true'))return;const d=snap.data();if(d.monthlyData){window.monthlyData=d.monthlyData;window.initDataAndRender();}});}
-  window.saveDataToCloud=async()=>{if(useCloud&&userId){try{await setDoc(doc(db,'artifacts',AID,'users',userId,'budget_data','yearly'),{monthlyData:window.monthlyData,lastUpdated:new Date().toISOString()});}catch(e){}}};
+}
+window.cloudSave=async()=>{
+  if(cloud&&uid)try{await setDoc(doc(db,'artifacts',AID,'users',uid,'budget_data','yearly'),{monthlyData:window.monthlyData,ts:new Date().toISOString()});}catch(e){}
+};
 </script>
 
 <!-- App -->
 <script>
-  const WORKER='https://soft-dream-e329.porbboyza.workers.dev';
-  const COLORS=['#4d9fff','#00d084','#a78bfa','#f5c842','#ff4d6d','#00b8a9','#ff6b35','#e879f9'];
-  const months=["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
-  const extraSrc=["OT","โบนัส","ขายของ","ฟรีแลนซ์","ธุรกิจ","ของขวัญ","ครอบครัว","อื่นๆ"];
-  const savPurp=["เงินสำรอง","ลงทุน","เกษียณ","ท่องเที่ยว","บ้าน/รถ","การศึกษา","สุขภาพ","อื่นๆ"];
-  window.myMainChartObj=null; window.savingsChartObj=null; window.monthSavingsChartObj=null;
-  const defM=()=>({salary:0,extraList:[],savings:[],details:[],notes:[],pockets:[]});
-  window.monthlyData=JSON.parse(localStorage.getItem('yearlyBudget_v1'))||months.map(defM);
-  window.currentMonthIndex=0; window.currentPocketMonthIndex=new Date().getMonth();
-  window.currentPocketIndex=null; window.aiHistory=[];
+const WORKER='https://soft-dream-e329.porbboyza.workers.dev';
+const COLORS=['#4d8fff','#00e096','#9b72ff','#f5c842','#ff4567','#00b8a9','#ff6b35','#e879f9'];
+const MONTHS=["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+const XSRC=["OT","โบนัส","ขายของ","ฟรีแลนซ์","ธุรกิจ","ของขวัญ","ครอบครัว","อื่นๆ"];
+const SSRC=["เงินสำรอง","ลงทุน","เกษียณ","ท่องเที่ยว","บ้าน/รถ","การศึกษา","สุขภาพ","อื่นๆ"];
 
-  function esc(t){return t?String(t).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m])):'';}
-  function fmtD(iso){const d=new Date(iso);return `${d.getDate()}/${d.getMonth()+1} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;}
-  function fmt(n){return Number(n||0).toLocaleString();}
-  function setEl(id,v){const e=document.getElementById(id);if(e)e.innerText=v;}
-  window.closeModal=(id)=>document.getElementById(id).classList.remove('show');
-  window.setDisplayMode=(m)=>{localStorage.setItem('display_mode',m);};
-  function calcS(m){const inc=(Number(m.salary)||0)+(m.extraList||[]).reduce((s,i)=>s+(Number(i.amount)||0),0)+(m.details||[]).filter(d=>d.type==='income').reduce((s,d)=>s+(Number(d.amount)||0),0);const exp=(m.details||[]).filter(d=>d.type==='expense').reduce((s,d)=>s+(Number(d.amount)||0),0);const save=(m.savings||[]).reduce((s,i)=>s+(Number(i.amount)||0),0);return{inc,exp,save,free:inc-exp-save};}
-  let saveTO;
-  window.saveData=()=>{localStorage.setItem('yearlyBudget_v1',JSON.stringify(window.monthlyData));clearTimeout(saveTO);saveTO=setTimeout(()=>{if(window.saveDataToCloud)window.saveDataToCloud();},5000);};
-  window.initDataAndRender=function(){window.monthlyData=window.monthlyData.map(m=>({...defM(),...m,details:Array.isArray(m.details)?m.details:[],extraList:Array.isArray(m.extraList)?m.extraList:[],savings:Array.isArray(m.savings)?m.savings:[],notes:Array.isArray(m.notes)?m.notes:[],pockets:Array.isArray(m.pockets)?m.pockets:[]}));if(document.getElementById('view-home').classList.contains('active'))window.renderHome();else if(document.getElementById('view-month').classList.contains('active'))window.renderMonthDetail();else if(document.getElementById('view-pocket').classList.contains('active'))window.renderPocket();};
+let portChartObj=null,mPortChartObj=null,mainChartObj=null;
+const defM=()=>({salary:0,extraList:[],savings:[],details:[],notes:[],pockets:[]});
+window.monthlyData=JSON.parse(localStorage.getItem('yearlyBudget_v1'))||MONTHS.map(defM);
+let curMonth=0,curPocketMonth=new Date().getMonth(),curPocketIdx=null,aiHistory=[];
 
-  window.renderHome=()=>{const list=document.getElementById('homeMonthList');if(!list)return;let html='',gI=0,gE=0,gS=0,sm={};const ci=new Date().getMonth();window.monthlyData.forEach((m,i)=>{const s=calcS(m);gI+=s.inc;gE+=s.exp;gS+=s.save;(m.savings||[]).forEach(v=>{const k=v.desc||'ออมทั่วไป';sm[k]=(sm[k]||0)+Number(v.amount);});const pos=s.free>=0;html+=`<div class="mc" onclick="window.openMonth(${i})"><div class="mc-l"><div class="mc-n">${i+1}</div><div><div class="mc-name">${months[i]}</div><div class="mc-sub">คงเหลือ ${fmt(s.free)}</div></div></div><div class="mc-bal" style="color:${pos?'var(--green)':'var(--red)'};">${pos?'+':''}${fmt(s.free)}</div></div>`;});list.innerHTML=html;const cs=calcS(window.monthlyData[ci]);setEl('currMonthName',months[ci]);setEl('currentMonthBalance','฿'+fmt(cs.free));setEl('dashIncome',fmt(cs.inc));setEl('dashExpense',fmt(cs.exp));setEl('dashSavings',fmt(gS));setEl('grandBalance','฿'+fmt(gI-gE-gS));renderPC(sm,'savingsDoughnut','savingsLegend');};
+/* ── Utils ── */
+const $=id=>document.getElementById(id);
+const esc=t=>t?String(t).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m])):'';
+const fmt=n=>Number(n||0).toLocaleString();
+const fmtDate=iso=>{const d=new Date(iso);return`${d.getDate()}/${d.getMonth()+1} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;};
+const setTxt=(id,v)=>{const e=$(id);if(e)e.innerText=v;};
+const calcS=m=>{
+  const inc=(Number(m.salary)||0)+(m.extraList||[]).reduce((s,i)=>s+(Number(i.amount)||0),0)+(m.details||[]).filter(d=>d.type==='income').reduce((s,d)=>s+(Number(d.amount)||0),0);
+  const exp=(m.details||[]).filter(d=>d.type==='expense').reduce((s,d)=>s+(Number(d.amount)||0),0);
+  const save=(m.savings||[]).reduce((s,i)=>s+(Number(i.amount)||0),0);
+  return{inc,exp,save,free:inc-exp-save};
+};
+let saveTO;
+window.saveData=()=>{
+  localStorage.setItem('yearlyBudget_v1',JSON.stringify(window.monthlyData));
+  clearTimeout(saveTO);saveTO=setTimeout(()=>{if(window.cloudSave)window.cloudSave();},5000);
+};
 
-  window.openMonth=(idx)=>{window.currentMonthIndex=idx;window.switchView('month');};
-  window.renderMonthDetail=()=>{const m=window.monthlyData[window.currentMonthIndex];const s=calcS(m);setEl('detailMonthName',months[window.currentMonthIndex]);setEl('monthGrandBalance','฿'+fmt(s.free));setEl('monthGrandIncome',fmt(s.inc));setEl('monthGrandExpense',fmt(s.exp));setEl('monthGrandSavings',fmt(s.save));const p=document.getElementById('monthProgressBar');if(p)p.style.width=Math.min((s.exp/(s.inc||1))*100,100)+'%';const sal=document.getElementById('inpSalary');if(sal)sal.value=m.salary||'';const pb=document.getElementById('btnPullPrev');if(pb)pb.style.display=window.currentMonthIndex>0?'inline-flex':'none';renderCL(m.extraList,'extraIncomeList','updateExtra','removeExtra','💸',extraSrc);renderCL(m.savings,'savingsDetailList','updateSave','removeSave','🏦',savPurp);const dl=document.getElementById('monthDetailList');if(dl)dl.innerHTML=(m.details||[]).map((d,i)=>`<div class="drow ${d.paid?'paid':''}"><div class="bdg ${d.type==='income'?'b-inc':'b-exp'}" onclick="toggleType(${i})">${d.type==='income'?'+':'-'}</div><input class="desc-inp" value="${esc(d.desc)}" placeholder="รายการ..." oninput="updateDetail(${i},'desc',this.value)"><div style="width:1px;height:16px;background:var(--border);"></div><input class="amt-inp" type="number" value="${d.amount}" oninput="updateDetail(${i},'amount',this.value)"><div class="paid-box ${d.paid?'on':''}" onclick="togglePaid(${i})">${d.paid?'<i class="fas fa-check"></i>':''}</div><button class="del-btn" onclick="removeDetail(${i})"><i class="fas fa-times"></i></button></div>`).join('');renderNotes(m.notes||[]);const ms={};(m.savings||[]).forEach(v=>{const k=v.desc||'ทั่วไป';ms[k]=(ms[k]||0)+Number(v.amount);});renderPC(ms,'monthSavingsDoughnut','monthSavingsLegend',true);};
+/* ── Init ── */
+window.initRender=()=>{
+  window.monthlyData=window.monthlyData.map(m=>({...defM(),...m,details:Array.isArray(m.details)?m.details:[],extraList:Array.isArray(m.extraList)?m.extraList:[],savings:Array.isArray(m.savings)?m.savings:[],notes:Array.isArray(m.notes)?m.notes:[],pockets:Array.isArray(m.pockets)?m.pockets:[]}));
+  const active=['view-home','view-month','view-pocket'].find(id=>$(id)&&$(id).classList.contains('active'))||'view-home';
+  if(active==='view-home')renderHome();
+  else if(active==='view-month')renderMonth();
+  else if(active==='view-pocket')renderPocket();
+};
 
-  function renderCL(arr,id,upFn,rmFn,icon,opts){const el=document.getElementById(id);if(!el)return;el.innerHTML=(arr||[]).length?arr.map((v,i)=>`<div class="drow"><span>${icon}</span><select class="sel" onchange="window.${upFn}(${i},'desc',this.value)"><option value="" disabled ${!v.desc?'selected':''}>เลือก...</option>${opts.map(o=>`<option value="${o}" ${v.desc===o?'selected':''}>${o}</option>`).join('')}</select><div style="width:1px;height:16px;background:var(--border);"></div><input class="amt-inp" type="number" value="${v.amount}" oninput="window.${upFn}(${i},'amount',this.value)"><button class="del-btn" onclick="window.${rmFn}(${i})"><i class="fas fa-times"></i></button></div>`).join(''):'<div style="text-align:center;color:var(--muted);font-size:0.78rem;padding:7px;">ยังไม่มีรายการ</div>';}
+/* ── Desktop check ── */
+function checkDesktop(){
+  const isDesk=window.innerWidth>=920;
+  const sidebar=$('sidebar'),mainArea=$('mainArea');
+  if(isDesk){
+    if(sidebar)sidebar.style.display='flex';
+    if(mainArea)mainArea.style.flex='1';
+  } else {
+    if(sidebar)sidebar.style.display='none';
+  }
+}
 
-  function renderNotes(notes){const el=document.getElementById('notesList');if(!el)return;el.innerHTML=notes.length?notes.map((n,i)=>`<div class="note-item"><div class="note-date">${fmtD(n.date)}</div><div class="note-row"><div class="note-text" contenteditable="true" oninput="updateNote(${i},this.innerText)">${esc(n.text)}</div><button class="del-btn" onclick="removeNote(${i})"><i class="fas fa-times"></i></button></div></div>`).join(''):'<div style="text-align:center;color:var(--muted);font-size:0.78rem;padding:7px;">ยังไม่มีโน้ต</div>';}
+/* ── Render Home ── */
+function renderHome(){
+  const ci=new Date().getMonth();
+  let gI=0,gE=0,gS=0,sm={};
+  window.monthlyData.forEach((m,i)=>{
+    const s=calcS(m);gI+=s.inc;gE+=s.exp;gS+=s.save;
+    (m.savings||[]).forEach(v=>{const k=v.desc||'ออมทั่วไป';sm[k]=(sm[k]||0)+Number(v.amount);});
+  });
 
-  function renderPC(map,cvs,lgd,isM=false){const canvas=document.getElementById(cvs);if(!canvas)return;const entries=Object.entries(map).sort((a,b)=>b[1]-a[1]);const legend=document.getElementById(lgd);if(!entries.length){if(legend)legend.innerHTML='<span style="color:var(--muted);font-size:0.75rem;">ไม่มีข้อมูล</span>';return;}const key=isM?'monthSavingsChartObj':'savingsChartObj';if(window[key])window[key].destroy();window[key]=new Chart(canvas.getContext('2d'),{type:'doughnut',data:{labels:entries.map(e=>e[0]),datasets:[{data:entries.map(e=>e[1]),backgroundColor:COLORS,borderWidth:0,cutout:'72%'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});if(legend)legend.innerHTML=entries.map((e,i)=>`<div class="port-item"><span><span class="port-dot" style="background:${COLORS[i%8]};"></span>${esc(e[0])}</span><b>${fmt(e[1])}</b></div>`).join('');}
+  const cs=calcS(window.monthlyData[ci]);
+  setTxt('heroMonth',MONTHS[ci]);
+  setTxt('heroBalance','฿'+fmt(cs.free));
+  setTxt('heroInc',fmt(cs.inc));
+  setTxt('heroExp',fmt(cs.exp));
+  setTxt('heroSave',fmt(gS));
+  setTxt('heroYear','฿'+fmt(gI-gE-gS));
+  
+  // Month list
+  let listHtml='';
+  window.monthlyData.forEach((m,i)=>{
+    const s=calcS(m);const pos=s.free>=0;
+    listHtml+=`<div class="card" style="cursor:pointer;padding:13px 16px${i===ci?';border-color:var(--blue);':''}" onclick="openMonth(${i})">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:34px;height:34px;border-radius:9px;background:${i===ci?'var(--blue2)':'var(--card2)'};border:1px solid ${i===ci?'var(--blue)':'var(--border2)'};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;color:${i===ci?'var(--blue)':'var(--sub)'}">${i+1}</div>
+          <div>
+            <div style="font-weight:700;font-size:.88rem">${MONTHS[i]}</div>
+            <div style="font-size:.65rem;color:var(--sub)">คงเหลือ ${fmt(s.free)}</div>
+          </div>
+        </div>
+        <div style="font-weight:800;font-size:.92rem;color:${pos?'var(--green)':'var(--red)'};">${pos?'+':''}${fmt(s.free)}</div>
+      </div>
+    </div>`;
+        <div style="font-weight:800;font-size:.92rem;color:${pos?'var(--green)':'var(--red)'};">${pos?'+':''}${fmt(s.free)}</div>
+      </div>
+    </div>`;
+  });
+  const ml=$('monthListCards');if(ml)ml.innerHTML=listHtml;
+  renderPortfolio(sm,'portChart','portLegend');
+}
 
-  function updMUI(){const s=calcS(window.monthlyData[window.currentMonthIndex]);setEl('monthGrandBalance','฿'+fmt(s.free));setEl('monthGrandIncome',fmt(s.inc));setEl('monthGrandExpense',fmt(s.exp));setEl('monthGrandSavings',fmt(s.save));const p=document.getElementById('monthProgressBar');if(p)p.style.width=Math.min((s.exp/(s.inc||1))*100,100)+'%';}
+/* ── Render Month ── */
+function renderMonth(){
+  const m=window.monthlyData[curMonth];const s=calcS(m);
+  setTxt('monthTitle',MONTHS[curMonth]);
+  setTxt('mInc',fmt(s.inc));setTxt('mExp',fmt(s.exp));setTxt('mFree',fmt(s.free));setTxt('mSave',fmt(s.save));
+  const pct=Math.min((s.exp/(s.inc||1))*100,100);
+  const prog=$('mProg');if(prog){prog.style.width=pct+'%';prog.style.background=pct>90?'var(--red)':pct>70?'var(--gold)':'var(--green)';}
+  setTxt('mProgPct',pct.toFixed(0)+'%');
+  const sal=$('inpSalary');if(sal)sal.value=m.salary||'';
+  const pull=$('btnPull');if(pull)pull.style.display=curMonth>0?'inline-flex':'none';
+  renderExtraList(m.extraList);
+  renderDetailList(m.details.filter(d=>d.type==='income'),'incList','income');
+  renderDetailList(m.details.filter(d=>d.type==='expense'),'expList','expense');
+  renderSaveList(m.savings);
+  renderNoteList(m.notes||[]);
+  const ms={};(m.savings||[]).forEach(v=>{const k=v.desc||'ทั่วไป';ms[k]=(ms[k]||0)+Number(v.amount);});
+  renderPortfolio(ms,'mPortChart','mPortLegend',true);
+}
 
-  window.updateCurrentMonthBase=(f,v)=>{window.monthlyData[window.currentMonthIndex][f]=Number(v);window.saveData();updMUI();};
-  window.addExtraIncomeItem=()=>{window.monthlyData[window.currentMonthIndex].extraList.push({desc:'',amount:''});window.saveData();window.renderMonthDetail();};
-  window.updateExtra=(i,f,v)=>{window.monthlyData[window.currentMonthIndex].extraList[i][f]=f==='amount'?Number(v):v;window.saveData();updMUI();};
-  window.removeExtra=(i)=>{window.monthlyData[window.currentMonthIndex].extraList.splice(i,1);window.saveData();window.renderMonthDetail();};
-  window.addSavingItemCurrent=()=>{window.monthlyData[window.currentMonthIndex].savings.push({desc:'',amount:''});window.saveData();window.renderMonthDetail();};
-  window.updateSave=(i,f,v)=>{window.monthlyData[window.currentMonthIndex].savings[i][f]=f==='amount'?Number(v):v;window.saveData();updMUI();};
-  window.removeSave=(i)=>{window.monthlyData[window.currentMonthIndex].savings.splice(i,1);window.saveData();window.renderMonthDetail();};
-  window.addDetailCurrent=(t)=>{window.monthlyData[window.currentMonthIndex].details.push({type:t,desc:'',amount:''});window.saveData();window.renderMonthDetail();};
-  window.updateDetail=(i,f,v)=>{window.monthlyData[window.currentMonthIndex].details[i][f]=f==='amount'?Number(v):v;window.saveData();if(f==='amount')updMUI();};
-  window.removeDetail=(i)=>{window.monthlyData[window.currentMonthIndex].details.splice(i,1);window.saveData();window.renderMonthDetail();};
-  window.toggleType=(i)=>{const d=window.monthlyData[window.currentMonthIndex].details[i];d.type=d.type==='income'?'expense':'income';window.saveData();window.renderMonthDetail();};
-  window.togglePaid=(i)=>{const d=window.monthlyData[window.currentMonthIndex].details[i];d.paid=!d.paid;window.saveData();window.renderMonthDetail();};
-  window.addNoteItem=()=>{const m=window.monthlyData[window.currentMonthIndex];if(!m.notes)m.notes=[];m.notes.push({text:'',date:new Date().toISOString()});window.saveData();window.renderMonthDetail();};
-  window.updateNote=(i,v)=>{window.monthlyData[window.currentMonthIndex].notes[i].text=v;window.saveData();};
-  window.removeNote=(i)=>{window.monthlyData[window.currentMonthIndex].notes.splice(i,1);window.saveData();window.renderMonthDetail();};
-  window.pullPrevBalance=()=>{if(window.currentMonthIndex===0)return;const ps=calcS(window.monthlyData[window.currentMonthIndex-1]);if(ps.free<=0){alert('เดือนที่แล้วไม่มีเงินคงเหลือ');return;}const label='ยอดยกมาจากเดือนที่แล้ว ✨';const m=window.monthlyData[window.currentMonthIndex];const idx=m.extraList.findIndex(e=>e.desc===label);if(idx!==-1)m.extraList[idx].amount=ps.free;else m.extraList.push({desc:label,amount:ps.free});window.saveData();window.renderMonthDetail();};
+function renderExtraList(arr){
+  const el=$('extraList');if(!el)return;
+  el.innerHTML=(arr||[]).length?arr.map((v,i)=>`
+    <div class="row-item">
+      <span style="font-size:.9rem">💸</span>
+      <select class="row-sel" onchange="updExtra(${i},'desc',this.value)">
+        <option value="" disabled ${!v.desc?'selected':''}>เลือก...</option>
+        ${XSRC.map(o=>`<option value="${o}"${v.desc===o?' selected':''}>${o}</option>`).join('')}
+      </select>
+      <div class="sep"></div>
+      <input class="row-amt" type="number" value="${v.amount}" oninput="updExtra(${i},'amount',this.value)">
+      <button class="del-btn" onclick="rmExtra(${i})"><i class="fas fa-times"></i></button>
+    </div>`).join(''):'<div style="text-align:center;color:var(--hint);font-size:.75rem;padding:8px">ยังไม่มีรายการ</div>';
+}
 
-  window.switchView=(v)=>{document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));if(v==='home'){document.getElementById('view-home').classList.add('active');document.getElementById('nav-home').classList.add('active');window.renderHome();}else if(v==='pocket'){document.getElementById('view-pocket').classList.add('active');document.getElementById('nav-pocket').classList.add('active');const sel=document.getElementById('pocketMonthSelect');if(sel)sel.value=window.currentPocketMonthIndex;window.renderPocket();}else{document.getElementById('view-month').classList.add('active');window.renderMonthDetail();}window.scrollTo({top:0,behavior:'smooth'});};
+function renderDetailList(arr,elId,type){
+  const el=$(elId);if(!el)return;
+  // Map to global indices
+  const m=window.monthlyData[curMonth];
+  el.innerHTML=arr.length?arr.map(d=>{
+    const gi=m.details.indexOf(d);
+    return`<div class="row-item${d.paid?' paid-row':''}">
+      <div class="badge ${type==='income'?'bi':'be'}" onclick="toggleType(${gi})">${type==='income'?'+':'-'}</div>
+      <input class="row-desc" value="${esc(d.desc)}" placeholder="รายการ..." oninput="updDetail(${gi},'desc',this.value)">
+      <div class="sep"></div>
+      <input class="row-amt" type="number" value="${d.amount}" oninput="updDetail(${gi},'amount',this.value)">
+      <div class="paid-chk${d.paid?' on':''}" onclick="togglePaid(${gi})">${d.paid?'<i class="fas fa-check"></i>':''}</div>
+      <button class="del-btn" onclick="rmDetail(${gi})"><i class="fas fa-times"></i></button>
+    </div>`;
+  }).join(''):'<div style="text-align:center;color:var(--hint);font-size:.75rem;padding:8px">ยังไม่มีรายการ</div>';
+}
 
-  window.openChartModal=(type)=>{document.getElementById('chartModal').classList.add('show');document.querySelectorAll('.chart-pill').forEach(b=>b.classList.remove('active'));const btn=document.getElementById('btn-chart-'+type);if(btn)btn.classList.add('active');const ctx=document.getElementById('chart').getContext('2d');if(window.myMainChartObj)window.myMainChartObj.destroy();const co={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#9090a8'}}}};if(type==='bar'){setEl('modalChartTitle','รายรับ-รายจ่าย รายเดือน');window.myMainChartObj=new Chart(ctx,{type:'bar',data:{labels:months,datasets:[{label:'รับ',data:window.monthlyData.map(m=>calcS(m).inc),backgroundColor:'rgba(0,208,132,0.7)'},{label:'จ่าย',data:window.monthlyData.map(m=>calcS(m).exp),backgroundColor:'rgba(255,77,109,0.7)'}]},options:{...co,scales:{x:{ticks:{color:'#6b6b80'}},y:{ticks:{color:'#6b6b80'}}}}});}else if(type==='pie'){setEl('modalChartTitle','สัดส่วนรายจ่าย');const em={};window.monthlyData.forEach(m=>(m.details||[]).filter(d=>d.type==='expense').forEach(d=>{const k=d.desc.trim()||'อื่นๆ';em[k]=(em[k]||0)+Number(d.amount);}));const ent=Object.entries(em).sort((a,b)=>b[1]-a[1]).slice(0,8);window.myMainChartObj=new Chart(ctx,{type:'doughnut',data:{labels:ent.map(e=>e[0]),datasets:[{data:ent.map(e=>e[1]),backgroundColor:COLORS}]},options:co});}else if(type==='line'){setEl('modalChartTitle','เงินออมสะสม');window.myMainChartObj=new Chart(ctx,{type:'line',data:{labels:months,datasets:[{label:'เงินออม',data:window.monthlyData.map(m=>calcS(m).save),borderColor:'var(--blue)',fill:true,backgroundColor:'rgba(77,159,255,0.08)',tension:0.4}]},options:{...co,scales:{x:{ticks:{color:'#6b6b80'}},y:{ticks:{color:'#6b6b80'}}}}});}};
+function renderSaveList(arr){
+  const el=$('saveList');if(!el)return;
+  el.innerHTML=(arr||[]).length?arr.map((v,i)=>`
+    <div class="row-item">
+      <span style="font-size:.9rem">🏦</span>
+      <select class="row-sel" onchange="updSave(${i},'desc',this.value)">
+        <option value="" disabled ${!v.desc?'selected':''}>เลือก...</option>
+        ${SSRC.map(o=>`<option value="${o}"${v.desc===o?' selected':''}>${o}</option>`).join('')}
+      </select>
+      <div class="sep"></div>
+      <input class="row-amt" type="number" value="${v.amount}" oninput="updSave(${i},'amount',this.value)">
+      <button class="del-btn" onclick="rmSave(${i})"><i class="fas fa-times"></i></button>
+    </div>`).join(''):'<div style="text-align:center;color:var(--hint);font-size:.75rem;padding:8px">ยังไม่มีรายการ</div>';
+}
 
-  // AI Chat
-  window.toggleAiChat=()=>{
-    const p=document.getElementById('aiPopup');
-    if(p.classList.contains('open')) window.closeAiChat();
-    else { p.classList.add('open'); setTimeout(()=>document.getElementById('aiChatInput').focus(),200); }
-  };
-  window.closeAiChat=()=>{
-    const p=document.getElementById('aiPopup');
-    p.classList.remove('open');
-    p.classList.remove('keyboard-open');
-  };
+function renderNoteList(notes){
+  const el=$('noteList');if(!el)return;
+  el.innerHTML=notes.length?notes.map((n,i)=>`
+    <div class="note-item">
+      <div class="note-date">${fmtDate(n.date)}</div>
+      <div class="note-body">
+        <div class="note-text" contenteditable="true" oninput="updNote(${i},this.innerText)">${esc(n.text)}</div>
+        <button class="del-btn" onclick="rmNote(${i})"><i class="fas fa-times"></i></button>
+      </div>
+    </div>`).join(''):'<div style="text-align:center;color:var(--hint);font-size:.75rem;padding:8px">ยังไม่มีโน้ต</div>';
+}
 
-  function getCtx(){return window.monthlyData.map((m,i)=>{const s=calcS(m);return `${months[i]}: รายรับ=${fmt(s.inc)} รายจ่าย=${fmt(s.exp)} ออม=${fmt(s.save)} คงเหลือ=${fmt(s.free)}`;}).join('\n');}
+/* ── Stats update (no full re-render) ── */
+function updStats(){
+  const s=calcS(window.monthlyData[curMonth]);
+  setTxt('mInc',fmt(s.inc));setTxt('mExp',fmt(s.exp));setTxt('mFree',fmt(s.free));setTxt('mSave',fmt(s.save));
+  const pct=Math.min((s.exp/(s.inc||1))*100,100);
+  const prog=$('mProg');if(prog){prog.style.width=pct+'%';prog.style.background=pct>90?'var(--red)':pct>70?'var(--gold)':'var(--green)';}
+  setTxt('mProgPct',pct.toFixed(0)+'%');
+}
 
-  function addMsg(role,text){const msgs=document.getElementById('aiMessages');const div=document.createElement('div');div.className=`ai-msg ${role}`;div.innerHTML=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;return div;}
+/* ── CRUD ── */
+window.updateBase=(f,v)=>{window.monthlyData[curMonth][f]=Number(v);window.saveData();updStats();};
+window.addExtra=()=>{window.monthlyData[curMonth].extraList.push({desc:'',amount:''});window.saveData();renderExtraList(window.monthlyData[curMonth].extraList);};
+window.updExtra=(i,f,v)=>{window.monthlyData[curMonth].extraList[i][f]=f==='amount'?Number(v):v;window.saveData();updStats();};
+window.rmExtra=(i)=>{window.monthlyData[curMonth].extraList.splice(i,1);window.saveData();renderExtraList(window.monthlyData[curMonth].extraList);updStats();};
+window.addSaving=()=>{window.monthlyData[curMonth].savings.push({desc:'',amount:''});window.saveData();renderSaveList(window.monthlyData[curMonth].savings);};
+window.updSave=(i,f,v)=>{window.monthlyData[curMonth].savings[i][f]=f==='amount'?Number(v):v;window.saveData();updStats();};
+window.rmSave=(i)=>{window.monthlyData[curMonth].savings.splice(i,1);window.saveData();renderMonth();};
+window.addDetail=(t)=>{window.monthlyData[curMonth].details.push({type:t,desc:'',amount:''});window.saveData();renderMonth();};
+window.updDetail=(i,f,v)=>{window.monthlyData[curMonth].details[i][f]=f==='amount'?Number(v):v;window.saveData();if(f==='amount')updStats();};
+window.rmDetail=(i)=>{window.monthlyData[curMonth].details.splice(i,1);window.saveData();renderMonth();};
+window.toggleType=(i)=>{const d=window.monthlyData[curMonth].details[i];d.type=d.type==='income'?'expense':'income';window.saveData();renderMonth();};
+window.togglePaid=(i)=>{const d=window.monthlyData[curMonth].details[i];d.paid=!d.paid;window.saveData();renderMonth();};
+window.addNote=()=>{const m=window.monthlyData[curMonth];if(!m.notes)m.notes=[];m.notes.push({text:'',date:new Date().toISOString()});window.saveData();renderNoteList(m.notes);};
+window.updNote=(i,v)=>{window.monthlyData[curMonth].notes[i].text=v;window.saveData();};
+window.rmNote=(i)=>{window.monthlyData[curMonth].notes.splice(i,1);window.saveData();renderNoteList(window.monthlyData[curMonth].notes);};
+window.pullPrevBalance=()=>{
+  if(curMonth===0)return;
+  const ps=calcS(window.monthlyData[curMonth-1]);
+  if(ps.free<=0){alert('เดือนที่แล้วไม่มียอดคงเหลือ');return;}
+  const lbl='ยอดยกมาจากเดือนที่แล้ว ✨';
+  const m=window.monthlyData[curMonth];
+  const idx=m.extraList.findIndex(e=>e.desc===lbl);
+  if(idx!==-1)m.extraList[idx].amount=ps.free;
+  else m.extraList.push({desc:lbl,amount:ps.free});
+  window.saveData();renderMonth();
+};
 
-  function addTyping(){const msgs=document.getElementById('aiMessages');const div=document.createElement('div');div.className='ai-msg bot typing';div.innerHTML='<div class="tdot"></div><div class="tdot"></div><div class="tdot"></div>';msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;return div;}
+/* ── View / Tab Switch ── */
+window.switchView=v=>{
+  document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
+  ['nav-home','nav-pocket'].forEach(id=>{const el=$(id);if(el)el.classList.remove('active');});
+  ['snav-home','snav-pocket'].forEach(id=>{const el=$(id);if(el)el.classList.remove('active');});
+  if(v==='home'){$('view-home').classList.add('active');[`nav-home`,`snav-home`].forEach(id=>{const el=$(id);if(el)el.classList.add('active');});renderHome();}
+  else if(v==='pocket'){$('view-pocket').classList.add('active');[`nav-pocket`,`snav-pocket`].forEach(id=>{const el=$(id);if(el)el.classList.add('active');});const sel=$('pocketMonthSel');if(sel)sel.value=curPocketMonth;renderPocket();}
+  else{$('view-month').classList.add('active');renderMonth();}
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+window.openMonth=(idx)=>{curMonth=idx;switchView('month');};
+window.switchTab=(tabId)=>{
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  $(tabId).classList.add('active');
+  const tabIdx=['t-income','t-expense','t-save','t-note'].indexOf(tabId);
+  document.querySelectorAll('.tab')[tabIdx]?.classList.add('active');
+};
 
-  window.sendQuick=(text)=>{document.getElementById('aiChatInput').value=text;window.sendAiChat();};
+/* ── Portfolio Chart ── */
+function renderPortfolio(map,cvs,lgd,isM=false){
+  const canvas=$(cvs);if(!canvas)return;
+  const entries=Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  const legend=$(lgd);
+  if(!entries.length){if(legend)legend.innerHTML='<span style="color:var(--hint);font-size:.72rem">ไม่มีข้อมูล</span>';return;}
+  const key=isM?'mPortChartObj':'portChartObj';
+  if(window[key])window[key].destroy();
+  window[key]=new Chart(canvas.getContext('2d'),{type:'doughnut',data:{labels:entries.map(e=>e[0]),datasets:[{data:entries.map(e=>e[1]),backgroundColor:COLORS,borderWidth:0,cutout:'70%'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+  if(legend)legend.innerHTML=entries.map((e,i)=>`<div class="port-item"><span><span class="port-dot" style="background:${COLORS[i%8]}"></span>${esc(e[0])}</span><b>${fmt(e[1])}</b></div>`).join('');
+}
 
-  window.sendAiChat=async()=>{const inp=document.getElementById('aiChatInput');const text=inp.value.trim();if(!text)return;inp.value='';addMsg('user',text);window.aiHistory.push({role:'user',content:text});const typing=addTyping();const sys=`คุณเป็น AI Coach ด้านการเงินส่วนตัว ตอบเป็นภาษาไทยเสมอ สั้นกระชับ มีประโยชน์ ใช้ emoji เล็กน้อย\n\nข้อมูลการเงินของผู้ใช้:\n${getCtx()}`;try{const msgs=[{role:'user',content:sys},...window.aiHistory];const res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:600,messages:msgs})});const data=await res.json();if(!res.ok)throw new Error(data.error?.message||'Error');const reply=data.content?.[0]?.text||'ไม่สามารถตอบได้';typing.remove();addMsg('bot',reply);window.aiHistory.push({role:'assistant',content:reply});if(window.aiHistory.length>20)window.aiHistory=window.aiHistory.slice(-20);}catch(e){typing.remove();addMsg('bot','ขออภัยครับ เกิดข้อผิดพลาด: '+e.message);}};
+/* ── Charts Modal ── */
+window.openChartModal=type=>{
+  $('chartModal').classList.add('show');
+  document.querySelectorAll('.chart-pill').forEach(b=>b.classList.remove('active'));
+  const btn=$(`cp-${type}`);if(btn)btn.classList.add('active');
+  const ctx=$('mainChart').getContext('2d');
+  if(mainChartObj)mainChartObj.destroy();
+  const co={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8888aa'}}}};
+  if(type==='bar'){setTxt('chartTitle','รายรับ-รายจ่าย รายเดือน');mainChartObj=new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[{label:'รับ',data:window.monthlyData.map(m=>calcS(m).inc),backgroundColor:'rgba(0,224,150,.7)'},{label:'จ่าย',data:window.monthlyData.map(m=>calcS(m).exp),backgroundColor:'rgba(255,69,103,.7)'}]},options:{...co,scales:{x:{ticks:{color:'#666'}},y:{ticks:{color:'#666'}}}}});}
+  else if(type==='pie'){setTxt('chartTitle','สัดส่วนรายจ่าย');const em={};window.monthlyData.forEach(m=>(m.details||[]).filter(d=>d.type==='expense').forEach(d=>{const k=d.desc.trim()||'อื่นๆ';em[k]=(em[k]||0)+Number(d.amount);}));const ent=Object.entries(em).sort((a,b)=>b[1]-a[1]).slice(0,8);mainChartObj=new Chart(ctx,{type:'doughnut',data:{labels:ent.map(e=>e[0]),datasets:[{data:ent.map(e=>e[1]),backgroundColor:COLORS}]},options:co});}
+  else if(type==='line'){setTxt('chartTitle','เงินออมสะสม');mainChartObj=new Chart(ctx,{type:'line',data:{labels:MONTHS,datasets:[{label:'ออม',data:window.monthlyData.map(m=>calcS(m).save),borderColor:'var(--blue)',fill:true,backgroundColor:'rgba(77,143,255,.08)',tension:.4}]},options:{...co,scales:{x:{ticks:{color:'#666'}},y:{ticks:{color:'#666'}}}}});}
+};
 
-  // Pocket
-  window.renderPocket=()=>{const sel=document.getElementById('pocketMonthSelect');window.currentPocketMonthIndex=sel?Number(sel.value):new Date().getMonth();const m=window.monthlyData[window.currentPocketMonthIndex];const stats=calcS(m);const pockets=m.pockets||[];const tB=pockets.reduce((s,p)=>s+Number(p.budget||0),0);const tS=pockets.reduce((s,p)=>s+(p.entries||[]).reduce((a,e)=>a+Number(e.amount||0),0),0);setEl('pocketFreeBalance','฿'+fmt(stats.free));setEl('pocketTotalBudget',fmt(tB));setEl('pocketTotalSpent',fmt(tS));setEl('pocketTotalLeft',fmt(tB-tS));const list=document.getElementById('pocketList');if(!list)return;if(!pockets.length){list.innerHTML='<div style="text-align:center;padding:36px 0;color:var(--muted);"><i class="fas fa-wallet" style="font-size:2.2rem;opacity:0.18;display:block;margin-bottom:10px;"></i>ยังไม่มีหมวดงบย่อย</div>';return;}list.innerHTML=pockets.map((p,pi)=>{const spent=(p.entries||[]).reduce((s,e)=>s+Number(e.amount||0),0);const budget=Number(p.budget||0);const pct=budget>0?Math.min((spent/budget)*100,100):0;const color=COLORS[pi%8];const left=budget-spent;const isOver=left<0;return `<div class="pocket-card"><div class="pocket-hdr" onclick="togglePocketBody(${pi})"><div style="display:flex;align-items:center;gap:9px;"><div style="width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0;"></div><div><div style="font-weight:700;font-size:0.9rem;">${esc(p.name||'ไม่มีชื่อ')}</div><div style="font-size:0.68rem;color:var(--muted);margin-top:1px;">งบ ${fmt(budget)} บาท</div></div></div><span class="${isOver?'over-b':'ok-b'}">${isOver?'⚠️ เกิน':'เหลือ '+fmt(left)}</span></div><div class="pocket-body" id="pocket-body-${pi}" style="display:none;"><div class="prog-t"><div class="prog-f" style="width:${pct}%;background:${isOver?'var(--red)':color};"></div></div><div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--muted);margin-bottom:10px;"><span>ใช้ ${fmt(spent)} / ${fmt(budget)}</span><span>${pct.toFixed(0)}%</span></div><div style="display:flex;gap:7px;margin-bottom:10px;"><input class="inp inp-sm" style="flex:2;" value="${esc(p.name||'')}" placeholder="ชื่อหมวด..." onchange="updatePocket(${pi},'name',this.value)"><input class="inp inp-sm inp-num" type="number" value="${budget||''}" placeholder="งบ..." onchange="updatePocket(${pi},'budget',this.value)"><button class="del-btn" onclick="removePocket(${pi})" style="width:30px;height:30px;"><i class="fas fa-trash"></i></button></div><div style="margin-bottom:9px;">${(p.entries||[]).length?(p.entries||[]).map((e,ei)=>`<div class="pocket-entry"><span class="pe-date">${fmtD(e.date)}</span><span class="pe-desc">${esc(e.desc||'-')}</span><span class="pe-amt">-${fmt(e.amount)}</span><button class="del-btn" onclick="removePocketEntry(${pi},${ei})"><i class="fas fa-times"></i></button></div>`).join(''):'<div style="text-align:center;color:var(--muted);font-size:0.76rem;padding:5px;">ยังไม่มีรายจ่าย</div>'}</div><button onclick="window.openPocketExpense(${pi})" style="width:100%;padding:9px;border-radius:50px;border:1px solid ${color}44;background:${color}15;color:${color};font-weight:700;cursor:pointer;font-size:0.8rem;"><i class="fas fa-plus"></i> บันทึกรายจ่าย</button></div></div>`;}).join('');};
+/* ── Pocket ── */
+window.renderPocket=()=>{
+  const sel=$('pocketMonthSel');curPocketMonth=sel?Number(sel.value):new Date().getMonth();
+  const m=window.monthlyData[curPocketMonth];const stats=calcS(m);const pockets=m.pockets||[];
+  const tB=pockets.reduce((s,p)=>s+Number(p.budget||0),0);
+  const tS=pockets.reduce((s,p)=>s+(p.entries||[]).reduce((a,e)=>a+Number(e.amount||0),0),0);
+  setTxt('pocketFree','฿'+fmt(stats.free));
+  setTxt('pocketBudget',fmt(tB));setTxt('pocketSpent',fmt(tS));setTxt('pocketLeft',fmt(tB-tS));
+  const list=$('pocketList');if(!list)return;
+  if(!pockets.length){list.innerHTML='<div style="text-align:center;padding:36px 0;color:var(--hint)"><i class="fas fa-wallet" style="font-size:2rem;opacity:.2;display:block;margin-bottom:10px"></i>ยังไม่มีหมวดงบย่อย</div>';return;}
+  list.innerHTML=pockets.map((p,pi)=>{
+    const spent=(p.entries||[]).reduce((s,e)=>s+Number(e.amount||0),0);
+    const budget=Number(p.budget||0);const pct=budget>0?Math.min((spent/budget)*100,100):0;
+    const color=COLORS[pi%8];const left=budget-spent;const over=left<0;
+    return`<div class="pocket-card">
+      <div class="pocket-hdr" onclick="togglePocketBody(${pi})">
+        <div style="display:flex;align-items:center;gap:9px">
+          <div style="width:9px;height:9px;border-radius:50%;background:${color}"></div>
+          <div>
+            <div style="font-weight:700;font-size:.87rem">${esc(p.name||'ไม่มีชื่อ')}</div>
+            <div style="font-size:.65rem;color:var(--sub)">งบ ${fmt(budget)} บาท</div>
+          </div>
+        </div>
+        <span class="${over?'badge-over':'badge-ok'}">${over?'⚠️ เกิน':'เหลือ '+fmt(left)}</span>
+      </div>
+      <div class="pocket-body" id="pb-${pi}" style="display:none">
+        <div class="prog-track" style="margin-top:12px"><div class="prog-fill" style="width:${pct}%;background:${over?'var(--red)':color}"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--sub);margin-bottom:10px"><span>ใช้ ${fmt(spent)} / ${fmt(budget)}</span><span>${pct.toFixed(0)}%</span></div>
+        <div style="display:flex;gap:7px;margin-bottom:10px">
+          <input class="inp inp-sm" style="flex:2" value="${esc(p.name||'')}" placeholder="ชื่อหมวด..." onchange="updPocket(${pi},'name',this.value)">
+          <input class="inp inp-sm inp-num" type="number" value="${budget||''}" placeholder="งบ..." onchange="updPocket(${pi},'budget',this.value)">
+          <button class="del-btn" onclick="rmPocket(${pi})" style="width:30px;height:30px"><i class="fas fa-trash"></i></button>
+        </div>
+        <div style="margin-bottom:9px">${(p.entries||[]).length?(p.entries||[]).map((e,ei)=>`<div class="pocket-entry"><span class="pe-date">${fmtDate(e.date)}</span><span class="pe-desc">${esc(e.desc)}</span><span class="pe-amt">-${fmt(e.amount)}</span><button class="del-btn" onclick="rmPocketEntry(${pi},${ei})"><i class="fas fa-times"></i></button></div>`).join(''):'<div style="text-align:center;color:var(--hint);font-size:.72rem;padding:5px">ยังไม่มีรายจ่าย</div>'}</div>
+        <button onclick="openPocketEntry(${pi})" style="width:100%;padding:9px;border-radius:50px;border:1px solid ${color}44;background:${color}15;color:${color};font-weight:700;cursor:pointer;font-size:.78rem;font-family:'Prompt',sans-serif"><i class="fas fa-plus"></i> บันทึกรายจ่าย</button>
+      </div>
+    </div>`;
+  }).join('');
+};
+window.togglePocketBody=pi=>{const b=$(`pb-${pi}`);if(b)b.style.display=b.style.display==='none'?'block':'none';};
+window.addPocket=()=>{const m=window.monthlyData[curPocketMonth];if(!m.pockets)m.pockets=[];m.pockets.push({name:'',budget:0,entries:[]});window.saveData();renderPocket();setTimeout(()=>{const bs=document.querySelectorAll('[id^="pb-"]');if(bs.length)bs[bs.length-1].style.display='block';},50);};
+window.updPocket=(pi,f,v)=>{window.monthlyData[curPocketMonth].pockets[pi][f]=f==='budget'?Number(v):v;window.saveData();renderPocket();};
+window.rmPocket=pi=>{if(!confirm('ลบหมวดนี้?'))return;window.monthlyData[curPocketMonth].pockets.splice(pi,1);window.saveData();renderPocket();};
+window.openPocketEntry=pi=>{curPocketIdx=pi;const p=window.monthlyData[curPocketMonth].pockets[pi];setTxt('pocketEntryTitle',`บันทึกรายจ่าย — ${p.name||'ไม่มีชื่อ'}`);$('pocketEntryDesc').value='';$('pocketEntryAmt').value='';$('pocketEntryModal').classList.add('show');setTimeout(()=>$('pocketEntryDesc').focus(),100);};
+window.savePocketEntry=()=>{const desc=$('pocketEntryDesc').value.trim();const amt=Number($('pocketEntryAmt').value);if(!amt){alert('กรุณาใส่จำนวนเงิน');return;}window.monthlyData[curPocketMonth].pockets[curPocketIdx].entries.push({desc:desc||'ไม่ระบุ',amount:amt,date:new Date().toISOString()});window.saveData();closeModal('pocketEntryModal');renderPocket();setTimeout(()=>{const b=$(`pb-${curPocketIdx}`);if(b)b.style.display='block';},50);};
+window.rmPocketEntry=(pi,ei)=>{window.monthlyData[curPocketMonth].pockets[pi].entries.splice(ei,1);window.saveData();renderPocket();setTimeout(()=>{const b=$(`pb-${pi}`);if(b)b.style.display='block';},50);};
 
-  window.togglePocketBody=(pi)=>{const b=document.getElementById(`pocket-body-${pi}`);if(b)b.style.display=b.style.display==='none'?'block':'none';};
-  window.addPocket=()=>{const m=window.monthlyData[window.currentPocketMonthIndex];if(!m.pockets)m.pockets=[];m.pockets.push({name:'',budget:0,entries:[]});window.saveData();window.renderPocket();setTimeout(()=>{const bs=document.querySelectorAll('[id^="pocket-body-"]');if(bs.length)bs[bs.length-1].style.display='block';},50);};
-  window.updatePocket=(pi,field,val)=>{const m=window.monthlyData[window.currentPocketMonthIndex];m.pockets[pi][field]=field==='budget'?Number(val):val;window.saveData();window.renderPocket();};
-  window.removePocket=(pi)=>{if(!confirm('ลบหมวดนี้?'))return;window.monthlyData[window.currentPocketMonthIndex].pockets.splice(pi,1);window.saveData();window.renderPocket();};
-  window.openPocketExpense=(pi)=>{window.currentPocketIndex=pi;const p=window.monthlyData[window.currentPocketMonthIndex].pockets[pi];setEl('pocketExpenseTitle',`บันทึกรายจ่าย — ${p.name||'ไม่มีชื่อ'}`);document.getElementById('pocketExpenseDesc').value='';document.getElementById('pocketExpenseAmt').value='';document.getElementById('pocketExpenseModal').classList.add('show');setTimeout(()=>document.getElementById('pocketExpenseDesc').focus(),100);};
-  window.savePocketExpense=()=>{const desc=document.getElementById('pocketExpenseDesc').value.trim();const amt=Number(document.getElementById('pocketExpenseAmt').value);if(!amt){alert('กรุณาใส่จำนวนเงิน');return;}const m=window.monthlyData[window.currentPocketMonthIndex];m.pockets[window.currentPocketIndex].entries.push({desc:desc||'ไม่ระบุ',amount:amt,date:new Date().toISOString()});window.saveData();window.closeModal('pocketExpenseModal');window.renderPocket();setTimeout(()=>{const b=document.getElementById(`pocket-body-${window.currentPocketIndex}`);if(b)b.style.display='block';},50);};
-  window.removePocketEntry=(pi,ei)=>{window.monthlyData[window.currentPocketMonthIndex].pockets[pi].entries.splice(ei,1);window.saveData();window.renderPocket();setTimeout(()=>{const b=document.getElementById(`pocket-body-${pi}`);if(b)b.style.display='block';},50);};
+/* ── AI ── */
+window.toggleAI=()=>{const p=$('aiPopup');if(p.classList.contains('open'))closeAI();else{p.classList.add('open');setTimeout(()=>$('aiInput').focus(),200);}};
+window.closeAI=()=>{const p=$('aiPopup');p.classList.remove('open');};
+function aiCtx(){return window.monthlyData.map((m,i)=>{const s=calcS(m);return`${MONTHS[i]}: รายรับ=${fmt(s.inc)} รายจ่าย=${fmt(s.exp)} ออม=${fmt(s.save)} คงเหลือ=${fmt(s.free)}`;}).join('\n');}
+function addAIMsg(role,html){const c=$('aiMsgs');const d=document.createElement('div');d.className=`ai-msg ${role}`;d.innerHTML=html;c.appendChild(d);c.scrollTop=c.scrollHeight;}
+function showTyping(){const c=$('aiMsgs');const d=document.createElement('div');d.className='ai-msg bot typing';d.id='aiTyping';d.innerHTML='<div class="tdot"></div><div class="tdot"></div><div class="tdot"></div>';c.appendChild(d);c.scrollTop=c.scrollHeight;}
+window.quickAsk=text=>{$('aiInput').value=text;sendAI();};
+window.sendAI=async()=>{
+  const inp=$('aiInput');const text=inp.value.trim();if(!text)return;
+  inp.value='';
+  addAIMsg('user',esc(text));
+  aiHistory.push({role:'user',content:text});
+  showTyping();
+  const sys=`คุณเป็น AI Coach การเงินส่วนตัว ตอบภาษาไทย กระชับ มีประโยชน์\n\nข้อมูลการเงิน:\n${aiCtx()}`;
+  try{
+    const msgs=[{role:'user',content:sys},...aiHistory];
+    const res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:600,messages:msgs})});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error?.message||'Error');
+    const reply=data.content?.[0]?.text||'ไม่สามารถตอบได้';
+    const t=$('aiTyping');if(t)t.remove();
+    addAIMsg('bot',reply.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>'));
+    aiHistory.push({role:'assistant',content:reply});
+    if(aiHistory.length>20)aiHistory=aiHistory.slice(-20);
+  }catch(e){
+    const t=$('aiTyping');if(t)t.remove();
+    addAIMsg('bot','ขออภัยครับ เกิดข้อผิดพลาด: '+e.message);
+  }
+};
 
-  window.exportJSON=()=>{const a=document.createElement('a');a.href='data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(window.monthlyData));a.download='budget_backup.json';a.click();};
-  window.exportToExcel=()=>{let csv='\uFEFFเดือน,ประเภท,รายการ,จำนวนเงิน\n';window.monthlyData.forEach((m,idx)=>{const mm=months[idx];if(m.salary)csv+=`${mm},รายรับประจำ,เงินเดือน,${m.salary}\n`;(m.extraList||[]).forEach(e=>csv+=`${mm},รายรับพิเศษ,${e.desc},${e.amount}\n`);(m.savings||[]).forEach(s=>csv+=`${mm},เงินออม,${s.desc},${s.amount}\n`);(m.details||[]).forEach(d=>csv+=`${mm},${d.type==='income'?'รายรับ':'รายจ่าย'},${d.desc},${d.amount}\n`);});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='Budget.csv';a.click();};
-  window.openClearModal=()=>document.getElementById('clearDataModal').classList.add('show');
-  window.performClear=()=>{if(confirm('ยืนยัน?')){window.monthlyData=months.map(defM);window.saveData();window.initDataAndRender();window.closeModal('clearDataModal');window.closeModal('toolsModal');}};
-  window.openToolsModal=()=>document.getElementById('toolsModal').classList.add('show');
-  window.openSettingsModal=()=>document.getElementById('settingsModal').classList.add('show');
-  window.triggerScanCurrent=()=>{document.getElementById('receiptInput').click();};
+/* ── Scan Receipt ── */
+window.triggerScan=()=>$('scanInput').click();
 
-  window.onload=function(){
-    // Keyboard detection for AI popup (mobile only)
-    const aiInp=document.getElementById('aiChatInput');
-    if(aiInp){
-      aiInp.addEventListener('focus',()=>{
-        if(window.innerWidth>=900)return; // desktop ไม่ต้องทำ
-        setTimeout(()=>{const p=document.getElementById('aiPopup');if(p)p.classList.add('keyboard-open');const m=document.getElementById('aiMessages');if(m)m.scrollTop=m.scrollHeight;},300);
-      });
-      aiInp.addEventListener('blur',()=>{
-        if(window.innerWidth>=900)return;
-        // delay เพื่อไม่รบกวน click event ของปุ่มปิด
-        setTimeout(()=>{const p=document.getElementById('aiPopup');if(p)p.classList.remove('keyboard-open');},200);
-      });
-    }
-    const input=document.getElementById('receiptInput');
-    if(input){
-      input.addEventListener('change',async function(){
-        if(!this.files[0])return;
-        const file=this.files[0];
-        const loader=document.getElementById('loadingOverlay');
-        document.getElementById('aiLoaderText').innerText='กำลังสแกนใบเสร็จ...';
-        loader.style.display='flex';
-        const reader=new FileReader();
-        reader.onload=async(ev)=>{
-          try{
-            const b64=ev.target.result.split(',')[1];
-            const mimeType=file.type||'image/jpeg';
-            const res=await fetch(WORKER,{
-              method:'POST',
-              headers:{'Content-Type':'application/json'},
-              body:JSON.stringify({
-                model:'claude-haiku-4-5-20251001',
-                max_tokens:300,
-                messages:[{
-                  role:'user',
-                  content:[
-                    {type:'image',source:{type:'base64',media_type:mimeType,data:b64}},
-                    {type:'text',text:'วิเคราะห์ใบเสร็จนี้ ตอบเป็น JSON เท่านั้น: {"description":"ชื่อร้านหรือรายการ","amount":ตัวเลขยอดรวม,"type":"expense"}'}
-                  ]
-                }]
-              })
-            });
-            const data=await res.json();
-            if(!res.ok)throw new Error(data.error?.message||'API Error');
-            const raw=data.content?.[0]?.text||'';
-            const clean=raw.replace(/```json|```/g,'').trim();
-            const json=JSON.parse(clean);
-            if(json.amount){
-              window.monthlyData[window.currentMonthIndex].details.push({type:json.type||'expense',desc:json.description||'ใบเสร็จ',amount:Number(json.amount)});
-              window.saveData();
-              window.renderMonthDetail();
-              alert(`✅ สแกนสำเร็จ!\n${json.description} — ฿${Number(json.amount).toLocaleString()}`);
-            } else {
-              alert('ไม่พบยอดเงินในใบเสร็จ');
-            }
-          }catch(err){
-            alert('สแกนไม่สำเร็จ: '+err.message);
-          }finally{
-            loader.style.display='none';
-            input.value='';
-          }
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-    // รอ Chart.js โหลดเสร็จก่อน render
-    if(typeof Chart !== 'undefined'){
-      window.initDataAndRender();
-    } else {
-      document.querySelector('script[src*="chart.js"]').addEventListener('load', window.initDataAndRender);
-    }
-  };
+/* ── Tools ── */
+window.closeModal=id=>$(id).classList.remove('show');
+window.openToolsModal=()=>$('toolsModal').classList.add('show');
+window.openSettingsModal=()=>$('settingsModal').classList.add('show');
+window.openChartModal=openChartModal;
+window.confirmClear=()=>{closeModal('toolsModal');$('clearModal').classList.add('show');};
+window.doClear=()=>{if(confirm('ยืนยัน?')){window.monthlyData=MONTHS.map(defM);window.saveData();window.initRender();closeModal('clearModal');}};
+window.exportJSON=()=>{const a=document.createElement('a');a.href='data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(window.monthlyData));a.download='budget_backup.json';a.click();};
+window.exportCSV=()=>{
+  let csv='\uFEFFเดือน,ประเภท,รายการ,จำนวนเงิน\n';
+  window.monthlyData.forEach((m,idx)=>{
+    const mm=MONTHS[idx];
+    if(m.salary)csv+=`${mm},เงินเดือน,เงินเดือน,${m.salary}\n`;
+    (m.extraList||[]).forEach(e=>csv+=`${mm},รายรับพิเศษ,${e.desc},${e.amount}\n`);
+    (m.savings||[]).forEach(s=>csv+=`${mm},เงินออม,${s.desc},${s.amount}\n`);
+    (m.details||[]).forEach(d=>csv+=`${mm},${d.type==='income'?'รายรับ':'รายจ่าย'},${d.desc},${d.amount}\n`);
+  });
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='Budget.csv';a.click();
+};
+
+/* ── Init ── */
+window.onload=()=>{
+  checkDesktop();
+  window.addEventListener('resize',checkDesktop);
+  // Scan
+  const scan=$('scanInput');
+  if(scan){
+    scan.addEventListener('change',async function(){
+      if(!this.files[0])return;
+      const file=this.files[0];
+      const loader=$('loadingOverlay');$('loadText').innerText='กำลังสแกนใบเสร็จ...';loader.style.display='flex';
+      const reader=new FileReader();
+      reader.onload=async ev=>{
+        try{
+          const b64=ev.target.result.split(',')[1];
+          const res=await fetch(WORKER,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:300,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:file.type||'image/jpeg',data:b64}},{type:'text',text:'วิเคราะห์ใบเสร็จนี้ ตอบ JSON เท่านั้น: {"description":"ชื่อร้าน","amount":ยอดรวม,"type":"expense"}'}]}]})});
+          const data=await res.json();
+          if(!res.ok)throw new Error(data.error?.message||'Error');
+          const raw=data.content?.[0]?.text||'';
+          const json=JSON.parse(raw.replace(/```json|```/g,'').trim());
+          if(json.amount){window.monthlyData[curMonth].details.push({type:'expense',desc:json.description||'ใบเสร็จ',amount:Number(json.amount)});window.saveData();renderMonth();alert(`✅ ${json.description} — ฿${fmt(json.amount)}`);}
+          else alert('ไม่พบยอดเงิน');
+        }catch(err){alert('สแกนไม่สำเร็จ: '+err.message);}
+        finally{loader.style.display='none';scan.value='';}
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  // Mobile AI keyboard fix
+  const aiInp=$('aiInput');
+  if(aiInp){
+    aiInp.addEventListener('focus',()=>{if(window.innerWidth<920)setTimeout(()=>{const p=$('aiPopup');if(p){p.style.bottom='8px';p.style.maxHeight='55vh';}},300);});
+    aiInp.addEventListener('blur',()=>{if(window.innerWidth<920)setTimeout(()=>{const p=$('aiPopup');if(p){p.style.bottom='';p.style.maxHeight='';}},150);});
+  }
+  // Render
+  if(typeof Chart!=='undefined')window.initRender();
+  else document.querySelector('script[src*="chart.js"]').addEventListener('load',window.initRender);
+};
 </script>
 </body>
 </html>
