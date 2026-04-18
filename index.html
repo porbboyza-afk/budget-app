@@ -283,9 +283,9 @@ img,svg{display:block}
   .home-left{position:sticky;top:20px}
   .wrap{max-width:900px}
   .tab-bar{margin:0 0 16px;max-width:900px}
-  /* AI bigger */
-  .ai-popup{left:244px;right:28px;max-width:500px;max-height:72vh;bottom:20px}
-  .ai-fab{right:28px;bottom:28px;width:54px;height:54px}
+  /* AI bigger - right bottom corner on desktop */
+  .ai-popup{left:auto;right:24px;width:420px;max-height:75vh;bottom:24px}
+  .ai-fab{right:24px;bottom:24px;width:56px;height:56px;font-size:1.2rem}
   /* Modal center */
   .modal{align-items:center;padding:20px}
   .modal-box{border-radius:22px;max-width:480px;max-height:82vh}
@@ -540,7 +540,7 @@ img,svg{display:block}
       <button class="chart-pill" id="cp-pie" onclick="openChartModal('pie')">สัดส่วน</button>
       <button class="chart-pill" id="cp-line" onclick="openChartModal('line')">ออม</button>
     </div>
-    <div style="position:relative;height:36vh"><canvas id="mainChart"></canvas></div>
+    <div style="position:relative;height:42vh"><canvas id="mainChart"></canvas></div>
   </div>
 </div>
 
@@ -874,10 +874,75 @@ window.openChartModal=type=>{
   const btn=$(`cp-${type}`);if(btn)btn.classList.add('active');
   const ctx=$('mainChart').getContext('2d');
   if(mainChartObj)mainChartObj.destroy();
-  const co={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8888aa'}}}};
-  if(type==='bar'){setTxt('chartTitle','รายรับ-รายจ่าย รายเดือน');mainChartObj=new Chart(ctx,{type:'bar',data:{labels:MONTHS,datasets:[{label:'รับ',data:window.monthlyData.map(m=>calcS(m).inc),backgroundColor:'rgba(0,224,150,.7)'},{label:'จ่าย',data:window.monthlyData.map(m=>calcS(m).exp),backgroundColor:'rgba(255,69,103,.7)'}]},options:{...co,scales:{x:{ticks:{color:'#666'}},y:{ticks:{color:'#666'}}}}});}
-  else if(type==='pie'){setTxt('chartTitle','สัดส่วนรายจ่าย');const em={};window.monthlyData.forEach(m=>(m.details||[]).filter(d=>d.type==='expense').forEach(d=>{const k=d.desc.trim()||'อื่นๆ';em[k]=(em[k]||0)+Number(d.amount);}));const ent=Object.entries(em).sort((a,b)=>b[1]-a[1]).slice(0,8);mainChartObj=new Chart(ctx,{type:'doughnut',data:{labels:ent.map(e=>e[0]),datasets:[{data:ent.map(e=>e[1]),backgroundColor:COLORS}]},options:co});}
-  else if(type==='line'){setTxt('chartTitle','เงินออมสะสม');mainChartObj=new Chart(ctx,{type:'line',data:{labels:MONTHS,datasets:[{label:'ออม',data:window.monthlyData.map(m=>calcS(m).save),borderColor:'var(--blue)',fill:true,backgroundColor:'rgba(77,143,255,.08)',tension:.4}]},options:{...co,scales:{x:{ticks:{color:'#666'}},y:{ticks:{color:'#666'}}}}});}
+
+  const shortMonths=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+  const co={
+    responsive:true,maintainAspectRatio:false,
+    plugins:{
+      legend:{labels:{color:'#9090b8',font:{family:'Prompt',size:12}}},
+      tooltip:{
+        backgroundColor:'rgba(20,20,40,.95)',
+        titleColor:'#fff',bodyColor:'#aaa',
+        padding:12,cornerRadius:10,
+        callbacks:{label:ctx=>' ฿'+Number(ctx.raw).toLocaleString()}
+      }
+    }
+  };
+
+  if(type==='bar'){
+    setTxt('chartTitle','รายรับ-รายจ่าย รายเดือน');
+    const incData=window.monthlyData.map(m=>calcS(m).inc);
+    const expData=window.monthlyData.map(m=>calcS(m).exp);
+    mainChartObj=new Chart(ctx,{
+      type:'bar',
+      data:{
+        labels:shortMonths,
+        datasets:[
+          {label:'รายรับ',data:incData,backgroundColor:'rgba(0,224,150,.75)',borderRadius:6,borderSkipped:false},
+          {label:'รายจ่าย',data:expData,backgroundColor:'rgba(255,69,103,.75)',borderRadius:6,borderSkipped:false}
+        ]
+      },
+      options:{
+        ...co,
+        scales:{
+          x:{ticks:{color:'#7070a0',font:{family:'Prompt',size:11}},grid:{color:'rgba(255,255,255,.04)'}},
+          y:{ticks:{color:'#7070a0',font:{family:'Prompt',size:11},callback:v=>v>=1000?'฿'+(v/1000).toFixed(0)+'K':'฿'+v},grid:{color:'rgba(255,255,255,.06)'}}
+        }
+      }
+    });
+  } else if(type==='pie'){
+    setTxt('chartTitle','สัดส่วนรายจ่ายปีนี้');
+    const em={};
+    window.monthlyData.forEach(m=>(m.details||[]).filter(d=>d.type==='expense').forEach(d=>{const k=d.desc.trim()||'อื่นๆ';em[k]=(em[k]||0)+Number(d.amount);}));
+    const ent=Object.entries(em).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    if(!ent.length){setTxt('chartTitle','ยังไม่มีรายจ่าย');return;}
+    mainChartObj=new Chart(ctx,{
+      type:'doughnut',
+      data:{labels:ent.map(e=>e[0]),datasets:[{data:ent.map(e=>e[1]),backgroundColor:COLORS,borderWidth:2,borderColor:'#141422',hoverOffset:8}]},
+      options:{...co,cutout:'60%',plugins:{...co.plugins,legend:{position:'right',labels:{color:'#9090b8',font:{family:'Prompt',size:11},boxWidth:12,padding:10}}}}
+    });
+  } else if(type==='line'){
+    setTxt('chartTitle','เงินออมสะสม');
+    const saveData=window.monthlyData.map(m=>calcS(m).save);
+    const cumData=saveData.reduce((acc,v,i)=>{acc.push((acc[i-1]||0)+v);return acc;},[]);
+    mainChartObj=new Chart(ctx,{
+      type:'line',
+      data:{
+        labels:shortMonths,
+        datasets:[
+          {label:'ออมรายเดือน',data:saveData,borderColor:'#4d8fff',backgroundColor:'rgba(77,143,255,.1)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#4d8fff'},
+          {label:'สะสมรวม',data:cumData,borderColor:'#00e096',backgroundColor:'rgba(0,224,150,.06)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#00e096',borderDash:[5,3]}
+        ]
+      },
+      options:{
+        ...co,
+        scales:{
+          x:{ticks:{color:'#7070a0',font:{family:'Prompt',size:11}},grid:{color:'rgba(255,255,255,.04)'}},
+          y:{ticks:{color:'#7070a0',font:{family:'Prompt',size:11},callback:v=>v>=1000?'฿'+(v/1000).toFixed(0)+'K':'฿'+v},grid:{color:'rgba(255,255,255,.06)'}}
+        }
+      }
+    });
+  }
 };
 
 /* ── Pocket ── */
