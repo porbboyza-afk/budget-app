@@ -3,1564 +3,669 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MyDash — ระบบส่วนตัว</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>MyDashboard (Local & Claude AI)</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
 <style>
-:root {
-  --bg:#0d1117; --surface:#161b22; --surface2:#21262d; --surface3:#30363d;
-  --border:#30363d; --border2:#484f58;
-  --accent:#58a6ff; --accent2:#3fb950; --accent3:#d29922; --accent4:#f85149;
-  --accent5:#bc8cff; --accent6:#39d353;
-  --text:#e6edf3; --text2:#8b949e; --text3:#6e7681;
-  --run:#58a6ff; --swim:#39c5cf; --bike:#d29922; --weight:#bc8cff;
-  --grad1:linear-gradient(135deg,#1a1f2e,#0d1117);
-  --shadow:0 8px 32px rgba(0,0,0,.4);
-  --radius:14px; --radius-sm:8px;
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{font-family:'Sarabun',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+  /* ฟอนต์สำหรับหนังสือราชการ */
+  @font-face {
+    font-family: 'TH Sarabun New';
+    src: local('TH Sarabun New'), local('THSarabunNew');
+  }
 
-/* SCROLLBAR */
-::-webkit-scrollbar{width:5px;height:5px;}
-::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:10px;}
+  :root {
+    --bg: #0f172a;        
+    --surface: #1e293b;   
+    --surface2: #334155;  
+    --border: #475569;    
+    --accent: #3b82f6;    
+    --accent2: #10b981;   
+    --accent3: #f59e0b;   
+    --accent4: #ef4444;   
+    --text: #f8fafc;      
+    --text2: #94a3b8;     
+    --text3: #64748b;     
+    --run: #3b82f6;
+  }
+  
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 
-/* SIDEBAR */
-.sidebar{
-  position:fixed;left:0;top:0;bottom:0;width:230px;
-  background:var(--surface);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;z-index:200;
-  padding:0;overflow-y:auto;
-  transition:transform .3s cubic-bezier(.4,0,.2,1);
-}
-.sidebar-header{
-  padding:20px 20px 16px;
-  border-bottom:1px solid var(--border);
-  background:linear-gradient(135deg,rgba(88,166,255,.08),transparent);
-}
-.logo{font-family:'Space Mono',monospace;font-size:18px;font-weight:700;color:var(--accent);letter-spacing:-0.5px;}
-.logo-sub{color:var(--text3);font-size:11px;margin-top:2px;font-family:'Sarabun',sans-serif;}
-.nav{flex:1;padding:12px 0;}
-.nav-section{padding:12px 16px 4px;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;font-weight:700;}
-.nav-item{
-  display:flex;align-items:center;gap:10px;
-  padding:9px 16px;cursor:pointer;color:var(--text2);font-size:13.5px;
-  border-left:2px solid transparent;
-  transition:all .18s ease;border-radius:0 8px 8px 0;margin:1px 8px 1px 0;
-}
-.nav-item:hover{color:var(--text);background:var(--surface2);border-left-color:var(--border2);}
-.nav-item.active{color:var(--accent);background:rgba(88,166,255,.1);border-left-color:var(--accent);}
-.nav-item .ni{font-size:16px;width:20px;text-align:center;}
+  ::-webkit-scrollbar { width: 6px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 10px; }
 
-/* MAIN */
-.main{margin-left:230px;padding:28px 32px;min-height:100vh;}
-.page{display:none;animation:fadeSlide .3s ease;}
-.page.active{display:block;}
-@keyframes fadeSlide{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
-h1{font-size:24px;font-weight:700;margin-bottom:4px;font-family:'Prompt',sans-serif;letter-spacing:-.3px;}
-.subtitle{color:var(--text2);font-size:13px;margin-bottom:24px;}
+  /* SIDEBAR */
+  .sidebar { position:fixed; left:0; top:0; bottom:0; width:240px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; z-index:100; padding:24px 0; overflow-y:auto; }
+  .logo { padding:0 20px 24px; border-bottom:1px solid var(--border); font-family:'Space Mono',monospace; font-size:20px; font-weight:700; color:var(--accent); letter-spacing:-0.5px; }
+  .logo span { color:var(--text2); font-size:11px; display:block; font-weight:400; margin-top:2px; }
+  .nav { flex:1; padding:16px 0; }
+  .nav-item { display:flex; align-items:center; gap:12px; padding:12px 20px; cursor:pointer; color:var(--text2); font-size:14px; border-left:3px solid transparent; transition:all .2s; }
+  .nav-item:hover, .nav-item.active { color:var(--text); background:var(--surface2); border-left-color:var(--accent); }
+  .nav-item .icon { font-size:18px; }
+  .nav-section { padding:12px 20px 4px; font-size:10px; letter-spacing:1.5px; color:var(--text3); text-transform:uppercase; margin-top:8px; font-weight:700; }
 
-/* GRID */
-.grid{display:grid;gap:16px;}
-.g2{grid-template-columns:1fr 1fr;}
-.g3{grid-template-columns:1fr 1fr 1fr;}
-.g4{grid-template-columns:repeat(4,1fr);}
-.span2{grid-column:span 2;}
+  /* MAIN */
+  .main { margin-left:240px; padding:32px; min-height:100vh; }
+  .page { display:none; animation: fadeIn 0.3s ease; }
+  .page.active { display:block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  
+  h1 { font-size:28px; font-weight:700; margin-bottom:4px; letter-spacing:-0.5px; }
+  .subtitle { color:var(--text2); font-size:14px; margin-bottom:28px; }
 
-/* CARD */
-.card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:20px;
-  transition:border-color .2s,box-shadow .2s;
-}
-.card:hover{border-color:var(--border2);}
-.card-title{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1.2px;font-weight:700;margin-bottom:14px;}
-.stat-big{font-family:'Space Mono',monospace;font-size:30px;font-weight:700;}
-.stat-unit{font-size:12px;color:var(--text2);margin-left:3px;}
-.stat-sub{font-size:12px;color:var(--text3);margin-top:3px;}
+  /* CARDS */
+  .grid { display:grid; gap:20px; }
+  .grid-2 { grid-template-columns:1fr 1fr; }
+  .grid-3 { grid-template-columns:1fr 1fr 1fr; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+  .card-title { font-size:12px; color:var(--text2); font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:16px; }
+  .stat-num { font-family:'Space Mono',monospace; font-size:32px; font-weight:700; color:var(--text); }
 
-/* GLOW CARDS */
-.card-run{border-color:rgba(88,166,255,.25);background:linear-gradient(135deg,rgba(88,166,255,.05),var(--surface));}
-.card-swim{border-color:rgba(57,197,207,.25);background:linear-gradient(135deg,rgba(57,197,207,.05),var(--surface));}
-.card-bike{border-color:rgba(210,153,34,.25);background:linear-gradient(135deg,rgba(210,153,34,.05),var(--surface));}
-.card-weight{border-color:rgba(188,140,255,.25);background:linear-gradient(135deg,rgba(188,140,255,.05),var(--surface));}
-.card-ai{border-color:rgba(88,166,255,.3);background:linear-gradient(135deg,rgba(88,166,255,.06),rgba(188,140,255,.04),var(--surface));}
+  .btn { padding:10px 20px; border-radius:10px; border:none; cursor:pointer; font-family:'Sarabun',sans-serif; font-size:14px; font-weight:600; transition:all .2s; }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-success { background:var(--accent2); color:#fff; }
+  .btn-ghost { background:transparent; color:var(--text2); border:1px solid var(--border); }
 
-/* BTN */
-.btn{padding:8px 18px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:13.5px;font-weight:600;transition:all .18s ease;display:inline-flex;align-items:center;gap:6px;}
-.btn:active{transform:scale(.97);}
-.btn-primary{background:var(--accent);color:#0d1117;}
-.btn-primary:hover{background:#79b8ff;box-shadow:0 0 16px rgba(88,166,255,.35);}
-.btn-success{background:var(--accent2);color:#0d1117;}
-.btn-success:hover{background:#56d364;}
-.btn-warn{background:var(--accent3);color:#0d1117;}
-.btn-danger{background:var(--accent4);color:#fff;}
-.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border);}
-.btn-ghost:hover{color:var(--text);border-color:var(--border2);background:var(--surface2);}
-.btn-sm{padding:5px 12px;font-size:12.5px;}
-.btn-xs{padding:3px 9px;font-size:11.5px;}
+  .form-group { margin-bottom:16px; }
+  label { display:block; font-size:13px; color:var(--text2); margin-bottom:8px; font-weight:500; }
+  input, select, textarea { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 14px; color:var(--text); font-family:'Sarabun',sans-serif; font-size:14px; transition:border-color .2s; outline:none; }
+  input:focus, select:focus, textarea:focus { border-color:var(--accent); background:var(--surface); }
 
-/* FORM */
-.form-group{margin-bottom:14px;}
-label{display:block;font-size:12.5px;color:var(--text2);margin-bottom:6px;font-weight:500;}
-input,select,textarea{
-  width:100%;background:var(--surface2);border:1px solid var(--border);
-  border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);
-  font-family:'Sarabun',sans-serif;font-size:13.5px;outline:none;
-  transition:border-color .2s,background .2s;
-}
-input:focus,select:focus,textarea:focus{border-color:var(--accent);background:var(--surface3);}
-textarea{resize:vertical;min-height:72px;line-height:1.5;}
-select option{background:var(--surface2);}
-input[type=file]{display:none;}
+  .tabs { display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--border); }
+  .tab { padding:10px 20px; cursor:pointer; font-size:14px; font-weight:600; color:var(--text2); border-bottom:3px solid transparent; transition:all .2s; margin-bottom:-1px; }
+  .tab.active { color:var(--accent); border-bottom-color:var(--accent); }
 
-/* TABS */
-.tabs{display:flex;gap:2px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0;}
-.tab{padding:8px 16px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .18s;border-radius:6px 6px 0 0;}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(88,166,255,.06);}
-.tab:hover:not(.active){color:var(--text);background:var(--surface2);}
+  .chart-wrap { position:relative; height:300px; }
 
-/* TABLE */
-table{width:100%;border-collapse:collapse;}
-th{text-align:left;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);padding:10px 12px;border-bottom:1px solid var(--border);font-weight:700;}
-td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text);}
-tr:hover td{background:var(--surface2);}
-tr:last-child td{border-bottom:none;}
+  /* DOC PREVIEW */
+  .doc-preview-container { background:#525659; padding:20px; border-radius:16px; overflow:auto; max-height:1000px; display:flex; justify-content:center; }
+  .a4-sim { 
+    width: 210mm; min-height: 297mm; height: auto; margin: 0 auto; 
+    padding: 2.5cm 2cm 2cm 3cm; background: white; color: #000; 
+    box-shadow: 0 0 10px rgba(0,0,0,0.5); font-family: 'TH Sarabun New', 'Sarabun', serif; 
+    font-size: 16pt; font-weight: normal; line-height: 1.15; position: relative; 
+    display: flex; flex-direction: column; box-sizing: border-box;
+  }
 
-/* BADGE */
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;}
-.b-run{background:rgba(88,166,255,.15);color:var(--run);}
-.b-swim{background:rgba(57,197,207,.15);color:var(--swim);}
-.b-bike{background:rgba(210,153,34,.15);color:var(--bike);}
-.b-weight{background:rgba(188,140,255,.15);color:var(--weight);}
-.b-out{background:rgba(248,81,73,.12);color:var(--accent4);}
-.b-memo{background:rgba(210,153,34,.12);color:var(--accent3);}
-.b-green{background:rgba(63,185,80,.12);color:var(--accent2);}
+  .ai-box { background:linear-gradient(135deg,rgba(59,130,246,.05),rgba(168,85,247,.05)); border:1px solid rgba(59,130,246,.3); border-radius:12px; padding:20px; margin-bottom: 20px; }
+  .ai-bubble { background: var(--surface2); padding: 16px; border-radius: 12px; margin-top:12px; line-height:1.6; font-size:14px;}
 
-/* CHART */
-.chart-wrap{position:relative;height:220px;}
-.chart-wrap-lg{position:relative;height:300px;}
+  #sys-error-toast { display:none; position:fixed; bottom:20px; right:20px; background:#ef4444; color:#fff; padding:16px; border-radius:12px; z-index:9999; max-width:400px; font-family: 'Sarabun', sans-serif; }
 
-/* NEWS CARD */
-.news-card{
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:var(--radius);padding:16px;margin-bottom:10px;
-  cursor:pointer;transition:all .2s;
-}
-.news-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow);}
-.news-tag{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);}
-.news-title{font-size:14px;font-weight:600;margin:5px 0;line-height:1.4;}
-.news-desc{font-size:12px;color:var(--text2);line-height:1.5;margin:4px 0;}
-.news-date{font-size:11px;color:var(--text3);}
+  .flex { display:flex; }
+  .items-center { align-items:center; }
+  .justify-between { justify-content:space-between; }
+  .mb-12 { margin-bottom:12px; }
+  .mb-24 { margin-bottom:24px; }
+  .mt-12 { margin-top:12px; }
 
-/* AI RESULT BOX */
-.ai-result{
-  background:var(--surface2);border:1px solid rgba(88,166,255,.2);
-  border-radius:var(--radius);padding:16px;margin-top:12px;
-  font-size:13.5px;line-height:1.7;white-space:pre-wrap;
-  animation:fadeSlide .3s ease;
-}
-
-/* SPLITS TABLE */
-.splits-table{width:100%;border-collapse:collapse;font-size:12.5px;}
-.splits-table th{padding:6px 8px;font-size:10.5px;text-align:center;}
-.splits-table td{padding:4px;text-align:center;}
-.splits-table input{padding:5px 8px;font-size:12.5px;text-align:center;}
-
-/* MODAL */
-.modal-bg{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
-  z-index:500;align-items:center;justify-content:center;
-  backdrop-filter:blur(4px);
-}
-.modal-bg.open{display:flex;animation:fadeSlide .2s ease;}
-.modal{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:18px;padding:28px;width:540px;max-width:95vw;
-  max-height:90vh;overflow-y:auto;
-  box-shadow:var(--shadow);
-}
-.modal-title{font-size:17px;font-weight:700;margin-bottom:18px;font-family:'Prompt',sans-serif;}
-
-/* RACE COUNTDOWN */
-.count-num{font-family:'Space Mono',monospace;font-size:36px;font-weight:700;color:var(--accent5);line-height:1;}
-.count-label{font-size:10px;color:var(--text3);margin-top:2px;}
-
-/* DOC PREVIEW — A4 */
-.doc-bg{background:#525659;padding:20px;border-radius:14px;overflow:auto;max-height:820px;display:flex;justify-content:center;}
-.a4{
-  width:210mm;min-height:297mm;
-  padding:2.5cm 2cm 2cm 3cm;
-  background:#fff;color:#000;
-  font-family:'TH Sarabun New','Sarabun',serif;
-  font-size:16pt;line-height:1.5;
-  box-shadow:0 4px 24px rgba(0,0,0,.3);
-  flex-shrink:0;
-}
-
-/* GARUDA BAR */
-.garuda-bar{
-  background:linear-gradient(135deg,rgba(210,153,34,.06),var(--surface));
-  border:1px solid rgba(210,153,34,.25);
-  border-radius:var(--radius);padding:16px;margin-bottom:18px;
-}
-
-/* TODAY ROW */
-.today-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
-.today-row:last-child{border-bottom:none;}
-.today-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-.today-val{font-size:14px;font-weight:600;}
-.today-sub{font-size:12px;color:var(--text2);}
-
-/* PROGRESS */
-.progress-wrap{margin:6px 0;}
-.progress-label{display:flex;justify-content:space-between;font-size:11.5px;color:var(--text2);margin-bottom:4px;}
-.progress-track{height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
-.progress-fill{height:100%;border-radius:3px;transition:width .6s ease;}
-
-/* PDF UPLOAD */
-.pdf-drop{
-  border:2px dashed var(--border);border-radius:var(--radius);
-  padding:32px;text-align:center;cursor:pointer;
-  transition:all .2s;color:var(--text2);font-size:13px;
-}
-.pdf-drop:hover{border-color:var(--accent);color:var(--text);background:rgba(88,166,255,.04);}
-.pdf-drop.dragover{border-color:var(--accent);background:rgba(88,166,255,.08);}
-
-/* UTIL */
-.flex{display:flex;}.items-center{align-items:center;}.justify-between{justify-content:space-between;}
-.gap-8{gap:8px;}.gap-12{gap:12px;}.gap-16{gap:16px;}
-.mt-8{margin-top:8px;}.mt-12{margin-top:12px;}.mt-16{margin-top:16px;}.mt-20{margin-top:20px;}
-.mb-8{margin-bottom:8px;}.mb-12{margin-bottom:12px;}.mb-16{margin-bottom:16px;}.mb-20{margin-bottom:20px;}
-.text-xs{font-size:11.5px;}.text-sm{font-size:13px;}.text2{color:var(--text2);}.text3{color:var(--text3);}
-.mono{font-family:'Space Mono',monospace;}.bold{font-weight:700;}
-.w-full{width:100%;}.text-center{text-align:center;}
-.hidden{display:none!important;}
-.spin{animation:spin 1s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-
-/* RESPONSIVE */
-@media(max-width:960px){
-  .g3{grid-template-columns:1fr 1fr;}.g4{grid-template-columns:1fr 1fr;}
-}
-@media(max-width:700px){
-  .sidebar{transform:translateX(-100%);}
-  .sidebar.open{transform:translateX(0);}
-  .main{margin-left:0;padding:16px;}
-  .g2,.g3,.g4{grid-template-columns:1fr;}
-  .span2{grid-column:span 1;}
-}
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-size:12px; color:var(--text3); padding:12px; border-bottom:2px solid var(--border); text-transform:uppercase; }
+  td { padding:14px 12px; border-bottom:1px solid var(--border); font-size:14px; }
 </style>
 </head>
 <body>
 
-<!-- SIDEBAR -->
-<nav class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <div class="logo">MyDash</div>
-    <div class="logo-sub">ระบบส่วนตัว — Local First</div>
-  </div>
+<div id="sys-error-toast">
+  <div style="font-weight:bold; margin-bottom:8px;">⚠️ ข้อผิดพลาดระบบ</div>
+  <div id="sys-error-msg" style="font-size:12px; margin-bottom:12px;"></div>
+  <button onclick="this.parentElement.style.display='none'" style="width:100%; border:none; padding:5px; border-radius:4px; cursor:pointer; background:#fff; color:#ef4444; font-weight:bold;">ปิด</button>
+</div>
+
+<nav class="sidebar">
+  <div class="logo">MyDash <span>Claude AI Local</span></div>
   <div class="nav">
     <div class="nav-section">หน้าหลัก</div>
-    <div class="nav-item active" onclick="showPage('today')"><span class="ni">🏠</span>Today</div>
-
-    <div class="nav-section">ออกกำลังกาย</div>
-    <div class="nav-item" onclick="showPage('fit-log')"><span class="ni">📝</span>บันทึกการออกกำลังกาย</div>
-    <div class="nav-item" onclick="showPage('fit-stats')"><span class="ni">📊</span>สถิติ & กราฟ</div>
-    <div class="nav-item" onclick="showPage('fit-coach')"><span class="ni">🤖</span>AI โค้ชวางแผน</div>
-    <div class="nav-item" onclick="showPage('race')"><span class="ni">🏆</span>การแข่งขัน</div>
-
+    <div class="nav-item active" onclick="showPage('today')"><span class="icon">🏠</span><span>Today</span></div>
+    
+    <div class="nav-section">สุขภาพ & การวิ่ง</div>
+    <div class="nav-item" onclick="showPage('fitness-log')"><span class="icon">💪</span><span>บันทึกออกกำลังกาย</span></div>
+    <div class="nav-item" onclick="showPage('fitness-stats')"><span class="icon">📊</span><span>สถิติ & วิเคราะห์</span></div>
+    <div class="nav-item" onclick="showPage('coach')"><span class="icon">🤖</span><span>AI โค้ชวิ่ง</span></div>
+    
     <div class="nav-section">งานธุรการ</div>
-    <div class="nav-item" onclick="showPage('doc-in')"><span class="ni">📥</span>AI สรุปหนังสือเข้า</div>
-    <div class="nav-item" onclick="showPage('doc-create')"><span class="ni">📤</span>สร้างหนังสือออก</div>
-    <div class="nav-item" onclick="showPage('doc-list')"><span class="ni">📁</span>ทะเบียนหนังสือ</div>
-
-    <div class="nav-section">ข้อมูล & AI</div>
-    <div class="nav-item" onclick="showPage('news')"><span class="ni">📰</span>ข่าวสาร & AI ถาม-ตอบ</div>
-    <div class="nav-item" onclick="showPage('settings')"><span class="ni">⚙️</span>ตั้งค่า</div>
+    <div class="nav-item" onclick="showPage('doc-summary')"><span class="icon">📑</span><span>AI สรุปหนังสือเข้า</span></div>
+    <div class="nav-item" onclick="showPage('doc-create')"><span class="icon">📝</span><span>สร้างหนังสือออก</span></div>
+    <div class="nav-item" onclick="showPage('doc-list')"><span class="icon">📁</span><span>ทะเบียนหนังสือ</span></div>
+    
+    <div class="nav-section">ฉลาดรอบรู้</div>
+    <div class="nav-item" onclick="showPage('news')"><span class="icon">📰</span><span>AI ถาม-ตอบ ข่าวสาร</span></div>
+    
+    <div class="nav-section">ระบบ</div>
+    <div class="nav-item" onclick="showPage('settings')"><span class="icon">⚙️</span><span>ตั้งค่าระบบ</span></div>
   </div>
 </nav>
 
-<!-- MAIN -->
 <main class="main">
 
-<!-- ========== TODAY ========== -->
+<!-- Today -->
 <div class="page active" id="page-today">
   <h1>สวัสดีครับ 👋</h1>
-  <div class="subtitle" id="today-date"></div>
-
-  <div class="grid g3 mb-16">
-    <div class="card card-run">
-      <div class="card-title">วิ่ง 7 วัน</div>
-      <div class="stat-big" id="t-run">0.0</div>
-      <div class="stat-unit" style="display:inline">กม.</div>
-      <div class="stat-sub" id="t-run-count">0 ครั้ง</div>
-    </div>
-    <div class="card">
-      <div class="card-title">ออกกำลังกาย 7 วัน</div>
-      <div class="stat-big" id="t-total">0</div>
-      <div class="stat-unit" style="display:inline">ครั้ง</div>
-    </div>
-    <div class="card">
-      <div class="card-title">หนังสือที่บันทึก</div>
-      <div class="stat-big" id="t-docs">0</div>
-      <div class="stat-unit" style="display:inline">ฉบับ</div>
-    </div>
-  </div>
-
-  <div class="grid g2">
-    <div class="card">
-      <div class="flex justify-between items-center mb-12">
-        <div class="card-title" style="margin:0">บันทึกล่าสุด</div>
-        <button class="btn btn-ghost btn-sm" onclick="showPage('fit-log')">+ เพิ่ม</button>
-      </div>
-      <div id="today-workouts"><p class="text2 text-sm">ยังไม่มีข้อมูล</p></div>
-    </div>
-    <div>
-      <div class="card card-ai mb-16" id="today-race-card" style="display:none">
-        <div class="card-title" style="color:var(--accent5);margin-bottom:8px">🏁 การแข่งขันถัดไป</div>
-        <div id="today-race-info"></div>
-      </div>
-      <div class="card card-ai">
-        <div class="card-title" style="color:var(--accent);margin-bottom:6px">🤖 Claude AI พร้อมใช้งาน</div>
-        <p class="text-sm text2" style="line-height:1.7">ระบบใช้ Claude API — ใส่ API Key ในตั้งค่าเพื่อเปิดใช้ฟีเจอร์ AI ทุกส่วน ข้อมูลทั้งหมดเก็บในเครื่องของคุณ</p>
-        <button class="btn btn-ghost btn-sm mt-8" onclick="showPage('settings')">⚙️ ตั้งค่า API</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ========== FITNESS LOG ========== -->
-<div class="page" id="page-fit-log">
-  <div class="flex justify-between items-center mb-20">
-    <div>
-      <h1>บันทึกการออกกำลังกาย</h1>
-      <div class="subtitle" style="margin:0">วิ่ง • ว่ายน้ำ • ปั่น • เวท — พร้อม Splits รายกิโล</div>
-    </div>
-  </div>
-
-  <div class="grid g2">
-    <!-- FORM -->
-    <div class="card">
-      <div class="card-title">เพิ่มบันทึกใหม่</div>
-      <div class="grid g2">
-        <div class="form-group">
-          <label>วันที่</label>
-          <input type="date" id="f-date">
-        </div>
-        <div class="form-group">
-          <label>กิจกรรม</label>
-          <select id="f-act" onchange="onActChange()">
-            <option value="run">🏃 วิ่ง</option>
-            <option value="swim">🏊 ว่ายน้ำ</option>
-            <option value="bike">🚴 ปั่นจักรยาน</option>
-            <option value="weight">🏋️ เวทเทรนนิ่ง</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- RUN -->
-      <div id="f-run">
-        <div class="grid g2">
-          <div class="form-group">
-            <label>ระยะทาง (กม.)</label>
-            <input type="number" step="0.01" id="r-dist" placeholder="6.50" oninput="buildSplits()">
-          </div>
-          <div class="form-group">
-            <label>เวลารวม (นาที)</label>
-            <input type="number" step="0.1" id="r-time" placeholder="35.0">
-          </div>
-        </div>
-        <div class="grid g2">
-          <div class="form-group">
-            <label>รอบขา (spm)</label>
-            <input type="number" id="r-cad" placeholder="170">
-          </div>
-          <div class="form-group">
-            <label>ระยะก้าว (ซม.)</label>
-            <input type="number" step="0.1" id="r-stride" placeholder="95">
-          </div>
-        </div>
-        <div class="grid g2">
-          <div class="form-group">
-            <label>HR เฉลี่ย (bpm)</label>
-            <input type="number" id="r-hr" placeholder="150">
-          </div>
-          <div class="form-group">
-            <label>ระดับความสูงขึ้น (ม.)</label>
-            <input type="number" id="r-elev" placeholder="80">
-          </div>
-        </div>
-
-        <!-- SPLITS -->
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;">
-          <div class="flex justify-between items-center mb-8">
-            <span style="font-size:12px;font-weight:700;color:var(--accent)">⚡ Splits รายกิโลเมตร</span>
-            <div id="avg-pace-disp" class="text-xs mono" style="color:var(--accent2)">Pace เฉลี่ย: —</div>
-          </div>
-          <div id="splits-area"><p class="text-sm text2" style="font-style:italic">กรอกระยะทางเพื่อสร้างช่อง Splits</p></div>
-        </div>
-        <div class="form-group">
-          <label>หมายเหตุ / เส้นทาง</label>
-          <textarea id="r-note" placeholder="เช่น วิ่งในสวนสาธารณะ..."></textarea>
-        </div>
-      </div>
-
-      <!-- SWIM -->
-      <div id="f-swim" class="hidden">
-        <div class="grid g2">
-          <div class="form-group"><label>ระยะ (ม.)</label><input type="number" id="sw-dist" placeholder="1000"></div>
-          <div class="form-group"><label>เวลา (นาที)</label><input type="number" step="0.1" id="sw-time" placeholder="30"></div>
-        </div>
-        <div class="grid g2">
-          <div class="form-group"><label>จำนวนเลน</label><input type="number" id="sw-laps" placeholder="20"></div>
-          <div class="form-group"><label>ท่าว่าย</label>
-            <select id="sw-style">
-              <option value="freestyle">ฟรีสไตล์</option>
-              <option value="breaststroke">กบ</option>
-              <option value="backstroke">กรรเชียง</option>
-              <option value="butterfly">ผีเสื้อ</option>
-              <option value="mixed">ผสม</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group"><label>หมายเหตุ</label><textarea id="sw-note"></textarea></div>
-      </div>
-
-      <!-- BIKE -->
-      <div id="f-bike" class="hidden">
-        <div class="grid g2">
-          <div class="form-group"><label>ระยะ (กม.)</label><input type="number" step="0.01" id="bk-dist" placeholder="40"></div>
-          <div class="form-group"><label>เวลา (นาที)</label><input type="number" step="0.1" id="bk-time" placeholder="90"></div>
-        </div>
-        <div class="grid g2">
-          <div class="form-group"><label>ความเร็วสูงสุด (กม./ชม.)</label><input type="number" step="0.1" id="bk-maxspd" placeholder="45"></div>
-          <div class="form-group"><label>HR เฉลี่ย (bpm)</label><input type="number" id="bk-hr" placeholder="140"></div>
-        </div>
-        <div class="form-group"><label>หมายเหตุ</label><textarea id="bk-note"></textarea></div>
-      </div>
-
-      <!-- WEIGHT -->
-      <div id="f-weight" class="hidden">
-        <div class="grid g2">
-          <div class="form-group"><label>กลุ่มกล้ามเนื้อ</label>
-            <select id="wt-muscle">
-              <option value="chest">อก</option><option value="back">หลัง</option>
-              <option value="legs">ขา</option><option value="shoulders">ไหล่</option>
-              <option value="arms">แขน</option><option value="core">คอร์</option>
-              <option value="full">ทั้งตัว</option>
-            </select>
-          </div>
-          <div class="form-group"><label>เวลา (นาที)</label><input type="number" id="wt-time" placeholder="60"></div>
-        </div>
-        <div class="grid g2">
-          <div class="form-group"><label>Sets รวม</label><input type="number" id="wt-sets" placeholder="15"></div>
-          <div class="form-group"><label>น้ำหนักรวม (กก.)</label><input type="number" id="wt-vol" placeholder="1200"></div>
-        </div>
-        <div class="form-group"><label>ท่าหลัก / หมายเหตุ</label><textarea id="wt-note" placeholder="เช่น Bench Press 3x10 @80kg..."></textarea></div>
-      </div>
-
-      <div class="form-group">
-        <label>ความรู้สึก</label>
-        <select id="f-feel">
-          <option value="great">💪 ดีมาก</option>
-          <option value="good">😊 ดี</option>
-          <option value="ok">😐 พอไหว</option>
-          <option value="tired">😓 เหนื่อย</option>
-          <option value="bad">😩 แย่</option>
-        </select>
-      </div>
-      <button class="btn btn-primary w-full" onclick="saveWorkout()">💾 บันทึก</button>
-    </div>
-
-    <!-- LIST -->
-    <div class="card">
-      <div class="flex justify-between items-center mb-12">
-        <div class="card-title" style="margin:0">บันทึกล่าสุด</div>
-      </div>
-      <div id="wk-list"><p class="text2 text-sm">ยังไม่มีข้อมูล</p></div>
-    </div>
-  </div>
-</div>
-
-<!-- ========== FITNESS STATS ========== -->
-<div class="page" id="page-fit-stats">
-  <h1>สถิติ & วิเคราะห์</h1>
-  <div class="subtitle">กราฟรายวัน รายสัปดาห์ รายเดือน + AI วิเคราะห์</div>
-
-  <div class="tabs">
-    <div class="tab active" onclick="statTab('day',this)">รายวัน</div>
-    <div class="tab" onclick="statTab('week',this)">รายสัปดาห์</div>
-    <div class="tab" onclick="statTab('month',this)">รายเดือน</div>
-  </div>
-
-  <!-- DAY -->
-  <div id="st-day">
-    <div class="flex gap-12 items-center mb-16">
-      <input type="date" id="st-day-pick" onchange="renderDay()" style="max-width:180px">
-      <button class="btn btn-primary btn-sm" onclick="aiAnalyzeDay()" id="btn-ai-day">🤖 วิเคราะห์วันนี้</button>
-    </div>
-    <div class="grid g4 mb-16" id="day-cards"></div>
-    <div class="grid g2 mb-16">
-      <div class="card">
-        <div class="card-title">Pace รายกม. (วิ่ง)</div>
-        <div class="chart-wrap"><canvas id="ch-day-pace"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-title">HR รายกม. (วิ่ง)</div>
-        <div class="chart-wrap"><canvas id="ch-day-hr"></canvas></div>
-      </div>
-    </div>
-    <div id="ai-day-out"></div>
-  </div>
-
-  <!-- WEEK -->
-  <div id="st-week" class="hidden">
-    <div class="flex gap-12 items-center mb-16">
-      <input type="date" id="st-week-pick" onchange="renderWeek()" style="max-width:180px">
-      <button class="btn btn-primary btn-sm" onclick="aiAnalyzeWeek()" id="btn-ai-week">🤖 วิเคราะห์สัปดาห์</button>
-    </div>
-    <div class="grid g2 mb-16">
-      <div class="card">
-        <div class="card-title">ระยะ & เวลา รายวัน</div>
-        <div class="chart-wrap-lg"><canvas id="ch-week-vol"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Pace เฉลี่ยรายวัน (วิ่ง)</div>
-        <div class="chart-wrap-lg"><canvas id="ch-week-pace"></canvas></div>
-      </div>
-    </div>
-    <div class="card mb-16">
-      <div class="card-title">สัดส่วนกิจกรรม</div>
-      <div class="chart-wrap"><canvas id="ch-week-type"></canvas></div>
-    </div>
-    <div id="ai-week-out"></div>
-  </div>
-
-  <!-- MONTH -->
-  <div id="st-month" class="hidden">
-    <div class="flex gap-12 items-center mb-16">
-      <input type="month" id="st-month-pick" onchange="renderMonth()" style="max-width:180px">
-      <button class="btn btn-primary btn-sm" onclick="aiAnalyzeMonth()" id="btn-ai-month">🤖 วิเคราะห์เดือน</button>
-    </div>
-    <div class="grid g2 mb-16">
-      <div class="card">
-        <div class="card-title">ระยะวิ่ง + ปั่น รายสัปดาห์</div>
-        <div class="chart-wrap-lg"><canvas id="ch-month-dist"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Pace เฉลี่ย + รอบขา รายสัปดาห์</div>
-        <div class="chart-wrap-lg"><canvas id="ch-month-pace"></canvas></div>
-      </div>
-    </div>
-    <div id="ai-month-out"></div>
-  </div>
-</div>
-
-<!-- ========== AI COACH ========== -->
-<div class="page" id="page-fit-coach">
-  <h1>AI โค้ชวางแผนการวิ่ง 🤖</h1>
-  <div class="subtitle">Claude AI วิเคราะห์ข้อมูลของคุณและจัดตารางซ้อมที่เหมาะสม</div>
-
-  <div class="grid g2">
-    <div class="card">
-      <div class="card-title">สร้างตารางซ้อม</div>
-      <div class="form-group">
-        <label>ระยะทางเป้าหมาย (กม.)</label>
-        <input type="number" id="coach-dist" placeholder="เช่น 10, 21.1, 42.2">
-      </div>
-      <div class="form-group">
-        <label>เวลาเป้าหมาย</label>
-        <div class="flex gap-8">
-          <input type="number" id="coach-hr" placeholder="ชม." min="0" style="flex:1">
-          <input type="number" id="coach-min" placeholder="นาที" min="0" max="59" style="flex:1">
-          <input type="number" id="coach-sec" placeholder="วิ" min="0" max="59" style="flex:1">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>จำนวนสัปดาห์</label>
-        <select id="coach-weeks">
-          <option value="4">4 สัปดาห์</option>
-          <option value="8">8 สัปดาห์</option>
-          <option value="12">12 สัปดาห์</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>วันซ้อมต่อสัปดาห์</label>
-        <select id="coach-days">
-          <option value="3">3 วัน (เน้นคุณภาพ)</option>
-          <option value="4" selected>4 วัน (มาตรฐาน)</option>
-          <option value="5">5 วัน (จริงจัง)</option>
-        </select>
-      </div>
-      <button class="btn btn-primary w-full" onclick="genCoachPlan()" id="btn-coach">✨ สร้างตารางด้วย AI</button>
-      <p class="text-xs text2 mt-8">AI จะวิเคราะห์ข้อมูลวิ่ง 4 สัปดาห์ล่าสุดของคุณ</p>
-    </div>
-    <div class="card" style="grid-column:span 1">
-      <div class="card-title">ตารางซ้อม</div>
-      <div id="coach-plan-out"><p class="text2 text-sm">ยังไม่มีตารางซ้อม กดสร้างทางซ้าย</p></div>
-    </div>
-  </div>
-</div>
-
-<!-- ========== RACE ========== -->
-<div class="page" id="page-race">
-  <h1>การแข่งขัน 🏆</h1>
-  <div class="subtitle">ตั้งเป้าหมายและติดตาม countdown</div>
-  <div class="grid g2">
-    <div class="card">
-      <div class="card-title">ตั้งการแข่งขัน</div>
-      <div class="form-group"><label>ชื่อการแข่งขัน</label><input type="text" id="race-name" placeholder="เช่น มาราธอนเชียงใหม่ 2025"></div>
-      <div class="form-group"><label>วันแข่งขัน</label><input type="date" id="race-date"></div>
-      <div class="form-group"><label>ประเภท</label>
-        <select id="race-type">
-          <option value="5k">5K</option><option value="10k">10K</option>
-          <option value="half">Half Marathon (21.1K)</option>
-          <option value="full">Full Marathon (42.2K)</option>
-          <option value="tri">Triathlon</option>
-        </select>
-      </div>
-      <div class="form-group"><label>เวลาเป้าหมาย (นาที)</label><input type="number" id="race-goal" placeholder="60"></div>
-      <button class="btn btn-success w-full" onclick="saveRace()">บันทึกการแข่งขัน</button>
-    </div>
-    <div class="card" id="race-info-card" style="display:none">
-      <div class="card-title" style="color:var(--accent5)">🏁 การแข่งขันถัดไป</div>
-      <div id="race-display"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ========== DOC IN (AI SUMMARY) ========== -->
-<div class="page" id="page-doc-in">
-  <h1>AI สรุปหนังสือเข้า</h1>
-  <div class="subtitle">อัปโหลด PDF หรือวางข้อความ — Claude AI จะสรุปเนื้อหาและแนะนำการดำเนินการ</div>
-
-  <div class="grid g2">
-    <div class="card card-ai">
-      <div class="card-title">อัปโหลดหนังสือ</div>
-
-      <!-- PDF Upload -->
-      <div class="pdf-drop" id="pdf-drop" onclick="document.getElementById('pdf-upload').click()"
-        ondragover="e=>e.preventDefault()" ondragenter="this.classList.add('dragover')"
-        ondragleave="this.classList.remove('dragover')">
-        <div style="font-size:32px;margin-bottom:8px">📄</div>
-        <div class="bold mb-8">คลิกหรือลาก PDF มาวางที่นี่</div>
-        <div class="text-xs text2">รองรับ PDF และรูปภาพ (JPG, PNG)</div>
-        <input type="file" id="pdf-upload" accept=".pdf,image/*" onchange="handleDocUpload(event)">
-      </div>
-
-      <div class="card-title mt-16" style="margin-bottom:8px">หรือวางข้อความโดยตรง</div>
-      <textarea id="doc-in-text" placeholder="คัดลอกข้อความจากหนังสือมาวางที่นี่..." style="min-height:120px"></textarea>
-
-      <button class="btn btn-primary w-full mt-12" onclick="summarizeDocIn()" id="btn-sum">✨ สรุปด้วย Claude AI</button>
-    </div>
-
-    <div class="card">
-      <div class="card-title">ผลการสรุป</div>
-      <div id="doc-in-result">
-        <p class="text2 text-sm">อัปโหลดหนังสือหรือวางข้อความแล้วกดสรุป...</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ========== DOC CREATE ========== -->
-<div class="page" id="page-doc-create">
-  <div class="flex justify-between items-center mb-20">
-    <div>
-      <h1>สร้างหนังสือออก</h1>
-      <div class="subtitle" style="margin:0">มาตรฐานสารบรรณ — TH Sarabun New 16pt</div>
-    </div>
-    <div class="flex gap-8">
-      <button class="btn btn-ghost btn-sm" onclick="saveDocDB()">💾 บันทึก</button>
-      <button class="btn btn-primary btn-sm" onclick="printDoc()">🖨️ พิมพ์</button>
-    </div>
-  </div>
-
-  <!-- GARUDA -->
-  <div class="garuda-bar mb-16">
-    <div class="flex items-center gap-12">
-      <div id="garuda-thumb" style="width:52px;height:52px;border:1.5px dashed var(--border2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;overflow:hidden;background:var(--surface2)">🦅</div>
-      <div style="flex:1">
-        <div class="bold text-sm mb-4" style="color:var(--accent3)">ตราครุฑ</div>
-        <div class="text-xs text2 mb-8">หนังสือภายนอก: สูง 3 ซม. กึ่งกลาง | บันทึกข้อความ: สูง 1.5 ซม. ชิดซ้าย</div>
-        <div class="flex gap-8">
-          <label class="btn btn-ghost btn-sm" style="cursor:pointer">
-            📁 อัปโหลดรูปครุฑ
-            <input type="file" id="garuda-upload" accept="image/*" onchange="loadGaruda(event)">
-          </label>
-          <button class="btn btn-ghost btn-sm" onclick="clearGaruda()">✕ ลบ</button>
-        </div>
-      </div>
-      <div class="text-xs text2" style="text-align:right;line-height:2">ขอบบน 2.5ซม. | ล่าง 2ซม.<br>ซ้าย 3ซม. | ขวา 2ซม.</div>
-    </div>
-  </div>
-
-  <div class="tabs">
-    <div class="tab active" onclick="docTab('out',this)">📤 หนังสือภายนอก</div>
-    <div class="tab" onclick="docTab('memo',this)">📋 บันทึกข้อความ</div>
-  </div>
-
-  <div class="grid g2">
-    <!-- FORM -->
-    <div>
-      <!-- COMMON -->
-      <div class="card mb-12">
-        <div class="card-title">ข้อมูลหน่วยงาน (Auto-fill)</div>
-        <div class="grid g2">
-          <div class="form-group"><label>ชื่อโรงเรียน / หน่วยงาน</label><input type="text" id="d-org" oninput="liveDoc()" placeholder="โรงเรียน..."></div>
-          <div class="form-group"><label>ที่อยู่</label><input type="text" id="d-addr" oninput="liveDoc()" placeholder="ต.xxx อ.xxx จ.xxx xxxxx"></div>
-        </div>
-        <div class="grid g2">
-          <div class="form-group"><label>โทร.</label><input type="text" id="d-tel" oninput="liveDoc()" placeholder="0xx-xxx xxxx"></div>
-          <div class="form-group"><label>วันที่</label><input type="date" id="d-date" oninput="liveDoc()"></div>
-        </div>
-      </div>
-
-      <!-- OUT FIELDS -->
-      <div class="card mb-12" id="df-out">
-        <div class="card-title">หนังสือภายนอก</div>
-        <div class="grid g2">
-          <div class="form-group"><label>เลขที่หนังสือ</label><input type="text" id="d-num" oninput="liveDoc()" placeholder="ศธ 04xxx/xxx"></div>
-          <div class="form-group"><label>สิ่งที่ส่งมาด้วย</label><input type="text" id="d-attach" oninput="liveDoc()"></div>
-        </div>
-        <div class="form-group"><label>เรื่อง</label><input type="text" id="d-subj" oninput="liveDoc()"></div>
-        <div class="form-group"><label>เรียน</label><input type="text" id="d-to" oninput="liveDoc()"></div>
-        <div class="form-group"><label>อ้างถึง (ถ้ามี)</label><input type="text" id="d-ref" oninput="liveDoc()"></div>
-      </div>
-
-      <!-- MEMO FIELDS -->
-      <div class="card mb-12 hidden" id="df-memo">
-        <div class="card-title">บันทึกข้อความ</div>
-        <div class="form-group"><label>เรื่อง</label><input type="text" id="dm-subj" oninput="liveDoc()"></div>
-        <div class="form-group"><label>เรียน</label><input type="text" id="dm-to" oninput="liveDoc()"></div>
-      </div>
-
-      <!-- BODY -->
-      <div class="card mb-12">
-        <div class="card-title">เนื้อหา</div>
-        <div class="form-group"><label>ภาคเหตุ (ด้วย...)</label><textarea id="d-body" oninput="liveDoc()" rows="4" placeholder="ด้วย..."></textarea></div>
-        <div class="form-group"><label>ภาคสรุป (จึงเรียนมาเพื่อ...)</label><textarea id="d-concl" oninput="liveDoc()" rows="2" placeholder="จึงเรียนมาเพื่อโปรดพิจารณา"></textarea></div>
-        <div class="grid g2">
-          <div class="form-group"><label>ผู้ลงนาม</label><input type="text" id="d-signer" oninput="liveDoc()"></div>
-          <div class="form-group"><label>ตำแหน่ง</label><input type="text" id="d-pos" oninput="liveDoc()"></div>
-        </div>
-      </div>
-
-      <!-- FOOTER -->
-      <div class="card">
-        <div class="card-title">ข้อมูลท้ายหนังสือ (ล่างซ้าย)</div>
-        <div class="form-group"><label>ชื่อเจ้าหน้าที่ผู้ร่าง</label><input type="text" id="d-drafter" oninput="liveDoc()" placeholder="นาย/นาง/น.ส. ..."></div>
-        <div class="form-group"><label>ฝ่าย / กลุ่มงาน</label><input type="text" id="d-dept2" oninput="liveDoc()" placeholder="งานธุรการ"></div>
-        <div class="form-group"><label>เบอร์ติดต่อ</label><input type="text" id="d-phone" oninput="liveDoc()" placeholder="0xx-xxx xxxx ต่อ xxx"></div>
-        <div class="form-group"><label>ข้อความท้ายสุด (คำขวัญจังหวัด / สโลแกน)</label><textarea id="d-slogan" oninput="liveDoc()" rows="2" placeholder="เช่น เมืองแห่งความสุข..."></textarea></div>
-      </div>
-    </div>
-
-    <!-- PREVIEW A4 -->
-    <div>
-      <div class="doc-bg">
-        <div class="a4" id="doc-a4"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ========== DOC LIST ========== -->
-<div class="page" id="page-doc-list">
-  <div class="flex justify-between items-center mb-20">
-    <div><h1>ทะเบียนหนังสือ</h1><div class="subtitle">บันทึกหนังสือทั้งหมด</div></div>
-    <button class="btn btn-primary btn-sm" onclick="showPage('doc-create')">+ สร้างหนังสือ</button>
+  <div class="subtitle" id="today-date-label"></div>
+  <div class="grid grid-3 mb-24" id="today-stats-grid">
+    <div class="card"><div class="card-title">ระยะวิ่ง 7 วัน</div><div class="stat-num" id="t-distance">0</div></div>
+    <div class="card"><div class="card-title">งานเอกสาร</div><div class="stat-num" id="t-docs">0</div></div>
+    <div class="card ai-box"><div class="card-title">Claude 3.5 AI</div><div class="text-sm">Online & Secure</div></div>
   </div>
   <div class="card">
-    <div class="flex gap-8 mb-16">
-      <input type="text" id="doc-search" placeholder="ค้นหา..." oninput="renderDocList()" style="max-width:280px">
-      <select id="doc-filter" onchange="renderDocList()" style="max-width:150px">
-        <option value="">ทุกประเภท</option>
-        <option value="out">ภายนอก</option>
-        <option value="memo">บันทึกข้อความ</option>
-      </select>
-    </div>
-    <table>
-      <thead><tr><th>เลขที่</th><th>วันที่</th><th>ประเภท</th><th>เรื่อง</th><th>เรียน/ถึง</th><th></th></tr></thead>
-      <tbody id="doc-tbody"></tbody>
-    </table>
+    <div class="card-title">บันทึกล่าสุด</div>
+    <div id="today-recent-workouts"></div>
   </div>
 </div>
 
-<!-- ========== NEWS ========== -->
+<!-- Log Activity -->
+<div class="page" id="page-fitness-log">
+  <div class="flex justify-between items-end mb-24">
+    <h1>บันทึกการออกกำลังกาย</h1>
+    <label class="btn btn-ghost" id="btn-sync-image" style="cursor:pointer">📸 สกัดรูปภาพ (AI)<input type="file" multiple style="display:none" onchange="processImageWithAI(event)"></label>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+        <div class="form-group"><label>วันที่</label><input type="date" id="f-date"></div>
+        <div class="form-group"><label>ระยะทาง (กม.)</label><input type="number" id="r-distance" step="0.01"></div>
+        <div class="form-group"><label>เวลา (นาที)</label><input type="number" id="r-time" step="0.1"></div>
+        <button class="btn btn-primary" onclick="saveWorkout()" style="width:100%">💾 บันทึกลงเครื่อง</button>
+    </div>
+    <div class="card"><div class="card-title">รายการล่าสุด</div><div id="recent-workouts-list"></div></div>
+  </div>
+</div>
+
+<!-- Stats & Analysis -->
+<div class="page" id="page-fitness-stats">
+    <h1>สถิติ & วิเคราะห์ 📊</h1>
+    <div class="subtitle">วิเคราะห์ข้อมูลการวิ่งของคุณ พร้อมคำแนะนำจาก Claude AI</div>
+    
+    <div class="tabs">
+        <div class="tab active" onclick="switchStatsTab('week', this)">รายสัปดาห์</div>
+        <div class="tab" onclick="switchStatsTab('month', this)">รายเดือน</div>
+    </div>
+
+    <div id="stats-week-view">
+        <div class="grid grid-2 mb-24">
+            <div class="card">
+                <div class="card-title">แนวโน้มระยะทางวิ่ง (7 วัน)</div>
+                <div class="chart-wrap"><canvas id="chart-week-trend"></canvas></div>
+            </div>
+            <div class="card">
+                <div class="card-title">สรุปสัปดาห์นี้</div>
+                <div class="grid grid-2 gap-4 mt-8">
+                    <div class="bg-slate-800 p-4 rounded-2xl">
+                        <div class="text-[10px] uppercase font-bold text-slate-400">ระยะรวม</div>
+                        <div class="text-2xl font-bold" id="stat-wk-dist">0 กม.</div>
+                    </div>
+                    <div class="bg-slate-800 p-4 rounded-2xl">
+                        <div class="text-[10px] uppercase font-bold text-slate-400">ความถี่</div>
+                        <div class="text-2xl font-bold" id="stat-wk-count">0 ครั้ง</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card ai-box">
+            <div class="card-title">🤖 วิเคราะห์ภาพรวมสัปดาห์ (Claude AI)</div>
+            <button class="btn btn-primary btn-sm mb-12" id="btn-analyze-wk" onclick="analyzeFitnessAI('week')">วิเคราะห์ผลลัพธ์สัปดาห์นี้</button>
+            <div id="ai-stats-output" class="ai-bubble" style="display:none; white-space:pre-wrap;"></div>
+        </div>
+    </div>
+
+    <div id="stats-month-view" style="display:none">
+        <div class="card mb-24">
+            <div class="card-title">ระยะทางสะสมรายสัปดาห์ในเดือนนี้</div>
+            <div class="chart-wrap"><canvas id="chart-month-trend"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Coach -->
+<div class="page" id="page-coach">
+    <h1>AI โค้ชวิ่งอัจฉริยะ (Claude) 🤖</h1>
+    <div class="grid grid-2 mt-12">
+        <div class="card">
+            <div class="form-group"><label>เป้าหมาย</label><input type="text" id="coach-goal" placeholder="เช่น วิ่ง 10K ใน 60 นาที"></div>
+            <button class="btn btn-primary" id="btn-coach" onclick="generateTrainingPlan()">✨ สร้างแผนการซ้อม</button>
+        </div>
+        <div class="card ai-box"><div id="coach-output" style="white-space:pre-wrap">ผลลัพธ์จะแสดงที่นี่...</div></div>
+    </div>
+</div>
+
+<!-- AI News Feed -->
 <div class="page" id="page-news">
-  <h1>ข่าวสาร & AI ถาม-ตอบ 📰</h1>
-  <div class="subtitle">ค้นหาและถามเรื่องข่าวสาร IT เศรษฐกิจ สินค้าใหม่ เทรนด์โลก</div>
-
-  <div class="card card-ai mb-20">
-    <div class="card-title" style="color:var(--accent)">🤖 ถาม Claude AI เรื่องข่าว</div>
-    <div class="flex gap-8 mb-8">
-      <input type="text" id="news-q" placeholder="เช่น มีรถยนต์ไฟฟ้ารุ่นใหม่อะไรออกมาบ้าง? หรือ เศรษฐกิจไทยวันนี้เป็นอย่างไร?" style="flex:1" onkeydown="if(event.key==='Enter')askNewsAI()">
-      <button class="btn btn-primary" onclick="askNewsAI()" id="btn-news-ai">ถาม</button>
+  <h1>AI ถาม-ตอบ ข่าวสาร 📰</h1>
+  <div class="subtitle">วิเคราะห์เทรนด์ล่าสุดด้วย Claude 3.5 Sonnet</div>
+  <div class="card ai-box">
+    <div class="form-group">
+      <label>หัวข้อที่อยากทราบ</label>
+      <div class="flex gap-12">
+        <input type="text" id="news-query" placeholder="พิมพ์สิ่งที่อยากรู้..." style="flex:1">
+        <button class="btn btn-primary" id="btn-news" onclick="askNews()">ถาม AI</button>
+      </div>
     </div>
-    <div id="news-ai-out" class="hidden"></div>
+    <div id="news-output" class="ai-bubble" style="display:none; white-space:pre-wrap;"></div>
   </div>
-
-  <div class="flex justify-between items-center mb-12">
-    <h2 style="font-size:18px;font-weight:700">ฟีดข่าว RSS</h2>
-    <button class="btn btn-ghost btn-sm" onclick="loadNews()">🔄 รีเฟรช</button>
-  </div>
-  <div id="news-list"><p class="text2 text-sm">กำลังโหลด...</p></div>
 </div>
 
-<!-- ========== SETTINGS ========== -->
+<!-- Doc Summary -->
+<div class="page" id="page-doc-summary">
+    <h1>AI สรุปหนังสือเข้า 🤖</h1>
+    <div class="card mt-12">
+        <textarea id="ai-doc-input" placeholder="วางเนื้อหาที่ต้องการสรุป..." style="min-height:300px"></textarea>
+        <button class="btn btn-primary mt-12" id="btn-doc-ai" onclick="summarizeDoc()">✨ สรุปเนื้อหา</button>
+        <div id="ai-doc-output-page" class="ai-bubble" style="display:none; white-space:pre-wrap;"></div>
+    </div>
+</div>
+
+<!-- Doc Create -->
+<div class="page" id="page-doc-create">
+  <div class="flex justify-between items-end mb-16">
+    <h1>สร้างหนังสือราชการ</h1>
+    <button class="btn btn-ghost" onclick="printDoc()">🖨️ พิมพ์เอกสาร</button>
+  </div>
+  
+  <div class="card mb-16">
+    <div class="flex items-center gap-12">
+      <div id="garuda-preview-thumb" style="width:50px;height:50px;border:1px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden"></div>
+      <label class="btn btn-ghost btn-sm" style="cursor:pointer">📁 อัปโหลดตราครุฑ<input type="file" accept="image/*" style="display:none" onchange="loadGaruda(event)"></label>
+      <button class="btn btn-ghost btn-sm" onclick="clearGaruda()">✕ ลบ</button>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card" style="max-height:800px; overflow-y:auto">
+      <div class="tabs"><div class="tab active" onclick="switchDocTab('out',this)">หนังสือภายนอก</div><div class="tab" onclick="switchDocTab('memo',this)">บันทึกข้อความ</div></div>
+      <div class="form-group"><label>ส่วนราชการ / ที่อยู่ (ขวาบน)</label><textarea id="do-dept" rows="2" oninput="updateDocPreview()"></textarea></div>
+      <div class="grid grid-2">
+        <div class="form-group"><label>ที่</label><input type="text" id="do-num" oninput="updateDocPreview()"></div>
+        <div class="form-group"><label>วันที่</label><input type="text" id="do-date" oninput="updateDocPreview()"></div>
+      </div>
+      <div class="form-group"><label>เรื่อง</label><input type="text" id="do-subject" oninput="updateDocPreview()"></div>
+      <div class="form-group"><label>เรียน</label><input type="text" id="do-to" oninput="updateDocPreview()"></div>
+      <div class="form-group"><label>สิ่งที่ส่งมาด้วย</label><textarea id="do-attach" rows="3" oninput="updateDocPreview()"></textarea></div>
+      <div class="form-group"><label>เนื้อหา</label><textarea id="do-body" rows="6" oninput="updateDocPreview()"></textarea></div>
+      <div class="form-group"><label>สรุปความ (จึงเรียนมาเพื่อ...)</label><textarea id="do-conclusion" rows="2" oninput="updateDocPreview()"></textarea></div>
+      <div class="grid grid-2">
+        <div class="form-group"><label>ผู้ลงนาม</label><input type="text" id="do-signer" oninput="updateDocPreview()"></div>
+        <div class="form-group"><label>ตำแหน่ง</label><input type="text" id="do-pos" oninput="updateDocPreview()"></div>
+      </div>
+      <div id="do-bottom-contact">
+        <label>ข้อมูลติดต่อมุมล่างซ้าย</label>
+        <input type="text" id="do-contact-name" oninput="updateDocPreview()" placeholder="กลุ่มงาน..." class="mb-12">
+        <input type="text" id="do-contact-phone" oninput="updateDocPreview()" placeholder="โทร. ..." class="mb-12">
+        <textarea id="do-slogan" rows="2" oninput="updateDocPreview()" placeholder="คำขวัญ..."></textarea>
+      </div>
+      <button class="btn btn-success mt-16" onclick="saveDocDb()" style="width:100%">💾 บันทึกลงเครื่อง</button>
+    </div>
+    <div class="doc-preview-container">
+      <div id="doc-render-area" class="a4-sim"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Doc List -->
+<div class="page" id="page-doc-list">
+    <h1>ทะเบียนหนังสือ 📁</h1>
+    <div class="card mt-12"><table><thead><tr><th>ที่</th><th>วันที่</th><th>เรื่อง</th></tr></thead><tbody id="doc-table-body"></tbody></table></div>
+</div>
+
+<!-- Settings -->
 <div class="page" id="page-settings">
   <h1>ตั้งค่าระบบ ⚙️</h1>
-  <div class="subtitle">จัดการ API Keys และค่าเริ่มต้น</div>
-  <div class="grid g2">
+  <div class="grid grid-2 mt-12">
     <div class="card">
-      <div class="card-title">Claude API Key</div>
+      <div class="card-title">Claude AI Settings</div>
       <div class="form-group">
-        <label>API Key (เก็บในเครื่องคุณเท่านั้น)</label>
-        <input type="password" id="set-key" placeholder="sk-ant-api03-...">
+        <label>Claude API Key (Anthropic)</label>
+        <input type="password" id="set-claude-key" placeholder="sk-ant-...">
       </div>
-      <button class="btn btn-success w-full" onclick="saveSettings()">💾 บันทึก</button>
-      <p class="text-xs text2 mt-8">ดูวิธีรับ API Key ได้ที่ <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com</a></p>
-    </div>
-    <div class="card">
-      <div class="card-title">ข้อมูลตั้งต้น (Auto-fill หนังสือราชการ)</div>
-      <div class="form-group"><label>ชื่อโรงเรียน</label><input type="text" id="set-school" placeholder="โรงเรียน..."></div>
-      <div class="form-group"><label>ที่อยู่</label><input type="text" id="set-addr"></div>
-      <div class="form-group"><label>โทร.</label><input type="text" id="set-tel"></div>
-      <div class="form-group"><label>ชื่อผู้อำนวยการ</label><input type="text" id="set-director"></div>
-      <div class="form-group"><label>ตำแหน่งผู้ลงนาม</label><input type="text" id="set-dirpos" placeholder="ผู้อำนวยการโรงเรียน..."></div>
-      <button class="btn btn-success w-full" onclick="saveSettings()">💾 บันทึก</button>
+      <button class="btn btn-success" onclick="saveSettings()">💾 บันทึกการตั้งค่า</button>
     </div>
   </div>
 </div>
 
 </main>
 
-<!-- MODAL: EDIT WORKOUT -->
-<div class="modal-bg" id="modal-edit">
-  <div class="modal">
-    <div class="modal-title">✏️ แก้ไขบันทึก</div>
-    <div id="modal-edit-content"></div>
-    <div class="flex gap-8 mt-16">
-      <button class="btn btn-primary" onclick="saveEditWorkout()">บันทึก</button>
-      <button class="btn btn-danger btn-sm" onclick="deleteWorkout()" id="btn-del-wk">ลบ</button>
-      <button class="btn btn-ghost" onclick="closeModal('modal-edit')">ยกเลิก</button>
-    </div>
-  </div>
-</div>
-
 <script>
-// ==================== DATA ====================
-const DB = {
-  get:(k,d=null)=>{ try{const v=localStorage.getItem(k); return v?JSON.parse(v):d;}catch{return d;}},
-  set:(k,v)=>{ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){console.warn('DB write fail',e);}},
-  del:(k)=>localStorage.removeItem(k)
+// ========== GLOBAL ERROR HANDLING ==========
+window.onerror = function(m, s, l, c, e) {
+    const toast = document.getElementById('sys-error-toast');
+    const msg = document.getElementById('sys-error-msg');
+    if(toast && msg) {
+        msg.textContent = `[Line ${l}] ${m}`;
+        toast.style.display = 'block';
+    }
+    return false;
 };
 
-function apiKey(){ return DB.get('claude_api_key','')||''; }
-function saveSettings(){
-  DB.set('claude_api_key', document.getElementById('set-key').value.trim());
-  const cfg = {school:g('set-school'),addr:g('set-addr'),tel:g('set-tel'),director:g('set-director'),dirpos:g('set-dirpos')};
-  DB.set('school_cfg',cfg);
-  alert('บันทึกแล้ว ✅');
-}
-function loadSettings(){
-  document.getElementById('set-key').value = apiKey();
-  const cfg = DB.get('school_cfg',{});
-  Object.keys(cfg).forEach(k=>{ const el=document.getElementById('set-'+k); if(el) el.value=cfg[k]||''; });
-}
-function autoFillSchool(){
-  const cfg = DB.get('school_cfg',{});
-  if(cfg.school){ const el=document.getElementById('d-org'); if(el&&!el.value) el.value=cfg.school; }
-  if(cfg.addr){ const el=document.getElementById('d-addr'); if(el&&!el.value) el.value=cfg.addr; }
-  if(cfg.tel){ const el=document.getElementById('d-tel'); if(el&&!el.value) el.value=cfg.tel; }
-  if(cfg.director){ const el=document.getElementById('d-signer'); if(el&&!el.value) el.value=cfg.director; }
-  if(cfg.dirpos){ const el=document.getElementById('d-pos'); if(el&&!el.value) el.value=cfg.dirpos; }
-  liveDoc();
-}
+// ========== DATA LAYER ==========
+function getData(k, d=[]) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch { return d; } }
+function setData(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
 
-// ==================== HELPERS ====================
-function g(id){ const el=document.getElementById(id); return el?el.value:''; }
-function today(){ return new Date().toISOString().slice(0,10); }
-function fmtDate(d){ if(!d) return ''; return new Date(d).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'}); }
-function fmtDateTH(d){
-  if(!d) return ''; const months=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-  const dt=new Date(d); return `${dt.getDate()} ${months[dt.getMonth()]} ${dt.getFullYear()+543}`;
-}
-function fmtPace(p){ if(!p||isNaN(p)) return '—'; const m=Math.floor(p); const s=Math.round((p-m)*60); return `${m}:${String(s).padStart(2,'0')}`; }
-function paceToMin(s){ if(!s) return null; const p=s.split(/[:.]/); return p.length>=2?parseInt(p[0])+(parseInt(p[1])/60):null; }
-function actName(a){ return {run:'วิ่ง',swim:'ว่ายน้ำ',bike:'ปั่น',weight:'เวท'}[a]||a; }
-function actEmoji(a){ return {run:'🏃',swim:'🏊',bike:'🚴',weight:'🏋️'}[a]||'💪'; }
-function actColor(a){ return {run:'var(--run)',swim:'var(--swim)',bike:'var(--bike)',weight:'var(--weight)'}[a]||'var(--accent)'; }
-function actBg(a,op=.12){ const m={run:'88,166,255',swim:'57,197,207',bike:'210,153,34',weight:'188,140,255'}; return `rgba(${m[a]||'88,166,255'},${op})`; }
+// ========== CLAUDE AI INTEGRATION ==========
+async function askClaude(prompt, systemMsg = "", btnId = "", isJson = false) {
+    const apiKey = localStorage.getItem('claude_api_key');
+    if (!apiKey) { alert("กรุณาตั้งค่า Claude API Key ในหน้าตั้งค่า"); showPage('settings'); return null; }
 
-// ==================== NAV ====================
-function showPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const pg=document.getElementById('page-'+id);
-  if(pg) pg.classList.add('active');
-  const navMap={today:0,'fit-log':1,'fit-stats':2,'fit-coach':3,race:4,'doc-in':5,'doc-create':6,'doc-list':7,news:8,settings:9};
-  const items=document.querySelectorAll('.nav-item');
-  if(navMap[id]!==undefined) items[navMap[id]]?.classList.add('active');
+    const btn = btnId ? document.getElementById(btnId) : null;
+    const oldTxt = btn?.innerText;
+    if(btn) { btn.innerText = "⏳ Claude is thinking..."; btn.disabled = true; }
 
-  if(id==='today') renderToday();
-  if(id==='fit-log'){ document.getElementById('f-date').value=today(); renderWkList(); }
-  if(id==='fit-stats'){ initStats(); }
-  if(id==='race') renderRacePage();
-  if(id==='doc-create'){ autoFillSchool(); liveDoc(); }
-  if(id==='doc-list') renderDocList();
-  if(id==='news') loadNews();
-  if(id==='settings') loadSettings();
-}
+    try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+                'dangerously-allow-browser': 'true'
+            },
+            body: JSON.stringify({
+                model: "claude-3-5-sonnet-20241022",
+                max_tokens: 2048,
+                system: systemMsg,
+                messages: [{ role: "user", content: prompt }]
+            })
+        });
 
-// ==================== TODAY ====================
-function renderToday(){
-  document.getElementById('today-date').textContent = new Date().toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  const wks=DB.get('workouts',[]); const docs=DB.get('documents',[]);
-  const d7=new Date(); d7.setDate(d7.getDate()-7);
-  const r7=wks.filter(w=>new Date(w.date)>=d7);
-  const runs7=r7.filter(w=>w.activity==='run');
-  document.getElementById('t-run').textContent=runs7.reduce((s,w)=>s+(parseFloat(w.dist)||0),0).toFixed(1);
-  document.getElementById('t-run-count').textContent=`${runs7.length} ครั้ง`;
-  document.getElementById('t-total').textContent=r7.length;
-  document.getElementById('t-docs').textContent=docs.length;
-  // recent workouts
-  const rw=document.getElementById('today-workouts');
-  if(!wks.length){ rw.innerHTML='<p class="text2 text-sm">ยังไม่มีข้อมูล</p>'; return; }
-  rw.innerHTML=wks.slice(0,4).map(w=>`
-    <div class="today-row">
-      <div class="today-icon" style="background:${actBg(w.activity)}">${actEmoji(w.activity)}</div>
-      <div style="flex:1">
-        <div class="today-val">${actName(w.activity)} ${w.dist?w.dist+' กม.':''} ${w.time?'· '+w.time+' นาที':''}</div>
-        <div class="today-sub">${fmtDate(w.date)}${w.avgPace?' · Pace '+fmtPace(w.avgPace):''}</div>
-      </div>
-    </div>
-  `).join('');
-  // race
-  const race=DB.get('race',null);
-  if(race&&race.date){
-    const dl=Math.ceil((new Date(race.date)-new Date())/86400000);
-    if(dl>0){
-      document.getElementById('today-race-card').style.display='block';
-      document.getElementById('today-race-info').innerHTML=`<div class="bold mb-4">${race.name}</div><span style="font-family:'Space Mono',monospace;font-size:28px;color:var(--accent5)">${dl}</span> <span class="text2">วัน</span>`;
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error?.message || "Connection Error");
+        }
+
+        const data = await response.json();
+        if (!data.content || !data.content[0]) throw new Error("No response from AI");
+        
+        let result = data.content[0].text;
+
+        if (isJson) {
+            // Clean markdown and extract JSON
+            result = result.replace(/```json\n?/gi, '').replace(/```\n?/gi, '').trim();
+            return JSON.parse(result);
+        }
+        return result;
+
+    } catch (e) {
+        alert("Claude API Error: " + e.message);
+        return null;
+    } finally {
+        if(btn) { btn.innerText = oldTxt; btn.disabled = false; }
     }
-  }
 }
 
-// ==================== FITNESS LOG ====================
-function onActChange(){
-  const a=g('f-act');
-  ['run','swim','bike','weight'].forEach(t=>{ const el=document.getElementById('f-'+t); if(el) el.classList.toggle('hidden',t!==a); });
-  if(a!=='run') document.getElementById('splits-area').innerHTML='<p class="text-sm text2" style="font-style:italic">เลือกกิจกรรม "วิ่ง" เพื่อใช้ Splits</p>';
+// ========== STATS ENGINE ==========
+let activeChart = null;
+
+function initStats() {
+    renderWeekStats();
 }
 
-function buildSplits(){
-  const dist=parseFloat(g('r-dist'));
-  const area=document.getElementById('splits-area');
-  if(!dist||dist<=0){ area.innerHTML=''; calcAvgPace(); return; }
-  const n=Math.ceil(dist); let html=`
-    <table class="splits-table">
-      <thead><tr><th>กม.</th><th>Pace (น:ว)</th><th>HR (bpm)</th><th>หมายเหตุ</th></tr></thead>
-      <tbody>`;
-  for(let i=1;i<=n;i++){
-    const lbl=i<n?`${i}`:`${i} (${dist%1?`+${(dist%1).toFixed(2).slice(1)}`:'ครบ'})`;
-    html+=`<tr>
-      <td class="mono bold" style="color:var(--accent)">${lbl}</td>
-      <td><input type="text" class="sp-pace" placeholder="5:30" oninput="calcAvgPace()" style="width:80px"></td>
-      <td><input type="number" class="sp-hr" placeholder="150" style="width:75px"></td>
-      <td><input type="text" class="sp-note" placeholder="" style="width:90px"></td>
-    </tr>`;
-  }
-  html+=`</tbody></table>`;
-  area.innerHTML=html; calcAvgPace();
+function switchStatsTab(tab, el) {
+    document.querySelectorAll('#page-fitness-stats .tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('stats-week-view').style.display = tab==='week'?'block':'none';
+    document.getElementById('stats-month-view').style.display = tab==='month'?'block':'none';
+    if(tab==='week') renderWeekStats();
+    if(tab==='month') renderMonthStats();
 }
 
-function calcAvgPace(){
-  const paces=[...document.querySelectorAll('.sp-pace')];
-  let total=0,cnt=0;
-  paces.forEach(p=>{ const m=paceToMin(p.value); if(m) { total+=m; cnt++; }});
-  const d=document.getElementById('avg-pace-disp');
-  if(!cnt){ d.textContent='Pace เฉลี่ย: —'; return null; }
-  const avg=total/cnt;
-  d.textContent=`Pace เฉลี่ย: ${fmtPace(avg)}`;
-  return avg;
+function renderWeekStats() {
+    const wks = getData('my_workouts');
+    const labels = []; const dataPoints = [];
+    let totalDist = 0;
+    
+    for(let i=6; i>=0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().slice(0,10);
+        labels.push(d.toLocaleDateString('th-TH', {day:'numeric', month:'short'}));
+        const dayDist = wks.filter(w=>w.date===dateStr).reduce((s,w)=>s+parseFloat(w.dist||0),0);
+        dataPoints.push(dayDist);
+        totalDist += dayDist;
+    }
+
+    document.getElementById('stat-wk-dist').textContent = totalDist.toFixed(1) + ' กม.';
+    document.getElementById('stat-wk-count').textContent = wks.filter(w => new Date(w.date) >= new Date(Date.now() - 7*86400000)).length + ' ครั้ง';
+
+    if(activeChart) activeChart.destroy();
+    const ctx = document.getElementById('chart-week-trend').getContext('2d');
+    activeChart = new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'ระยะทาง (กม.)', data: dataPoints, backgroundColor: '#3b82f6', borderRadius: 8 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#334155' } }, x: { grid: { display: false } } } }
+    });
 }
 
-function getSplits(){
-  const rows=[...document.querySelectorAll('#splits-area tbody tr')];
-  return rows.map((r,i)=>({
-    km:i+1,
-    pace:r.querySelector('.sp-pace')?.value||'',
-    hr:parseInt(r.querySelector('.sp-hr')?.value)||0,
-    note:r.querySelector('.sp-note')?.value||''
-  })).filter(s=>s.pace||s.hr);
+function renderMonthStats() {
+    const wks = getData('my_workouts');
+    const labels = ['สัปดาห์ 1', 'สัปดาห์ 2', 'สัปดาห์ 3', 'สัปดาห์ 4'];
+    const dataPoints = [0, 0, 0, 0];
+    
+    wks.forEach(w => {
+        const d = new Date(w.date);
+        const weekIdx = Math.floor((d.getDate() - 1) / 7);
+        if(weekIdx < 4) dataPoints[weekIdx] += parseFloat(w.dist || 0);
+    });
+
+    const ctx = document.getElementById('chart-month-trend').getContext('2d');
+    if(activeChart) activeChart.destroy();
+    activeChart = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets: [{ label: 'ระยะทางรวม (กม.)', data: dataPoints, borderColor: '#10b981', tension: 0.4, fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)' }] },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
 }
 
-function saveWorkout(){
-  const act=g('f-act');
-  let w={id:Date.now(),activity:act,date:g('f-date')||today(),feel:g('f-feel'),ts:Date.now()};
-  if(act==='run'){
-    const dist=parseFloat(g('r-dist'));
-    if(!dist){ alert('กรุณากรอกระยะทาง'); return; }
-    const time=parseFloat(g('r-time'))||0;
-    const avgPace=calcAvgPace()||(time>0&&dist>0?time/dist:0);
-    w={...w,dist,time,avgPace,cad:parseInt(g('r-cad'))||0,stride:parseFloat(g('r-stride'))||0,hr:parseInt(g('r-hr'))||0,elev:parseInt(g('r-elev'))||0,note:g('r-note'),splits:getSplits()};
-  } else if(act==='swim'){
-    w={...w,dist:parseInt(g('sw-dist'))||0,time:parseFloat(g('sw-time'))||0,laps:parseInt(g('sw-laps'))||0,style:g('sw-style'),note:g('sw-note')};
-  } else if(act==='bike'){
-    const dist=parseFloat(g('bk-dist'))||0,time=parseFloat(g('bk-time'))||0;
-    w={...w,dist,time,maxspd:parseFloat(g('bk-maxspd'))||0,hr:parseInt(g('bk-hr'))||0,avgspd:time>0?dist/(time/60):0,note:g('bk-note')};
-  } else {
-    w={...w,muscle:g('wt-muscle'),time:parseInt(g('wt-time'))||0,sets:parseInt(g('wt-sets'))||0,vol:parseInt(g('wt-vol'))||0,note:g('wt-note')};
-  }
-  const wks=DB.get('workouts',[]); wks.unshift(w); DB.set('workouts',wks);
-  // reset form
-  ['r-dist','r-time','r-cad','r-stride','r-hr','r-elev','r-note'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-  document.getElementById('splits-area').innerHTML='<p class="text-sm text2" style="font-style:italic">กรอกระยะทางเพื่อสร้างช่อง Splits</p>';
-  document.getElementById('avg-pace-disp').textContent='Pace เฉลี่ย: —';
-  alert('บันทึกสำเร็จ ✅'); renderWkList(); renderToday();
+async function analyzeFitnessAI(type) {
+    const wks = getData('my_workouts').slice(0, 10);
+    const summary = wks.map(w => `${w.date}: ${w.dist}กม. ${w.time}นาที`).join(', ');
+    const out = document.getElementById('ai-stats-output');
+    out.style.display = 'block';
+    out.innerText = "⏳ Claude กำลังวิเคราะห์แนวโน้มสุขภาพของคุณ...";
+    const res = await askClaude(`ข้อมูลการซ้อมล่าสุด: ${summary}. ช่วยวิเคราะห์ Training Load และให้คำแนะนำการซ้อมแบบตรงไปตรงมา ไม่เยิ่นเย้อ 3 ข้อ`, "คุณคือผู้เชี่ยวชาญสรีรวิทยาการออกกำลังกาย", "btn-analyze-wk");
+    if(res) out.innerText = res;
 }
 
-function renderWkList(){
-  const wks=DB.get('workouts',[]);
-  const el=document.getElementById('wk-list');
-  if(!wks.length){ el.innerHTML='<p class="text2 text-sm">ยังไม่มีข้อมูล</p>'; return; }
-  el.innerHTML=`<table>
-    <thead><tr><th>วัน</th><th>กิจกรรม</th><th>ระยะ/เวลา</th><th>Pace เฉลี่ย</th><th>HR</th><th></th></tr></thead>
-    <tbody>${wks.slice(0,15).map(w=>`
-      <tr>
-        <td>${fmtDate(w.date)}</td>
-        <td><span class="badge b-${w.activity}">${actEmoji(w.activity)} ${actName(w.activity)}</span></td>
-        <td class="mono">${w.dist?w.dist+' กม.':''}${w.time?' · '+w.time+' นาที':''}</td>
-        <td class="mono">${w.avgPace?fmtPace(w.avgPace):'—'}</td>
-        <td class="mono">${w.hr||'—'}</td>
-        <td>
-          <button class="btn btn-ghost btn-xs" onclick="openEditWk(${w.id})">✏️</button>
-          <button class="btn btn-ghost btn-xs" onclick="confirmDelWk(${w.id})">🗑️</button>
-        </td>
-      </tr>
-    `).join('')}</tbody>
-  </table>`;
-}
-
-let editWkId=null;
-function openEditWk(id){
-  const wks=DB.get('workouts',[]);
-  const w=wks.find(x=>x.id===id);
-  if(!w) return;
-  editWkId=id;
-  const el=document.getElementById('modal-edit-content');
-  el.innerHTML=`
-    <div class="grid g2">
-      <div class="form-group"><label>วันที่</label><input type="date" id="ew-date" value="${w.date}"></div>
-      <div class="form-group"><label>ระยะ</label><input type="number" step="0.01" id="ew-dist" value="${w.dist||''}"></div>
-    </div>
-    <div class="grid g2">
-      <div class="form-group"><label>เวลา (นาที)</label><input type="number" step="0.1" id="ew-time" value="${w.time||''}"></div>
-      <div class="form-group"><label>HR เฉลี่ย</label><input type="number" id="ew-hr" value="${w.hr||''}"></div>
-    </div>
-    <div class="form-group"><label>หมายเหตุ</label><textarea id="ew-note">${w.note||''}</textarea></div>
-  `;
-  document.getElementById('modal-edit').classList.add('open');
-}
-function saveEditWorkout(){
-  const wks=DB.get('workouts',[]);
-  const idx=wks.findIndex(x=>x.id===editWkId);
-  if(idx<0) return;
-  wks[idx]={...wks[idx],date:g('ew-date'),dist:parseFloat(g('ew-dist'))||wks[idx].dist,time:parseFloat(g('ew-time'))||wks[idx].time,hr:parseInt(g('ew-hr'))||wks[idx].hr,note:g('ew-note')};
-  DB.set('workouts',wks); closeModal('modal-edit'); renderWkList(); renderToday();
-}
-function confirmDelWk(id){
-  if(!confirm('ลบบันทึกนี้?')) return;
-  const wks=DB.get('workouts',[]).filter(w=>w.id!==id);
-  DB.set('workouts',wks); renderWkList(); renderToday();
-}
-function deleteWorkout(){
-  confirmDelWk(editWkId); closeModal('modal-edit');
-}
-
-// ==================== STATS ====================
-const charts={};
-function destroyChart(id){ if(charts[id]){ charts[id].destroy(); delete charts[id]; }}
-const chartOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8b949e',font:{size:11}}}},scales:{x:{ticks:{color:'#8b949e'},grid:{color:'#30363d'}},y:{ticks:{color:'#8b949e'},grid:{color:'#30363d'}}}};
-
-function initStats(){
-  document.getElementById('st-day-pick').value=today();
-  document.getElementById('st-week-pick').value=today();
-  document.getElementById('st-month-pick').value=today().slice(0,7);
-  renderDay();
-}
-function statTab(t,el){
-  document.querySelectorAll('#page-fit-stats .tab').forEach(x=>x.classList.remove('active'));
-  el.classList.add('active');
-  ['day','week','month'].forEach(x=>{ document.getElementById('st-'+x).classList.toggle('hidden',x!==t); });
-  if(t==='week') renderWeek();
-  if(t==='month') renderMonth();
-}
-
-function renderDay(){
-  const date=g('st-day-pick');
-  const wks=DB.get('workouts',[]).filter(w=>w.date===date);
-  const runs=wks.filter(w=>w.activity==='run');
-  const totalDist=runs.reduce((s,w)=>s+(w.dist||0),0);
-  const avgPaceVal=runs.length?runs.reduce((s,w)=>s+(w.avgPace||0),0)/runs.length:0;
-  const avgHR=runs.length?Math.round(runs.reduce((s,w)=>s+(w.hr||0),0)/runs.length):0;
-  document.getElementById('day-cards').innerHTML=`
-    <div class="card card-run"><div class="card-title">ระยะวิ่ง</div><div class="stat-big">${totalDist.toFixed(2)}</div><div class="stat-unit">กม.</div></div>
-    <div class="card"><div class="card-title">กิจกรรม</div><div class="stat-big">${wks.length}</div><div class="stat-unit">ครั้ง</div></div>
-    <div class="card"><div class="card-title">Pace เฉลี่ย</div><div class="stat-big mono">${avgPaceVal?fmtPace(avgPaceVal):'—'}</div></div>
-    <div class="card"><div class="card-title">HR เฉลี่ย</div><div class="stat-big">${avgHR||'—'}</div><div class="stat-unit">bpm</div></div>
-  `;
-  // splits charts — aggregate all runs of that day
-  destroyChart('day-pace'); destroyChart('day-hr');
-  let allSplits=[];
-  runs.forEach(w=>{ if(w.splits) allSplits=allSplits.concat(w.splits); });
-  if(allSplits.length){
-    charts['day-pace']=new Chart(document.getElementById('ch-day-pace'),{type:'bar',data:{labels:allSplits.map(s=>`กม.${s.km}`),datasets:[{label:'Pace (น:ว)',data:allSplits.map(s=>paceToMin(s.pace)),backgroundColor:'rgba(88,166,255,.5)',borderColor:'var(--run)',borderWidth:2,borderRadius:4}]},options:{...chartOpts,plugins:{...chartOpts.plugins,tooltip:{callbacks:{label:ctx=>'Pace: '+fmtPace(ctx.raw)}}}}});
-    charts['day-hr']=new Chart(document.getElementById('ch-day-hr'),{type:'line',data:{labels:allSplits.map(s=>`กม.${s.km}`),datasets:[{label:'HR (bpm)',data:allSplits.map(s=>s.hr||null),borderColor:'var(--accent4)',backgroundColor:'rgba(248,81,73,.1)',fill:true,tension:.35,pointRadius:4}]},options:{...chartOpts}});
-  }
-}
-
-function getWeekDates(dateStr){
-  const d=new Date(dateStr);
-  const day=d.getDay(); const diff=day===0?-6:1-day;
-  const mon=new Date(d); mon.setDate(d.getDate()+diff); mon.setHours(0,0,0,0);
-  const sun=new Date(mon); sun.setDate(mon.getDate()+6); sun.setHours(23,59,59,999);
-  return {start:mon,end:sun};
-}
-
-function renderWeek(){
-  const {start,end}=getWeekDates(g('st-week-pick'));
-  const wks=DB.get('workouts',[]).filter(w=>{ const d=new Date(w.date); return d>=start&&d<=end; });
-  const days=['จ','อ','พ','พฤ','ศ','ส','อา'];
-  const distData=Array(7).fill(0), timeData=Array(7).fill(0), paceData=Array(7).fill(null);
-  const typeCounts={run:0,swim:0,bike:0,weight:0};
-  wks.forEach(w=>{
-    const di=new Date(w.date).getDay();
-    const idx=di===0?6:di-1;
-    if(w.activity==='run'||w.activity==='bike') distData[idx]+=(w.dist||0);
-    timeData[idx]+=(w.time||0);
-    if(typeCounts[w.activity]!==undefined) typeCounts[w.activity]++;
-  });
-  // avg pace per day
-  days.forEach((_,idx)=>{
-    const dayDate=new Date(start); dayDate.setDate(start.getDate()+idx);
-    const dateStr=dayDate.toISOString().slice(0,10);
-    const dayRuns=wks.filter(w=>w.activity==='run'&&w.date===dateStr);
-    if(dayRuns.length) paceData[idx]=dayRuns.reduce((s,w)=>s+(w.avgPace||0),0)/dayRuns.length;
-  });
-
-  destroyChart('w-vol'); destroyChart('w-pace'); destroyChart('w-type');
-  charts['w-vol']=new Chart(document.getElementById('ch-week-vol'),{type:'bar',data:{labels:days,datasets:[{label:'ระยะ (กม.)',data:distData.map(v=>+v.toFixed(2)),backgroundColor:'rgba(88,166,255,.6)',yAxisID:'y'},{label:'เวลา (นาที)',data:timeData,backgroundColor:'rgba(63,185,80,.4)',yAxisID:'y1',type:'line',fill:false,borderColor:'var(--accent2)',tension:.3}]},options:{...chartOpts,scales:{x:{ticks:{color:'#8b949e'},grid:{color:'#30363d'}},y:{position:'left',ticks:{color:'#8b949e'},grid:{color:'#30363d'}},y1:{position:'right',ticks:{color:'#8b949e'},grid:{drawOnChartArea:false}}}}});
-  charts['w-pace']=new Chart(document.getElementById('ch-week-pace'),{type:'line',data:{labels:days,datasets:[{label:'Pace เฉลี่ย',data:paceData,borderColor:'var(--accent3)',backgroundColor:'rgba(210,153,34,.1)',fill:true,tension:.3,spanGaps:true,pointRadius:5}]},options:{...chartOpts,plugins:{...chartOpts.plugins,tooltip:{callbacks:{label:ctx=>ctx.raw?'Pace: '+fmtPace(ctx.raw):'ไม่มีข้อมูล'}}}}});
-  charts['w-type']=new Chart(document.getElementById('ch-week-type'),{type:'doughnut',data:{labels:['วิ่ง','ว่ายน้ำ','ปั่น','เวท'],datasets:[{data:Object.values(typeCounts),backgroundColor:['rgba(88,166,255,.7)','rgba(57,197,207,.7)','rgba(210,153,34,.7)','rgba(188,140,255,.7)'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#8b949e'}}}}});
-}
-
-function renderMonth(){
-  const pick=g('st-month-pick');
-  const [y,m]=pick.split('-').map(Number);
-  const wks=DB.get('workouts',[]).filter(w=>{ const d=new Date(w.date); return d.getFullYear()===y&&d.getMonth()===m-1; });
-  const wkLabels=['W1','W2','W3','W4','W5'];
-  const runsByWk=[[],[],[],[],[]]; const bikesByWk=[[],[],[],[],[]];
-  wks.forEach(w=>{
-    const wk=Math.min(Math.floor((new Date(w.date).getDate()-1)/7),4);
-    if(w.activity==='run') runsByWk[wk].push(w);
-    if(w.activity==='bike') bikesByWk[wk].push(w);
-  });
-  destroyChart('m-dist'); destroyChart('m-pace');
-  charts['m-dist']=new Chart(document.getElementById('ch-month-dist'),{type:'bar',data:{labels:wkLabels,datasets:[{label:'วิ่ง (กม.)',data:runsByWk.map(wk=>+wk.reduce((s,w)=>s+(w.dist||0),0).toFixed(2)),backgroundColor:'rgba(88,166,255,.6)',borderRadius:4},{label:'ปั่น (กม.)',data:bikesByWk.map(wk=>+wk.reduce((s,w)=>s+(w.dist||0),0).toFixed(2)),backgroundColor:'rgba(210,153,34,.5)',borderRadius:4}]},options:{...chartOpts}});
-  charts['m-pace']=new Chart(document.getElementById('ch-month-pace'),{type:'line',data:{labels:wkLabels,datasets:[{label:'Pace (วิ่ง)',data:runsByWk.map(wk=>{ const r=wk.filter(w=>w.avgPace>0); return r.length?+(r.reduce((s,w)=>s+w.avgPace,0)/r.length).toFixed(3):null; }),borderColor:'var(--run)',tension:.3,spanGaps:true,yAxisID:'y'},{label:'รอบขา (spm)',data:runsByWk.map(wk=>{ const r=wk.filter(w=>w.cad>0); return r.length?Math.round(r.reduce((s,w)=>s+w.cad,0)/r.length):null; }),borderColor:'var(--accent2)',tension:.3,spanGaps:true,yAxisID:'y1'}]},options:{...chartOpts,scales:{x:{ticks:{color:'#8b949e'},grid:{color:'#30363d'}},y:{position:'left',ticks:{color:'#8b949e',callback:v=>fmtPace(v)},grid:{color:'#30363d'}},y1:{position:'right',ticks:{color:'#8b949e'},grid:{drawOnChartArea:false}}}}});
-}
-
-// ==================== AI FUNCTIONS ====================
-async function callClaude(messages, systemPrompt='', onChunk=null){
-  const key=apiKey();
-  if(!key){ alert('กรุณาตั้งค่า Claude API Key ก่อน'); showPage('settings'); throw new Error('no key'); }
-  const body={model:'claude-sonnet-4-6',max_tokens:2000,messages};
-  if(systemPrompt) body.system=systemPrompt;
-  const res=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
-    body:JSON.stringify(body)
-  });
-  if(!res.ok){ const e=await res.json(); throw new Error(e.error?.message||'API Error '+res.status); }
-  const data=await res.json();
-  return data.content?.[0]?.text||'';
-}
-
-async function aiBtn(btnId, outId, fn){
-  const btn=document.getElementById(btnId);
-  const out=document.getElementById(outId);
-  const orig=btn.innerHTML;
-  btn.innerHTML='⏳...'; btn.disabled=true;
-  if(out){ out.innerHTML=''; out.classList.remove('hidden'); }
-  try{
-    const result=await fn();
-    if(out){ out.innerHTML=`<div class="ai-result">${result.replace(/\n/g,'<br>')}</div>`; }
-    return result;
-  } catch(e){
-    if(out) out.innerHTML=`<div class="ai-result" style="border-color:var(--accent4);color:var(--accent4)">⚠️ ${e.message}</div>`;
-  } finally{ btn.innerHTML=orig; btn.disabled=false; }
-}
-
-function aiAnalyzeDay(){
-  const date=g('st-day-pick');
-  const wks=DB.get('workouts',[]).filter(w=>w.date===date);
-  aiBtn('btn-ai-day','ai-day-out',()=>callClaude(
-    [{role:'user',content:`วิเคราะห์การออกกำลังกายวันที่ ${date}:\n${JSON.stringify(wks,null,2)}\nกรุณาวิเคราะห์เป็นภาษาไทย: Pace, HR, Splits pattern, ความหนัก, จุดควรปรับปรุง`}],
-    'คุณเป็นโค้ชวิ่งมืออาชีพ วิเคราะห์ข้อมูลการวิ่งและให้คำแนะนำเป็นภาษาไทย กระชับ ตรงประเด็น'
-  ));
-}
-function aiAnalyzeWeek(){
-  const {start,end}=getWeekDates(g('st-week-pick'));
-  const wks=DB.get('workouts',[]).filter(w=>{ const d=new Date(w.date); return d>=start&&d<=end; });
-  aiBtn('btn-ai-week','ai-week-out',()=>callClaude(
-    [{role:'user',content:`วิเคราะห์การออกกำลังกายสัปดาห์ ${start.toISOString().slice(0,10)} ถึง ${end.toISOString().slice(0,10)}:\n${JSON.stringify(wks,null,2)}`}],
-    'คุณเป็นโค้ชวิ่งมืออาชีพ วิเคราะห์ Training Load, ความสม่ำเสมอ, ความเสี่ยง overtraining เป็นภาษาไทย'
-  ));
-}
-function aiAnalyzeMonth(){
-  const pick=g('st-month-pick');
-  const [y,m]=pick.split('-').map(Number);
-  const wks=DB.get('workouts',[]).filter(w=>{ const d=new Date(w.date); return d.getFullYear()===y&&d.getMonth()===m-1; });
-  aiBtn('btn-ai-month','ai-month-out',()=>callClaude(
-    [{role:'user',content:`วิเคราะห์พัฒนาการเดือน ${pick}:\n${JSON.stringify(wks,null,2)}`}],
-    'คุณเป็นโค้ชวิ่งมืออาชีพ วิเคราะห์ Progress, Fitness trend, CTL/ATL concept เป็นภาษาไทย'
-  ));
-}
-
-async function genCoachPlan(){
-  const dist=g('coach-dist'),weeks=g('coach-weeks'),days=g('coach-days');
-  const hr=parseInt(g('coach-hr'))||0,min=parseInt(g('coach-min'))||0,sec=parseInt(g('coach-sec'))||0;
-  if(!dist){ alert('กรุณากรอกระยะทาง'); return; }
-  const d28=new Date(); d28.setDate(d28.getDate()-28);
-  const recentRuns=DB.get('workouts',[]).filter(w=>w.activity==='run'&&new Date(w.date)>=d28);
-  const avgVol=(recentRuns.reduce((s,w)=>s+(w.dist||0),0)/4).toFixed(1);
-  const btn=document.getElementById('btn-coach');
-  const out=document.getElementById('coach-plan-out');
-  btn.innerHTML='⏳ กำลังสร้างตาราง...'; btn.disabled=true;
-  try{
-    const result=await callClaude([{role:'user',content:`สร้างตารางซ้อมวิ่ง:\n- เป้าหมาย: ${dist} กม. เวลา ${hr}ชม.${min}นาที${sec}วิ\n- ระยะเวลา: ${weeks} สัปดาห์\n- ซ้อม ${days} วัน/สัปดาห์\n- ฐานความฟิตปัจจุบัน: เฉลี่ย ${avgVol} กม./สัปดาห์\n\nจัดตารางเป็นตาราง markdown แสดง: สัปดาห์, วัน, ประเภท (Easy/Tempo/Long/Rest), ระยะทาง, Pace target`}],
-      'คุณเป็นโค้ชวิทยาศาสตร์การกีฬา สร้างตารางซ้อมที่สมจริง ป้องกัน overtraining มีวันพัก และปรับตามฐานความฟิตที่ให้มา ตอบเป็นภาษาไทย');
-    out.innerHTML=`<div class="ai-result" style="font-size:13px">${result.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>`;
-  } catch(e){ out.innerHTML=`<div class="ai-result" style="color:var(--accent4)">⚠️ ${e.message}</div>`; }
-  finally{ btn.innerHTML='✨ สร้างตารางด้วย AI'; btn.disabled=false; }
-}
-
-// ==================== RACE ====================
-function saveRace(){
-  DB.set('race',{name:g('race-name'),date:g('race-date'),type:g('race-type'),goal:parseInt(g('race-goal'))||0});
-  alert('บันทึกแล้ว ✅'); renderRacePage();
-}
-function renderRacePage(){
-  const race=DB.get('race',null);
-  if(!race||!race.date) return;
-  const card=document.getElementById('race-info-card');
-  card.style.display='block';
-  const dl=Math.max(0,Math.ceil((new Date(race.date)-new Date())/86400000));
-  const h=Math.floor(dl/7*7/24),d=dl%7;
-  document.getElementById('race-display').innerHTML=`
-    <div class="bold mb-8" style="font-size:17px">${race.name}</div>
-    <div class="text2 text-sm mb-12">${race.type} · วันที่ ${fmtDate(race.date)}</div>
-    <div class="flex gap-16">
-      <div><div class="count-num">${dl}</div><div class="count-label">วัน</div></div>
-    </div>
-    ${race.goal?`<div class="text-sm text2 mt-12">เป้าหมาย ${race.goal} นาที</div>`:''}
-  `;
-}
-
-// ==================== GARUDA ====================
-let garudaB64=null;
-(()=>{ const s=DB.get('garuda_img',null); if(s){ garudaB64=s; setGarudaThumb(s); }})();
-function loadGaruda(e){
-  const f=e.target.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=ev=>{ garudaB64=ev.target.result; setGarudaThumb(garudaB64); try{DB.set('garuda_img',garudaB64);}catch(e){} liveDoc(); };
-  r.readAsDataURL(f);
-}
-function clearGaruda(){ garudaB64=null; DB.del('garuda_img'); document.getElementById('garuda-thumb').innerHTML='🦅'; document.getElementById('garuda-upload').value=''; liveDoc(); }
-function setGarudaThumb(src){ const t=document.getElementById('garuda-thumb'); if(t) t.innerHTML=`<img src="${src}" style="width:100%;height:100%;object-fit:contain">`; }
-function garudaHTML(size){
-  const h=size==='lg'?'3cm':'1.5cm';
-  if(!garudaB64) return `<div style="width:${h};height:${h};border:1px solid #000;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:${size==='lg'?'11pt':'8pt'};font-weight:bold;font-family:serif;">ครุฑ</div>`;
-  return `<img src="${garudaB64}" style="height:${h};width:auto;object-fit:contain;display:block;">`;
-}
-
-// ==================== DOC CREATE ====================
-let docType='out';
-function docTab(t,el){
-  docType=t;
-  document.querySelectorAll('#page-doc-create .tab').forEach(x=>x.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('df-out').classList.toggle('hidden',t!=='out');
-  document.getElementById('df-memo').classList.toggle('hidden',t!=='memo');
-  liveDoc();
-}
-
-function liveDoc(){
-  const org=g('d-org'),addr=g('d-addr'),tel=g('d-tel'),date=g('d-date'),body=g('d-body'),concl=g('d-concl'),signer=g('d-signer'),pos=g('d-pos'),drafter=g('d-drafter'),dept2=g('d-dept2'),phone=g('d-phone'),slogan=g('d-slogan');
-  const esc=s=>s.replace(/[&<>"']/g,t=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[t]));
-  const E=id=>esc(g(id));
-  let html='';
-  if(docType==='out'){
-    const num=E('d-num'),subj=E('d-subj'),to=E('d-to'),ref=E('d-ref'),attach=E('d-attach');
-    html=`
-      <!-- ครุฑ กึ่งกลาง สูง 3 ซม. -->
-      <div style="text-align:center;margin-bottom:2pt;">${garudaHTML('lg')}</div>
-      <!-- หัวหน่วยงาน ด้านขวา -->
-      <div style="text-align:right;font-size:16pt;line-height:1.5;margin-bottom:8pt;">
-        ${esc(org)||'ชื่อหน่วยงาน/โรงเรียน'}<br>
-        ${esc(addr)||'ที่อยู่'}
-      </div>
-      <!-- ที่ + วันที่ -->
-      <div style="display:flex;justify-content:space-between;margin-bottom:4pt;">
-        <div>ที่&nbsp;&nbsp;&nbsp;${num||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</div>
-        <div>${fmtDateTH(date)||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</div>
-      </div>
-      ${attach?`<div style="margin-bottom:2pt;">สิ่งที่ส่งมาด้วย&nbsp;&nbsp;&nbsp;${attach}</div>`:''}
-      <div style="margin-bottom:2pt;">เรื่อง&nbsp;&nbsp;&nbsp;${subj||'.................................................................'}</div>
-      <div style="margin-bottom:10pt;">เรียน&nbsp;&nbsp;&nbsp;${to||'.................................................................'}</div>
-      ${ref?`<div style="margin-bottom:2pt;">อ้างถึง&nbsp;&nbsp;&nbsp;${ref}</div>`:''}
-      <hr style="border:none;border-top:0.5pt solid #000;margin:8pt 0;">
-      <!-- เนื้อหา -->
-      <div style="flex:1;">
-        <div style="text-indent:2.5cm;white-space:pre-wrap;margin-bottom:10pt;">${esc(body)||'ด้วย ...'}</div>
-        <div style="text-indent:2.5cm;white-space:pre-wrap;">${esc(concl)||'จึงเรียนมาเพื่อโปรดพิจารณา'}</div>
-      </div>
-      <!-- ลงนาม กึ่งกลาง -->
-      <div style="text-align:center;margin-top:40pt;margin-bottom:30pt;">
-        ขอแสดงความนับถือ
-      </div>
-      <div style="text-align:center;">
-        <div style="margin-bottom:40pt;">&nbsp;</div>
-        <div>(${esc(signer)||'..................................'})</div>
-        <div>${esc(pos)||'ตำแหน่ง'}</div>
-      </div>
-      <!-- ท้ายหนังสือ ล่างซ้าย -->
-      <div style="margin-top:20pt;font-size:14pt;border-top:0.5pt solid #ccc;padding-top:6pt;">
-        ${esc(drafter)?`${esc(drafter)}<br>`:''}
-        ${esc(dept2)?`${esc(dept2)}<br>`:''}
-        ${esc(phone)?`โทร. ${esc(phone)}<br>`:''}
-        ${tel?`โทร. ${esc(tel)}`:''}
-      </div>
-      <!-- คำขวัญ/สโลแกน -->
-      ${slogan?`<div style="text-align:center;margin-top:12pt;font-size:16pt;font-weight:bold;line-height:1.5;">${esc(slogan)}</div>`:''}
-    `;
-  } else {
-    // MEMO
-    const msubj=E('dm-subj'),mto=E('dm-to');
-    html=`
-      <!-- ครุฑ 1.5 ซม. ชิดซ้าย + "บันทึกข้อความ" ขวา -->
-      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6pt;">
-        <div>${garudaHTML('sm')}</div>
-        <div style="font-size:22pt;font-weight:bold;text-align:center;flex:1;">บันทึกข้อความ</div>
-        <div style="width:3cm;">&nbsp;</div>
-      </div>
-      <!-- หัวตาราง -->
-      <table style="width:100%;border-collapse:collapse;font-size:16pt;margin-bottom:6pt;">
-        <tr>
-          <td style="width:3cm;padding:2pt 0;border-bottom:0.5pt solid #000;font-weight:bold;">ส่วนราชการ</td>
-          <td style="padding:2pt 6pt;border-bottom:0.5pt solid #000;" colspan="3">${esc(org)||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} &nbsp;&nbsp; ${esc(addr)||''} ${tel?'โทร.'+esc(tel):''}</td>
-        </tr>
-        <tr>
-          <td style="padding:2pt 0;border-bottom:0.5pt solid #000;font-weight:bold;">ที่</td>
-          <td style="padding:2pt 6pt;border-bottom:0.5pt solid #000;width:5cm;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-          <td style="padding:2pt 0;border-bottom:0.5pt solid #000;font-weight:bold;width:1.5cm;">วันที่</td>
-          <td style="padding:2pt 6pt;border-bottom:0.5pt solid #000;">${fmtDateTH(date)||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</td>
-        </tr>
-        <tr>
-          <td style="padding:2pt 0;font-weight:bold;">เรื่อง</td>
-          <td colspan="3" style="padding:2pt 6pt;">${msubj||'...........................................................................'}</td>
-        </tr>
-        <tr>
-          <td style="padding:2pt 0;font-weight:bold;">เรียน</td>
-          <td colspan="3" style="padding:2pt 6pt;">${mto||'...........................................................................'}</td>
-        </tr>
-      </table>
-      <hr style="border:none;border-top:0.5pt solid #000;margin:4pt 0 10pt;">
-      <!-- เนื้อหา -->
-      <div style="flex:1;">
-        <div style="text-indent:2.5cm;white-space:pre-wrap;margin-bottom:10pt;">${esc(body)||'ด้วย ...'}</div>
-        <div style="text-indent:2.5cm;white-space:pre-wrap;">${esc(concl)||'จึงเรียนมาเพื่อโปรดพิจารณา'}</div>
-      </div>
-      <!-- ลงนาม -->
-      <div style="text-align:center;margin-top:40pt;">
-        <div style="margin-bottom:40pt;">&nbsp;</div>
-        <div>(${esc(signer)||'..................................'})</div>
-        <div>${esc(pos)||'ตำแหน่ง'}</div>
-      </div>
-      <!-- ท้าย -->
-      <div style="margin-top:16pt;font-size:14pt;border-top:0.5pt solid #ccc;padding-top:4pt;">
-        ${esc(drafter)?`${esc(drafter)}<br>`:''}
-        ${esc(dept2)?`${esc(dept2)}<br>`:''}
-        ${esc(phone)?`โทร. ${esc(phone)}<br>`:''}
-      </div>
-      ${slogan?`<div style="text-align:center;margin-top:10pt;font-size:16pt;font-weight:bold;">${esc(slogan)}</div>`:''}
-    `;
-  }
-  const area=document.getElementById('doc-a4');
-  if(area) area.innerHTML=html;
-}
-
-function saveDocDB(){
-  const d={id:Date.now(),type:docType,date:g('d-date')||today(),num:g('d-num'),subject:docType==='out'?g('d-subj'):g('dm-subj'),to:docType==='out'?g('d-to'):g('dm-to'),ts:Date.now()};
-  const docs=DB.get('documents',[]); docs.unshift(d); DB.set('documents',docs);
-  alert('บันทึกลงทะเบียนหนังสือแล้ว ✅');
-}
-
-function renderDocList(){
-  const search=g('doc-search').toLowerCase(), filter=g('doc-filter');
-  let docs=DB.get('documents',[]);
-  if(filter) docs=docs.filter(d=>d.type===filter);
-  if(search) docs=docs.filter(d=>(d.num+d.subject+d.to).toLowerCase().includes(search));
-  const tbody=document.getElementById('doc-tbody');
-  if(!docs.length){ tbody.innerHTML='<tr><td colspan="6" class="text-center text2">ไม่พบข้อมูล</td></tr>'; return; }
-  tbody.innerHTML=docs.map(d=>`
-    <tr>
-      <td class="mono">${d.num||'-'}</td>
-      <td>${fmtDate(d.date)}</td>
-      <td><span class="badge ${d.type==='out'?'b-out':'b-memo'}">${d.type==='out'?'ภายนอก':'บันทึก'}</span></td>
-      <td>${d.subject||'-'}</td>
-      <td class="text2">${d.to||'-'}</td>
-      <td><button class="btn btn-ghost btn-xs" onclick="delDoc(${d.id})">🗑️</button></td>
-    </tr>
-  `).join('');
-}
-function delDoc(id){ if(!confirm('ลบ?')) return; DB.set('documents',DB.get('documents',[]).filter(d=>d.id!==id)); renderDocList(); }
-
-function printDoc(){
-  const content=document.getElementById('doc-a4').innerHTML;
-  const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><style>
-    @font-face{font-family:'TH Sarabun New';src:local('TH Sarabun New'),local('THSarabunNew');}
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:#fff;margin:0;}
-    .a4{width:210mm;min-height:297mm;padding:2.5cm 2cm 2cm 3cm;font-family:'TH Sarabun New','Sarabun',serif;font-size:16pt;line-height:1.5;color:#000;display:flex;flex-direction:column;}
-    @media print{@page{size:A4;margin:0;}body{margin:0;}}
-  </style></head><body><div class="a4">${content}</div><script>setTimeout(()=>{window.print();},400);<\/script></body></html>`);
-}
-
-// ==================== DOC IN (AI SUMMARY) ====================
-async function handleDocUpload(e){
-  const f=e.target.files[0]; if(!f) return;
-  if(f.type==='application/pdf'){
-    const r=new FileReader();
-    r.onload=ev=>{ document.getElementById('doc-in-text').value='[PDF อัปโหลดแล้ว — กดสรุปเพื่อให้ AI วิเคราะห์]\n\nBase64 data: '+ev.target.result.slice(0,100)+'...'; };
-    r.readAsDataURL(f);
-    // Store for API
-    const rb=new FileReader();
-    rb.onload=ev=>{ window._pdfB64=ev.target.result.split(',')[1]; window._pdfMime=f.type; };
-    rb.readAsDataURL(f);
-  } else {
-    const rb=new FileReader();
-    rb.onload=ev=>{ window._imgB64=ev.target.result.split(',')[1]; window._imgMime=f.type; document.getElementById('doc-in-text').value='[รูปภาพอัปโหลดแล้ว]'; };
-    rb.readAsDataURL(f);
-  }
-}
-
-async function summarizeDocIn(){
-  const key=apiKey(); if(!key){ alert('กรุณาตั้งค่า Claude API Key'); showPage('settings'); return; }
-  const btn=document.getElementById('btn-sum'); const out=document.getElementById('doc-in-result');
-  btn.innerHTML='⏳ กำลังวิเคราะห์...'; btn.disabled=true;
-  out.innerHTML='<div class="text2">กำลังประมวลผล...</div>';
-  try{
-    let messages;
-    if(window._pdfB64){
-      messages=[{role:'user',content:[
-        {type:'document',source:{type:'base64',media_type:'application/pdf',data:window._pdfB64}},
-        {type:'text',text:'กรุณาสรุปหนังสือราชการนี้เป็นภาษาไทย:\n1. สาระสำคัญ (3-5 บรรทัด)\n2. ผู้ส่ง/ผู้รับ\n3. เรื่องที่ต้องดำเนินการ\n4. กำหนดเวลา (ถ้ามี)\n5. ความเห็นเสนอผู้บริหาร'}
-      ]}];
-    } else if(window._imgB64){
-      messages=[{role:'user',content:[
-        {type:'image',source:{type:'base64',media_type:window._imgMime,data:window._imgB64}},
-        {type:'text',text:'กรุณาสรุปหนังสือราชการในรูปนี้เป็นภาษาไทย:\n1. สาระสำคัญ\n2. ผู้ส่ง/ผู้รับ\n3. เรื่องที่ต้องดำเนินการ\n4. ความเห็นเสนอผู้บริหาร'}
-      ]}];
+// ========== RENDER FUNCTIONS ==========
+function renderToday() {
+    const wks = getData('my_workouts');
+    const docs = getData('my_docs');
+    const totalDist = wks.filter(w => new Date(w.date) >= new Date(Date.now() - 7*86400000)).reduce((s, w) => s + parseFloat(w.dist || 0), 0);
+    document.getElementById('t-distance').textContent = totalDist.toFixed(1);
+    document.getElementById('t-docs').textContent = docs.length;
+    
+    const todayList = document.getElementById('today-recent-workouts');
+    if(wks.length) {
+        todayList.innerHTML = wks.slice(0, 3).map(w => `<div class="mb-12 text-sm">${w.date}: ${w.dist} กม.</div>`).join('');
     } else {
-      const txt=g('doc-in-text'); if(!txt){ alert('กรุณาวางข้อความหรืออัปโหลดไฟล์'); return; }
-      messages=[{role:'user',content:txt+'\n\nสรุปหนังสือนี้:\n1. สาระสำคัญ\n2. เรื่องที่ต้องดำเนินการ\n3. ความเห็นเสนอผู้บริหาร'}];
+        todayList.innerHTML = '<p class="text2 text-sm">ยังไม่มีข้อมูล</p>';
     }
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,system:'คุณเป็นผู้เชี่ยวชาญงานสารบรรณไทย สรุปหนังสือราชการอย่างกระชับและตรงประเด็น',messages})});
-    if(!res.ok){ const e=await res.json(); throw new Error(e.error?.message||'API Error'); }
-    const data=await res.json();
-    const text=data.content?.[0]?.text||'ไม่พบข้อมูล';
-    out.innerHTML=`<div class="ai-result">${text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>`;
-    window._pdfB64=null; window._imgB64=null;
-  } catch(e){ out.innerHTML=`<div class="ai-result" style="color:var(--accent4)">⚠️ ${e.message}</div>`; }
-  finally{ btn.innerHTML='✨ สรุปด้วย Claude AI'; btn.disabled=false; }
 }
 
-// ==================== NEWS ====================
-async function askNewsAI(){
-  const q=g('news-q'); if(!q) return;
-  const btn=document.getElementById('btn-news-ai'); const out=document.getElementById('news-ai-out');
-  btn.innerHTML='⏳'; btn.disabled=true;
-  out.classList.remove('hidden'); out.innerHTML='<div class="text2">กำลังค้นหาข้อมูล...</div>';
-  try{
-    const result=await callClaude(
-      [{role:'user',content:q}],
-      'คุณเป็น AI ที่ช่วยสรุปและตอบคำถามเกี่ยวกับข่าวสาร IT เศรษฐกิจ เทคโนโลยี สินค้าใหม่ รถยนต์ และเหตุการณ์โลก ตอบเป็นภาษาไทยที่ชัดเจน กระชับ'
-    );
-    out.innerHTML=`<div class="ai-result">${result.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>`;
-  } catch(e){ out.innerHTML=`<div class="ai-result" style="color:var(--accent4)">⚠️ ${e.message}</div>`; }
-  finally{ btn.innerHTML='ถาม'; btn.disabled=false; }
+function renderDocList() {
+    const list = getData('my_docs');
+    const body = document.getElementById('doc-table-body');
+    if(!list.length) { body.innerHTML = '<tr><td colspan="3">ไม่มีข้อมูล</td></tr>'; return; }
+    body.innerHTML = list.map(d => `<tr><td>${d.num || '-'}</td><td>${d.date || '-'}</td><td>${d.sub || '-'}</td></tr>`).join('');
 }
 
-// RSS NEWS - ใช้หลาย proxy เพื่อแก้ปัญหา CORS
-const RSS_SOURCES=[
-  {tag:'IT',url:'https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml'},
-  {tag:'IT',url:'https://feeds.arstechnica.com/arstechnica/technology-lab'},
-  {tag:'เศรษฐกิจ',url:'https://www.bangkokpost.com/rss/data/business.xml'},
-  {tag:'เศรษฐกิจ',url:'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml'},
-];
-const PROXIES=[
-  url=>`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&count=4`,
-  url=>`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-];
-async function fetchRSS(src){
-  try{
-    const res=await fetch(PROXIES[0](src.url));
-    const data=await res.json();
-    if(data.status==='ok') return data.items.map(i=>({tag:src.tag,title:i.title,date:new Date(i.pubDate).toLocaleDateString('th-TH'),url:i.link,desc:(i.description||'').replace(/<[^>]*>/g,'').slice(0,100)}));
-  } catch(e){}
-  return [];
-}
-async function loadNews(){
-  const el=document.getElementById('news-list');
-  el.innerHTML='<p class="text2 text-sm">⏳ กำลังโหลดข่าว...</p>';
-  let all=[];
-  const results=await Promise.allSettled(RSS_SOURCES.map(s=>fetchRSS(s)));
-  results.forEach(r=>{ if(r.status==='fulfilled') all=all.concat(r.value); });
-  if(!all.length){
-    el.innerHTML=`<div class="card" style="text-align:center;padding:32px;">
-      <div style="font-size:28px;margin-bottom:12px">⚠️</div>
-      <div class="text2 text-sm">ไม่สามารถโหลดฟีดข่าวได้ในขณะนี้ (API rate limit หรือ network issue)<br>กรุณาใช้ <strong>AI ถาม-ตอบ</strong> ด้านบนแทนครับ</div>
-    </div>`;
-    return;
-  }
-  el.innerHTML=`<div class="grid g2">${all.map(n=>`
-    <div class="news-card" onclick="window.open('${n.url}','_blank')">
-      <div class="news-tag">${n.tag}</div>
-      <div class="news-title">${n.title}</div>
-      ${n.desc?`<div class="news-desc">${n.desc}...</div>`:''}
-      <div class="news-date">${n.date}</div>
-    </div>
-  `).join('')}</div>`;
+function renderRecentWorkouts() {
+    const list = getData('my_workouts');
+    const container = document.getElementById('recent-workouts-list');
+    if(!list.length) { container.innerHTML = '<p class="text2 text-sm">ไม่มีข้อมูล</p>'; return; }
+    container.innerHTML = list.slice(0, 5).map(w => `<div class="mb-12 text-sm">${w.date}: ${w.dist} กม. (${w.time} นาที)</div>`).join('');
 }
 
-// ==================== MODAL ====================
-function closeModal(id){ document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); }));
+// ========== NAVIGATION ==========
+function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const pageEl = document.getElementById('page-'+id);
+    if(pageEl) pageEl.classList.add('active');
+    
+    const navItems = document.querySelectorAll('.nav-item');
+    const map = {today:0,'fitness-log':1,'fitness-stats':2,coach:3,'doc-summary':4,'doc-create':5,'doc-list':6,news:7,settings:8};
+    if (navItems[map[id]]) navItems[map[id]].classList.add('active');
 
-// ==================== INIT ====================
-document.getElementById('f-date').value=today();
-document.getElementById('st-day-pick').value=today();
-document.getElementById('st-week-pick').value=today();
-document.getElementById('st-month-pick').value=today().slice(0,7);
-showPage('today');
+    if(id==='today') renderToday();
+    if(id==='fitness-log') renderRecentWorkouts();
+    if(id==='fitness-stats') initStats();
+    if(id==='doc-create') updateDocPreview();
+    if(id==='doc-list') renderDocList();
+    if(id==='settings') document.getElementById('set-claude-key').value = localStorage.getItem('claude_api_key') || '';
+}
+
+// ========== ACTIONS ==========
+function saveSettings() {
+    localStorage.setItem('claude_api_key', document.getElementById('set-claude-key').value);
+    alert('บันทึกการตั้งค่าแล้ว ✅');
+}
+
+function saveWorkout() {
+    const date = document.getElementById('f-date').value || new Date().toISOString().slice(0,10);
+    const dist = parseFloat(document.getElementById('r-distance').value) || 0;
+    const time = parseFloat(document.getElementById('r-time').value) || 0;
+    const workouts = getData('my_workouts');
+    workouts.unshift({ id: Date.now(), date, dist, time });
+    setData('my_workouts', workouts);
+    renderRecentWorkouts(); renderToday();
+    alert('บันทึกสำเร็จ ✅');
+}
+
+function saveDocDb() {
+    const docs = getData('my_docs');
+    docs.unshift({ id: Date.now(), num: document.getElementById('do-num').value, sub: document.getElementById('do-subject').value, date: document.getElementById('do-date').value });
+    setData('my_docs', docs);
+    alert('บันทึกทะเบียนหนังสือแล้ว ✅');
+    renderDocList();
+}
+
+async function processImageWithAI(event) {
+    const files = event.target.files;
+    if (!files.length) return;
+    const btn = document.getElementById('btn-sync-image');
+    btn.innerText = "⏳ กำลังสกัดข้อมูล...";
+    try {
+        const prompt = "Extract running distance (km) and total time (minutes) from these images. Return ONLY JSON: {distance: number, time: number}";
+        const res = await askClaude(prompt, "You are a fitness data extractor.", "btn-sync-image", true);
+        if(res) {
+            document.getElementById('r-distance').value = res.distance || 0;
+            document.getElementById('r-time').value = res.time || 0;
+        }
+    } catch(e) { alert(e.message); } finally { btn.innerText = "📸 สกัดรูปภาพ (AI)"; }
+}
+
+async function askNews() {
+    const q = document.getElementById('news-query').value || 'ข่าวเศรษฐกิจเทคโนโลยีวันนี้';
+    const out = document.getElementById('news-output');
+    out.style.display = 'block';
+    out.innerText = "⏳ Claude กำลังรวบรวมข้อมูลข่าวสาร...";
+    const res = await askClaude(q, "คุณคือผู้เชี่ยวชาญข่าวสาร สรุปข่าวจากเน็ต 3 ข้อสำคัญ พร้อมวิเคราะห์สั้นๆ เป็นภาษาไทย", "btn-news");
+    if(res) out.innerText = res;
+}
+
+async function summarizeDoc() {
+    const txt = document.getElementById('ai-doc-input').value;
+    const out = document.getElementById('ai-doc-output-page');
+    const res = await askClaude(txt, "สรุปสาระสำคัญของหนังสือราชการไทยให้เหลือ 3 ข้อสั้นๆ กระชับที่สุดเพื่อเสนอผู้บริหาร", "btn-doc-ai");
+    if(res) { out.innerText = res; out.style.display = 'block'; }
+}
+
+async function generateTrainingPlan() {
+    const goal = document.getElementById('coach-goal').value;
+    const out = document.getElementById('coach-output');
+    const res = await askClaude(goal, "คุณคือโค้ชวิ่งวิทยาศาสตร์การกีฬา วางแผนการซ้อมให้เป็นตารางรายวัน 7 วัน", "btn-coach");
+    if(res) out.innerText = res;
+}
+
+// ========== DOC PREVIEW & PRINT ==========
+function loadGaruda(e) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        localStorage.setItem('garudaImg', ev.target.result);
+        document.getElementById('garuda-preview-thumb').innerHTML = `<img src="${ev.target.result}" style="width:100%">`;
+        updateDocPreview();
+    };
+    reader.readAsDataURL(e.target.files[0]);
+}
+
+function clearGaruda() { 
+    localStorage.removeItem('garudaImg'); 
+    document.getElementById('garuda-preview-thumb').innerHTML = ''; 
+    updateDocPreview(); 
+}
+
+function switchDocTab(type, el) {
+    currentDocType = type;
+    document.querySelectorAll('#page-doc-create .tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+    updateDocPreview();
+}
+
+function updateDocPreview() {
+    const v = id => (document.getElementById(id)?.value || '').replace(/[&<>'"]/g, t => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[t]));
+    const garudaBase64 = localStorage.getItem('garudaImg');
+    const garudaHtml = garudaBase64 
+        ? `<img src="${garudaBase64}" style="height:${currentDocType==='out'?'3cm':'1.5cm'}; width:auto;">`
+        : `<div style="width:1.5cm; height:1.5cm; border:1px solid #000; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold;">ครุฑ</div>`;
+
+    if (currentDocType === 'out') {
+        document.getElementById('doc-render-area').innerHTML = `
+            <div style="display:flex; justify-content:center; margin-bottom:5px;">${garudaHtml}</div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <div style="display:flex;">ที่&nbsp;&nbsp;&nbsp;&nbsp;${v('do-num')}</div>
+                <div style="width:40%; white-space:pre-wrap; line-height:1.2;">${v('do-dept')}</div>
+            </div>
+            <div style="margin-left:7.5cm; margin-bottom:10px;">${v('do-date')}</div>
+            <div style="display:flex;"><div style="width:2.5cm; flex-shrink:0;">เรื่อง</div><div style="white-space:pre-wrap">${v('do-subject')}</div></div>
+            <div style="display:flex;"><div style="width:2.5cm; flex-shrink:0;">เรียน</div><div style="white-space:pre-wrap">${v('do-to')}</div></div>
+            <div style="display:flex; margin-bottom:10px;"><div style="width:2.5cm; flex-shrink:0;">สิ่งที่ส่งมาด้วย</div><div style="white-space:pre-wrap;">${v('do-attach')}</div></div>
+            
+            <div style="margin-top:16pt; text-indent:2.5cm; white-space:pre-wrap;">${v('do-body')}</div>
+            <div style="margin-top:12pt; text-indent:2.5cm; white-space:pre-wrap;">${v('do-conclusion')}</div>
+            
+            <div style="margin-top:32pt; margin-left:7.5cm; width:7.5cm; text-align:center;">
+                <div style="text-align:left; padding-left:0.5cm; margin-bottom:48pt;">ขอแสดงความนับถือ</div>
+                <div>(${v('do-signer')})</div>
+                <div style="margin-top:5px">${v('do-pos')}</div>
+            </div>
+
+            <div style="margin-top:auto; line-height:1;">
+                <div>${v('do-contact-name')}</div>
+                <div>${v('do-contact-phone')}</div>
+                <div style="text-align:center; margin-top:20px; white-space:pre-wrap; line-height:1.2; font-weight:bold; font-size:18pt;">${v('do-slogan')}</div>
+            </div>
+        `;
+    } else {
+        document.getElementById('doc-render-area').innerHTML = `
+            <div style="display:flex; align-items:flex-start; gap:20px; margin-bottom:10px;">
+                ${garudaHtml} <div style="font-size:26pt; font-weight:bold; padding-top:10px;">บันทึกข้อความ</div>
+            </div>
+            <div style="display:flex;"><div style="width:2.5cm; font-weight:bold">ส่วนราชการ</div><div style="white-space:pre-wrap">${v('do-dept')}</div></div>
+            <div style="display:flex; margin-bottom:5px;"><div style="width:50%; display:flex;"><div style="width:1cm; font-weight:bold">ที่</div><div>${v('do-num')}</div></div><div style="width:50%; display:flex;"><div style="width:1.5cm; font-weight:bold">วันที่</div><div>${v('do-date')}</div></div></div>
+            <div style="display:flex;"><div style="width:2.5cm; font-weight:bold">เรื่อง</div><div>${v('do-subject')}</div></div>
+            <div style="display:flex; margin-bottom:15px;"><div style="width:2.5cm; font-weight:bold">เรียน</div><div>${v('do-to')}</div></div>
+            <div style="margin-top:8pt; text-indent:2.5cm; white-space:pre-wrap;">${v('do-body')}</div>
+            <div style="margin-top:8pt; text-indent:2.5cm; white-space:pre-wrap;">${v('do-conclusion')}</div>
+            <div style="margin-top:32pt; margin-left:7.5cm; width:7.5cm; text-align:center;">
+                <div style="margin-top:32pt;">(${v('do-signer')})</div>
+                <div style="margin-top:5px">${v('do-pos')}</div>
+            </div>
+        `;
+    }
+}
+
+function printDoc() {
+    const content = document.getElementById('doc-render-area').innerHTML;
+    const win = window.open('', '_blank');
+    win.document.write(`<html><head><style>@font-face{font-family:'TH Sarabun New';src:local('TH Sarabun New');}body{margin:0;} .print-area{width:210mm; min-height:297mm; padding:2.5cm 2cm 2cm 3cm; font-family:'TH Sarabun New',serif; font-size:16pt; color:#000; display:flex; flex-direction:column;}</style></head><body><div class="print-area">${content}</div><script>window.print();<\/script></body></html>`);
+    win.document.close();
+}
+
+// ========== INITIALIZATION ==========
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('today-date-label').textContent = new Date().toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    const savedGaruda = localStorage.getItem('garudaImg');
+    if(savedGaruda) document.getElementById('garuda-preview-thumb').innerHTML = `<img src="${savedGaruda}" style="width:100%">`;
+    showPage('today');
+});
 </script>
 </body>
 </html>
