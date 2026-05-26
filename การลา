@@ -62,10 +62,10 @@
             { id: 11, name: 'นางสาวนิราณี รักษาวงศ์', pos: 'ครูผู้ช่วย', role: 'user' },
             { id: 12, name: 'นางนวลมณี สมประสงค์', pos: 'ครู คศ.3', role: 'user' },
             { id: 13, name: 'นางสาวศิริลักษณ์ อัคนิจ', pos: 'ครู คศ.1', role: 'user' },
-            { id: 14, name: 'นายสุรศักดิ์ อุ่นแก้ว', pos: 'ครู คศ.1', role: 'user' },
+            { id: 14, name: 'นายสุรศักดิ์ อุ่นแก้ว', pos: 'ครู คศ.2', role: 'user' },
             { id: 15, name: 'นายเกรียงศักดิ์ สร้อยกลางเมือง', pos: 'ครู คศ.1', role: 'user' },
             { id: 16, name: 'นางสาวนัฐธิยา จันทร์ศรีโคตร', pos: 'ครูอัตราจ้าง', role: 'user' },
-            { id: 17, name: 'นายปรัชญา ศรีจันทร์', pos: 'จนท.ธุรการ', role: 'user', isSecretary: true },
+            { id: 17, name: 'นายปรัชญา ศรีจันทร์', pos: 'ธุรการโรงเรียน', role: 'user', isSecretary: true },
         ];
 
         const Icon = ({ name, size = 24, className = "" }) => {
