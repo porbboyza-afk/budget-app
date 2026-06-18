@@ -3,53 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจัดการการลา - โรงเรียนหนองใสพรเจริญวิทยา</title>
-    <!-- 1. Library Setup -->
+    <script>
+        window.errors = [];
+        window.consoleErrors = [];
+        window.onerror = function(message, source, lineno, colno, error) {
+            window.errors.push(message + " in " + source + " (line " + lineno + ", col " + colno + ")");
+            return false;
+        };
+        const origConsoleError = console.error;
+        console.error = function(...args) {
+            window.consoleErrors.push(args.map(a => {
+                if (a && a.message) return a.message + (a.stack ? "\\n" + a.stack : "");
+                return typeof a === 'object' ? JSON.stringify(a) : String(a);
+            }).join(' '));
+            origConsoleError.apply(console, args);
+        };
+    </script>
+    <title>ระบบจัดการการลาครู - โรงเรียนหนองใสพรเจริญวิทยา</title>
+    
+    <!-- Libraries CDN -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@100;400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@100;300;400;500;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- 2. Firebase SDK Compat -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Google Sheets Integration (No Firebase required) -->
 
     <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #cbd5e1; }
-        .teacher-card { transition: all 0.25s ease-in-out; border: 3px solid #94a3b8; background-color: white; cursor: pointer; }
-        .teacher-card:hover { transform: translateY(-5px); border-color: #2563eb; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15); }
-        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #070913;
+            color: #E2E8F0;
+        }
+        /* Custom scrollbar override */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #070913;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #1E293B;
+            border-radius: 9999px;
+            border: 2px solid #070913;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+
+        /* Override layouts to futuristic dark style */
+        .min-h-screen, .md\:h-screen, .bg-slate-100 {
+            background-color: #070913 !important;
+        }
+        aside.bg-slate-900 {
+            background-color: #0B0E1B !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
         
-        /* เพิ่มเพื่อป้องกันตารางล้นจอในมือถือ */
-        .table-responsive-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        /* Glassmorphic Cards */
+        .bg-white {
+            background-color: rgba(18, 23, 44, 0.45) !important;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06) !important;
+            border-radius: 1.5rem !important; /* 24px rounded */
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .bg-white:hover {
+            border-color: rgba(6, 182, 212, 0.25) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px -8px rgba(6, 182, 212, 0.1) !important;
+        }
+
+        /* Connections border overrides */
+        .border-slate-100, .border-slate-200, .border-b, .divide-y, .border-t {
+            border-color: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        /* Sidebar buttons hover and active */
+        nav button {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        nav button.text-slate-400:hover {
+            background-color: rgba(255, 255, 255, 0.03) !important;
+            color: #06B6D4 !important;
+        }
+        .bg-blue-800, .active-tab-btn {
+            background-image: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%) !important;
+            background-color: transparent !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 8px 20px -6px rgba(6, 182, 212, 0.4) !important;
+        }
+
+        /* Inputs & forms style override */
+        input, select, textarea {
+            background-color: rgba(13, 17, 34, 0.7) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            color: #F1F5F9 !important;
+            border-radius: 0.75rem !important;
+            padding: 0.75rem 1rem !important;
+            outline: none !important;
+            transition: all 0.2s ease;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #06B6D4 !important;
+            box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.15) !important;
+            background-color: rgba(13, 17, 34, 0.9) !important;
+        }
+
+        /* Typography colors */
+        .text-slate-900 {
+            color: #FFFFFF !important;
+            background: linear-gradient(135deg, #FFFFFF 0%, #94A3B8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .text-slate-800 {
+            color: #E2E8F0 !important;
+        }
+        .text-slate-600 {
+            color: #CBD5E1 !important;
+        }
+        .text-slate-400 {
+            color: #64748B !important;
+        }
+        .text-slate-500 {
+            color: #64748B !important;
+        }
+
+        /* Badges & Neon indicators */
+        .bg-blue-50 {
+            background-color: rgba(6, 182, 212, 0.1) !important;
+            color: #22D3EE !important;
+        }
+        .text-blue-600 {
+            color: #22D3EE !important;
+        }
+        .bg-amber-50 {
+            background-color: rgba(245, 158, 11, 0.1) !important;
+            color: #FBBF24 !important;
+        }
+        .text-amber-500, .text-amber-600 {
+            color: #FBBF24 !important;
+        }
+        .bg-red-50 {
+            background-color: rgba(244, 63, 94, 0.1) !important;
+            color: #FB7185 !important;
+        }
+        .text-red-500, .text-red-600 {
+            color: #FB7185 !important;
+        }
+        .bg-emerald-50 {
+            background-color: rgba(16, 185, 129, 0.1) !important;
+            color: #34D399 !important;
+        }
+        .text-emerald-500, .text-emerald-600 {
+            color: #34D399 !important;
+        }
+        
+        /* Button hover overrides for dark mode */
+        .hover\:bg-amber-100:hover {
+            background-color: rgba(245, 158, 11, 0.2) !important;
+        }
+        .hover\:bg-red-100:hover {
+            background-color: rgba(244, 63, 94, 0.2) !important;
+        }
+
+        /* Tables & Lists */
+        .bg-slate-50 {
+            background-color: rgba(13, 17, 34, 0.5) !important;
+            color: #94A3B8 !important;
+        }
+        thead.bg-slate-50 {
+            background-color: rgba(13, 17, 34, 0.8) !important;
+        }
+        tr {
+            transition: all 0.2s ease;
+        }
+        tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.02) !important;
+        }
+
+        /* Buttons custom overrides */
+        .bg-emerald-600 {
+            background-image: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important;
+        }
+        .bg-emerald-600:hover {
+            background-image: linear-gradient(135deg, #34D399 0%, #10B981 100%) !important;
+            transform: scale(1.02);
+        }
+        .bg-blue-700 {
+            background-image: linear-gradient(135deg, #06B6D4 0%, #2563EB 100%) !important;
+            box-shadow: 0 4px 14px rgba(6, 182, 212, 0.2) !important;
+        }
+        .bg-blue-700:hover {
+            background-image: linear-gradient(135deg, #22D3EE 0%, #3B82F6 100%) !important;
+            transform: scale(1.02);
+        }
+        .bg-red-600 {
+            background-image: linear-gradient(135deg, #F43F5E 0%, #E11D48 100%) !important;
+            box-shadow: 0 4px 14px rgba(244, 63, 94, 0.2) !important;
+        }
+        .bg-red-600:hover {
+            background-image: linear-gradient(135deg, #FB7185 0%, #F43F5E 100%) !important;
+            transform: scale(1.02);
+        }
+
+        /* Modals & Dialogs */
+        .fixed.inset-0.bg-slate-955\/70 {
+            background-color: rgba(3, 7, 18, 0.8) !important;
+            backdrop-filter: blur(8px) !important;
+        }
+        .bg-white.rounded-3xl.p-8, .bg-white.rounded-3xl.p-8.max-w-md, .bg-white.rounded-3xl.p-8.max-w-sm {
+            background-color: #0E1326 !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
+        }
+
+        /* Animations */
+        .animate-fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Mobile safe area for iOS devices */
+        @media (max-width: 767px) {
+            nav.fixed.bottom-0 {
+                padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 16px));
+            }
+        }
     </style>
 </head>
-<body>
+<body class="text-slate-800 antialiased font-medium">
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useMemo, useEffect, useRef } = React;
 
-        // --- Firebase Config ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyAUryuhFy1uunyyRXmFJsRARkUSbTT68FA",
-            authDomain: "schoolleave-669a7.firebaseapp.com",
-            projectId: "schoolleave-669a7",
-            storageBucket: "schoolleave-669a7.firebasestorage.app",
-            messagingSenderId: "850104833391",
-            appId: "1:850104833391:web:b9bb828d6625778691c49a",
-            measurementId: "G-3YMMBD7P6P"
-        };
+        // Google Apps Script Web App URL (ใส่ URL ที่บอสปอ Deploy จาก Apps Script ตรงนี้ค่ะ)
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfybySWsvctlrmZoKAwlgx9ou2XvjlrqT9G9nZp0NzOa50UAB74VdNw1Gc0j_lj91kQJGe5Q/exec";
 
-        const teachersList = [
-            { id: 1, name: 'นายชุมพร กรุณานำ', pos: 'ผอ.รร', role: 'admin' },
+        // Default 17 Teachers List
+        const defaultTeachers = [
+            { id: 1, name: 'นายชุมพร กรุณานำ', pos: 'ผู้อำนวยการโรงเรียน', role: 'admin' },
             { id: 2, name: 'นางสาวสราลักษณ์ แก้วโสภา', pos: 'ครู คศ.3', role: 'user' },
             { id: 3, name: 'นางสาวจิราพร ไชยมาศ', pos: 'ครู คศ.3', role: 'user' },
             { id: 4, name: 'นางสาวธีมาพร นามบุรี', pos: 'ครู คศ.1', role: 'user' },
@@ -65,122 +271,539 @@
             { id: 14, name: 'นายสุรศักดิ์ อุ่นแก้ว', pos: 'ครู คศ.2', role: 'user' },
             { id: 15, name: 'นายเกรียงศักดิ์ สร้อยกลางเมือง', pos: 'ครู คศ.1', role: 'user' },
             { id: 16, name: 'นางสาวนัฐธิยา จันทร์ศรีโคตร', pos: 'ครูอัตราจ้าง', role: 'user' },
-            { id: 17, name: 'นายปรัชญา ศรีจันทร์', pos: 'ธุรการโรงเรียน', role: 'user', isSecretary: true },
+            { id: 17, name: 'นายปรัชญา ศรีจันทร์', pos: 'ธุรการโรงเรียน', role: 'user', isSecretary: true }
         ];
 
-        const Icon = ({ name, size = 24, className = "" }) => {
-            const ref = useRef(null);
+        // Helper component for Lucide Icons
+        const Icon = ({ name, size = 20, className = "" }) => {
+            const [ready, setReady] = useState(!!window.lucide);
+
             useEffect(() => {
-                if (window.lucide && window.lucide.icons[name] && ref.current) {
-                    ref.current.innerHTML = window.lucide.icons[name].toSvg({ width: size, height: size, class: className });
+                if (window.lucide) {
+                    setReady(true);
+                    return;
                 }
-            }, [name, size, className]);
-            return <span ref={ref} className={`inline-flex items-center justify-center ${className}`} style={{ minWidth: size, minHeight: size }}></span>;
+                const interval = setInterval(() => {
+                    if (window.lucide) {
+                        setReady(true);
+                        clearInterval(interval);
+                    }
+                }, 100);
+                return () => clearInterval(interval);
+            }, []);
+
+            if (!ready || !window.lucide || !window.lucide.icons) {
+                return <span className={`inline-block ${className}`} style={{ width: size, height: size, minWidth: size, minHeight: size }}></span>;
+            }
+
+            const getIconNode = (rawName) => {
+                if (window.lucide.icons[rawName]) return window.lucide.icons[rawName];
+                const pascalName = rawName.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('');
+                if (window.lucide.icons[pascalName]) return window.lucide.icons[pascalName];
+                const lowerName = rawName.replace(/-/g, '').toLowerCase();
+                const foundKey = Object.keys(window.lucide.icons).find(k => k.toLowerCase() === lowerName);
+                if (foundKey) return window.lucide.icons[foundKey];
+                return null;
+            };
+
+            const node = getIconNode(name);
+            if (!node) {
+                return <span className={`inline-block ${className}`} style={{ width: size, height: size, minWidth: size, minHeight: size }}></span>;
+            }
+
+            return (
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width={size}
+                    height={size}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className={`inline-block ${className}`}
+                    style={{ minWidth: size, minHeight: size }}
+                >
+                    {node.map(([tag, attrs], idx) => {
+                        const Tag = tag;
+                        return <Tag key={idx} {...attrs} />;
+                    })}
+                </svg>
+            );
         };
 
         const App = () => {
-            const [db, setDb] = useState(null);
-            const [isOnline, setIsOnline] = useState(false);
-            const [requests, setRequests] = useState([]);
-            const appId = 'school-leave-v4-production';
-
-            const [currentPage, setCurrentPage] = useState('selection'); 
-            const [selectedTeacher, setSelectedTeacher] = useState(null);
-            const [showLoginModal, setShowLoginModal] = useState(false);
-            const [passwordInput, setPasswordInput] = useState('');
+            const [isOnline, setIsOnline] = useState(navigator.onLine);
             const [activeTab, setActiveTab] = useState('dashboard');
-            const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+            const [teachers, setTeachers] = useState([]);
+            const [records, setRecords] = useState([]);
             const [isSubmitting, setIsSubmitting] = useState(false);
-            const [isAuthorizedMaster, setIsAuthorizedMaster] = useState(false);
-            const [requestToDelete, setRequestToDelete] = useState(null);
-            const [showResetModal, setShowResetModal] = useState(false);
-            const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+            
+            // Search and Filters
+            const [filterTeacher, setFilterTeacher] = useState('');
+            const [filterType, setFilterType] = useState('all');
+            const [filterYear, setFilterYear] = useState('2569');
 
-            const [formData, setFormData] = useState({ type: 'ลากิจ', startDate: '', endDate: '', reason: '', substitute: '' });
+            // Form States
+            const [formData, setFormData] = useState({
+                id: '',
+                userId: '',
+                type: 'ลากิจ',
+                startDate: '',
+                endDate: '',
+                reason: '',
+                substitute: '',
+                status: 'approved'
+            });
 
-            // Initialize Firebase Compat
+            // Teacher Form States
+            const [showTeacherModal, setShowTeacherModal] = useState(false);
+            const [teacherForm, setTeacherForm] = useState({ id: '', name: '', pos: '' });
+
+            // Confirm Delete Modal States
+            const [deleteTarget, setDeleteTarget] = useState(null); // { type: 'record'|'teacher', id: '' }
+            const [editMode, setEditMode] = useState(false);
+
+            // Notification / Alert state
+            const [alertMsg, setAlertMsg] = useState({ text: '', type: '' });
+
+            // Keep reference to latest states to prevent useEffect dependency leaks
+            const recordsRef = useRef(records);
+            const teachersRef = useRef(teachers);
+
             useEffect(() => {
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(firebaseConfig);
-                }
-                const firestore = firebase.firestore();
-                setDb(firestore);
+                recordsRef.current = records;
+            }, [records]);
 
-                firebase.auth().signInAnonymously().then(() => {
-                    setIsOnline(true);
-                }).catch(err => console.error("Firebase Auth Fail", err));
+            useEffect(() => {
+                teachersRef.current = teachers;
+            }, [teachers]);
+
+            // Check connection status
+            useEffect(() => {
+                const handleOnline = () => setIsOnline(true);
+                const handleOffline = () => setIsOnline(false);
+                window.addEventListener('online', handleOnline);
+                window.addEventListener('offline', handleOffline);
+                return () => {
+                    window.removeEventListener('online', handleOnline);
+                    window.removeEventListener('offline', handleOffline);
+                };
             }, []);
 
-            // Realtime Sync
+            // 1. Initial Load from LocalStorage
             useEffect(() => {
-                if (!db || !isOnline) return;
-                const unsub = db.collection('artifacts').doc(appId).collection('public_data')
-                    .onSnapshot((snaps) => {
-                        const data = snaps.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        setRequests(data);
-                    }, (err) => console.log("Waiting for Rules..."));
-                return () => unsub();
-            }, [db, isOnline]);
+                const localT = localStorage.getItem('school_leave_teachers');
+                const localR = localStorage.getItem('school_leave_records');
 
-            const isAdmin = selectedTeacher?.role === 'admin';
-            const isMaster = isAuthorizedMaster;
-            const currentYearBE = 2569;
+                if (localT) {
+                    setTeachers(JSON.parse(localT));
+                } else {
+                    localStorage.setItem('school_leave_teachers', JSON.stringify(defaultTeachers));
+                    setTeachers(defaultTeachers);
+                }
 
-            const userRequests = useMemo(() => selectedTeacher ? requests.filter(r => r.userId === selectedTeacher.id) : [], [requests, selectedTeacher]);
-            
-            const stats = useMemo(() => {
-                const calc = (type) => ({ 
-                    used: userRequests.filter(r => r.type === type && r.status === 'approved').length, 
-                    pending: userRequests.filter(r => r.type === type && r.status === 'pending').length 
-                });
-                return { personal: calc('ลากิจ'), sick: calc('ลาป่วย'), maternity: calc('ลาคลอดบุตร'), paternity: calc('ลาช่วยภรรยา'), ordination: calc('ลาอุปสมบท') };
-            }, [userRequests]);
+                if (localR) {
+                    setRecords(JSON.parse(localR));
+                }
+            }, []);
 
-            // สถิติสำหรับ ผอ. (รวมทั้งโรงเรียน)
-            const globalSummary = useMemo(() => {
-                return teachersList.map(t => {
-                    const teacherApprovedRequests = requests.filter(r => r.userId === t.id && r.status === 'approved');
+            // Apps Script Helper for POST API requests
+            const callAppsScript = async (action, sheet, dataOrId) => {
+                if (!APPS_SCRIPT_URL) return { error: "APPS_SCRIPT_URL is not set" };
+                try {
+                    const payload = { action, sheet };
+                    if (action === 'save') {
+                        payload.data = dataOrId;
+                    } else if (action === 'delete') {
+                        payload.id = dataOrId;
+                    }
                     
-                    const calculateStats = (type) => {
-                        const typeRequests = teacherApprovedRequests.filter(r => r.type === type);
-                        const days = typeRequests.reduce((acc, curr) => {
-                            // เพิ่ม Safety Check เพื่อแก้ปัญหา "หน้าจอขาว" เวลาข้อมูลในฐานข้อมูลแหว่ง
-                            if (!curr.startDate || !curr.endDate) return acc;
-                            
-                            const start = new Date(curr.startDate.replace(/(\d{4})/, (m) => parseInt(m) - 543));
-                            const end = new Date(curr.endDate.replace(/(\d{4})/, (m) => parseInt(m) - 543));
-                            const diffTime = Math.abs(end - start);
-                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                            return acc + (isNaN(diffDays) ? 0 : diffDays);
-                        }, 0);
-                        return { days, times: typeRequests.length };
-                    };
+                    const response = await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain;charset=utf-8'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    return await response.json();
+                } catch (err) {
+                    console.error("Apps Script API Error:", err);
+                    throw err;
+                }
+            };
 
-                    const sickStats = calculateStats('ลาป่วย');
-                    const personalStats = calculateStats('ลากิจ');
-                    
-                    const maternity = calculateStats('ลาคลอดบุตร');
-                    const paternity = calculateStats('ลาช่วยภรรยาคลอดบุตร');
-                    const ordination = calculateStats('ลาอุปสมบท');
-
-                    const otherDays = maternity.days + paternity.days + ordination.days;
-                    const otherTimes = maternity.times + paternity.times + ordination.times;
-
-                    return {
-                        ...t,
-                        sick: sickStats,
-                        personal: personalStats,
-                        others: { days: otherDays, times: otherTimes },
-                        total: { 
-                            days: sickStats.days + personalStats.days + otherDays, 
-                            times: sickStats.times + personalStats.times + otherTimes 
+            // 2. Initial Load from Google Sheets Web App (Merge with Local Storage)
+            useEffect(() => {
+                const loadDataFromCloud = async () => {
+                    if (!APPS_SCRIPT_URL || !isOnline) return;
+                    try {
+                        // Fetch Teachers
+                        const resTeachers = await fetch(`${APPS_SCRIPT_URL}?sheet=teachers`);
+                        if (resTeachers.ok) {
+                            const cloudTeachers = await resTeachers.json();
+                            if (Array.isArray(cloudTeachers) && cloudTeachers.length > 0) {
+                                const parsedTeachers = cloudTeachers.map(t => ({
+                                    ...t,
+                                    id: parseInt(t.id)
+                                }));
+                                setTeachers(parsedTeachers);
+                                localStorage.setItem('school_leave_teachers', JSON.stringify(parsedTeachers));
+                            }
                         }
-                    };
-                }).filter(t => t.role !== 'admin');
-            }, [requests]);
+                        
+                        // Fetch Leave Records
+                        const resRecords = await fetch(`${APPS_SCRIPT_URL}?sheet=leave_records`);
+                        if (resRecords.ok) {
+                            const cloudRecords = await resRecords.json();
+                            if (Array.isArray(cloudRecords)) {
+                                const parsedCloud = cloudRecords.map(r => ({
+                                    ...r,
+                                    userId: parseInt(r.userId),
+                                    days: parseFloat(r.days),
+                                    timestamp: parseInt(r.timestamp) || Date.now(),
+                                    synced: true
+                                }));
+                                
+                                setRecords(prev => {
+                                    const mergedMap = new Map(prev.map(r => [r.id, r]));
+                                    parsedCloud.forEach(c => {
+                                        const local = mergedMap.get(c.id);
+                                        if (!local || local.synced !== false) {
+                                            mergedMap.set(c.id, c);
+                                        }
+                                    });
+                                    const merged = Array.from(mergedMap.values());
+                                    merged.sort((a, b) => b.timestamp - a.timestamp);
+                                    localStorage.setItem('school_leave_records', JSON.stringify(merged));
+                                    return merged;
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Cloud initial load failed:", e);
+                    }
+                };
+                
+                loadDataFromCloud();
+            }, [isOnline]);
 
+            // 3. Periodic Background Sync (Push local offline changes to Google Sheets)
+            useEffect(() => {
+                if (!APPS_SCRIPT_URL || !isOnline) return;
+                
+                const pushOfflineChanges = async () => {
+                    // Sync Teachers
+                    const unsyncedTeachers = teachersRef.current.filter(t => t.synced === false);
+                    for (const teacher of unsyncedTeachers) {
+                        try {
+                            const { synced, ...cleanData } = teacher;
+                            const res = await callAppsScript("save", "teachers", cleanData);
+                            if (res && res.success) {
+                                setTeachers(prev => {
+                                    const updated = prev.map(t => t.id === teacher.id ? { ...t, synced: true } : t);
+                                    localStorage.setItem('school_leave_teachers', JSON.stringify(updated));
+                                    return updated;
+                                });
+                            }
+                        } catch (e) {
+                            console.error("Failed to sync teacher to cloud:", teacher, e);
+                        }
+                    }
+
+                    // Sync Leave Records
+                    const unsyncedRecords = recordsRef.current.filter(r => r.synced === false);
+                    if (unsyncedRecords.length === 0) return;
+                    
+                    console.log(`Syncing ${unsyncedRecords.length} offline records to Google Sheets...`);
+                    let syncSuccessCount = 0;
+                    
+                    for (const rec of unsyncedRecords) {
+                        try {
+                            const { synced, ...cleanData } = rec;
+                            const res = await callAppsScript("save", "leave_records", cleanData);
+                            if (res && res.success) {
+                                syncSuccessCount++;
+                                setRecords(prev => {
+                                    const updated = prev.map(r => r.id === rec.id ? { ...r, synced: true } : r);
+                                    localStorage.setItem('school_leave_records', JSON.stringify(updated));
+                                    return updated;
+                                });
+                            }
+                        } catch (e) {
+                            console.error("Failed to sync record to cloud:", rec, e);
+                        }
+                    }
+                    
+                    if (syncSuccessCount > 0) {
+                        showAlert(`ซิงก์ข้อมูลออฟไลน์ ${syncSuccessCount} รายการขึ้น Google Sheets เรียบร้อยแล้วค่ะ`, "success");
+                    }
+                };
+
+                const interval = setInterval(pushOfflineChanges, 15000);
+                return () => clearInterval(interval);
+            }, [isOnline]);
+
+            const showAlert = (text, type = 'success') => {
+                setAlertMsg({ text, type });
+                setTimeout(() => setAlertMsg({ text: '', type: '' }), 4000);
+            };
+
+            // Calculate leave days between startDate and endDate with full validations
+            const calculateDays = (start, end) => {
+                if (!start || !end) return 0;
+                try {
+                    const sParts = start.split('-');
+                    const eParts = end.split('-');
+                    if (sParts.length !== 3 || eParts.length !== 3) return 0;
+                    
+                    // Convert to CE if year is in BE (> 2400)
+                    const sYear = parseInt(sParts[0]) > 2400 ? parseInt(sParts[0]) - 543 : parseInt(sParts[0]);
+                    const eYear = parseInt(eParts[0]) > 2400 ? parseInt(eParts[0]) - 543 : parseInt(eParts[0]);
+
+                    const sDate = new Date(sYear, parseInt(sParts[1]) - 1, parseInt(sParts[2]));
+                    const eDate = new Date(eYear, parseInt(eParts[1]) - 1, parseInt(eParts[2]));
+                    
+                    if (isNaN(sDate.getTime()) || isNaN(eDate.getTime())) return 0;
+                    if (eDate < sDate) return -1; // Negative value indicates end before start
+                    
+                    const diffTime = eDate - sDate;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                    return Math.max(diffDays, 0);
+                } catch (e) {
+                    return 0;
+                }
+            };
+
+            // Form Start/End Dates auto calculation
+            const currentDaysCount = useMemo(() => {
+                return calculateDays(formData.startDate, formData.endDate);
+            }, [formData.startDate, formData.endDate]);
+
+            // Submit Record
+            const handleRecordSubmit = async (e) => {
+                e.preventDefault();
+                if (!formData.userId) {
+                    showAlert("กรุณาเลือกรายชื่อครูผู้ลาด้วยค่ะ", "error");
+                    return;
+                }
+                
+                if (currentDaysCount <= 0) {
+                    if (currentDaysCount === -1) {
+                        showAlert("วันที่สิ้นสุดต้องอยู่หลังวันที่เริ่มต้นค่ะ", "error");
+                    } else {
+                        showAlert("ช่วงวันที่ลาไม่ถูกต้อง กรุณาตรวจสอบวันที่ค่ะ", "error");
+                    }
+                    return;
+                }
+
+                setIsSubmitting(true);
+                const recordId = editMode ? formData.id : 'rec_' + Date.now();
+                
+                // Format dates to BE structure (YYYY-MM-DD where YYYY is BE)
+                const toBE = (dateStr) => {
+                    if (!dateStr) return '';
+                    const parts = dateStr.split('-');
+                    if (parseInt(parts[0]) < 2400) {
+                        return `${parseInt(parts[0]) + 543}-${parts[1]}-${parts[2]}`;
+                    }
+                    return dateStr;
+                };
+
+                const recordData = {
+                    userId: parseInt(formData.userId),
+                    type: formData.type,
+                    startDate: toBE(formData.startDate),
+                    endDate: toBE(formData.endDate),
+                    days: currentDaysCount,
+                    reason: formData.reason || '-',
+                    substitute: formData.substitute || '-',
+                    status: formData.status,
+                    timestamp: editMode ? formData.timestamp : Date.now()
+                };
+
+                // Save locally first
+                let parsedR = [...recordsRef.current];
+                if (editMode) {
+                    parsedR = parsedR.map(r => r.id === recordId ? { ...recordData, id: recordId, synced: false } : r);
+                } else {
+                    parsedR.push({ ...recordData, id: recordId, synced: false });
+                }
+                
+                localStorage.setItem('school_leave_records', JSON.stringify(parsedR));
+                setRecords(parsedR);
+
+                // Push to Google Sheets if online and URL configured
+                if (APPS_SCRIPT_URL && isOnline) {
+                    try {
+                        const res = await callAppsScript("save", "leave_records", { ...recordData, id: recordId });
+                        if (res && res.success) {
+                            const updatedRecords = parsedR.map(r => r.id === recordId ? { ...r, synced: true } : r);
+                            localStorage.setItem('school_leave_records', JSON.stringify(updatedRecords));
+                            setRecords(updatedRecords);
+                            showAlert(editMode ? "แก้ไขประวัติการลาสำเร็จและซิงก์ขึ้น Google Sheets แล้วค่ะ" : "บันทึกใบลาสำเร็จและซิงก์ขึ้น Google Sheets แล้วค่ะ");
+                        } else {
+                            throw new Error(res.error || "Unknown error");
+                        }
+                    } catch (err) {
+                        console.error("Apps Script Save Fail:", err);
+                        showAlert(editMode ? "บันทึกแก้ไขในเครื่องสำเร็จ (จะซิงก์ข้อมูลคลาวด์ทีหลังเมื่อพร้อม)" : "บันทึกสำเร็จลงเครื่อง (จะซิงก์ข้อมูลคลาวด์ทีหลังเมื่อพร้อม)", "warning");
+                    }
+                } else {
+                    showAlert(editMode ? "แก้ไขสำเร็จในโหมดออฟไลน์แล้วค่ะ" : "บันทึกใบลาในโหมดออฟไลน์เรียบร้อยแล้วค่ะ", "warning");
+                }
+
+                // Reset form
+                setFormData({
+                    id: '',
+                    userId: '',
+                    type: 'ลากิจ',
+                    startDate: '',
+                    endDate: '',
+                    reason: '',
+                    substitute: '',
+                    status: 'approved'
+                });
+                setEditMode(false);
+                setIsSubmitting(false);
+                setActiveTab('history');
+            };
+
+            // Set Form for Edit
+            const startEditRecord = (rec) => {
+                const toCE = (dateStr) => {
+                    if (!dateStr) return '';
+                    const parts = dateStr.split('-');
+                    if (parseInt(parts[0]) > 2400) {
+                        return `${parseInt(parts[0]) - 543}-${parts[1]}-${parts[2]}`;
+                    }
+                    return dateStr;
+                };
+
+                setFormData({
+                    id: rec.id,
+                    userId: rec.userId,
+                    type: rec.type,
+                    startDate: toCE(rec.startDate),
+                    endDate: toCE(rec.endDate),
+                    reason: rec.reason,
+                    substitute: rec.substitute,
+                    status: rec.status,
+                    timestamp: rec.timestamp
+                });
+                setEditMode(true);
+                setActiveTab('request');
+            };
+
+            // Trigger Delete Confirm Modal
+            const confirmDelete = (type, id) => {
+                setDeleteTarget({ type, id });
+            };
+
+            // Execute Delete
+            const executeDelete = async () => {
+                if (!deleteTarget) return;
+
+                const { type, id } = deleteTarget;
+
+                if (type === 'record') {
+                    const updatedR = recordsRef.current.filter(r => r.id !== id);
+                    setRecords(updatedR);
+                    localStorage.setItem('school_leave_records', JSON.stringify(updatedR));
+
+                    if (APPS_SCRIPT_URL && isOnline) {
+                        try {
+                            const res = await callAppsScript("delete", "leave_records", id);
+                            if (res && res.success) {
+                                showAlert("ลบประวัติการลาออกจาก Google Sheets เรียบร้อยแล้วค่ะ");
+                            } else {
+                                throw new Error(res.error || "Unknown error");
+                            }
+                        } catch (err) {
+                            console.error("Apps Script Delete Fail:", err);
+                            showAlert("ลบรายการในเครื่องเรียบร้อยแล้ว (การลบในคลาวด์ไม่สำเร็จ)", "warning");
+                        }
+                    } else {
+                        showAlert("ลบข้อมูลสำเร็จในเครื่องแล้วค่ะ (โหมดออฟไลน์)", "warning");
+                    }
+                } else if (type === 'teacher') {
+                    const updatedT = teachersRef.current.filter(t => t.id !== id);
+                    setTeachers(updatedT);
+                    localStorage.setItem('school_leave_teachers', JSON.stringify(updatedT));
+
+                    if (APPS_SCRIPT_URL && isOnline) {
+                        try {
+                            const res = await callAppsScript("delete", "teachers", id);
+                            if (res && res.success) {
+                                showAlert("ลบรายชื่อบุคลากรออกจาก Google Sheets สำเร็จแล้วค่ะ");
+                            } else {
+                                throw new Error(res.error || "Unknown error");
+                            }
+                        } catch (err) {
+                            console.error("Apps Script Delete Teacher Fail:", err);
+                            showAlert("ลบรายชื่อในเครื่องสำเร็จแล้วค่ะ (การลบในคลาวด์ไม่สำเร็จ)", "warning");
+                        }
+                    } else {
+                        showAlert("ลบรายชื่อในเครื่องสำเร็จ (โหมดออฟไลน์)", "warning");
+                    }
+                }
+
+                setDeleteTarget(null);
+            };
+
+            // Submit Teacher Form
+            const handleTeacherSubmit = async (e) => {
+                e.preventDefault();
+                if (!teacherForm.name || !teacherForm.pos) {
+                    showAlert("กรุณากรอกข้อมูลครูให้ครบถ้วนด้วยค่ะ", "error");
+                    return;
+                }
+
+                const nextId = teacherForm.id || (teachersRef.current.length > 0 ? Math.max(...teachersRef.current.map(t => t.id)) + 1 : 1);
+                const teacherData = {
+                    id: parseInt(nextId),
+                    name: teacherForm.name,
+                    pos: teacherForm.pos,
+                    role: 'user'
+                };
+
+                let updatedT = [...teachersRef.current];
+                if (teacherForm.id) {
+                    updatedT = updatedT.map(t => t.id === teacherForm.id ? { ...teacherData, synced: false } : t);
+                } else {
+                    updatedT.push({ ...teacherData, synced: false });
+                }
+
+                setTeachers(updatedT);
+                localStorage.setItem('school_leave_teachers', JSON.stringify(updatedT));
+
+                if (APPS_SCRIPT_URL && isOnline) {
+                    try {
+                        const res = await callAppsScript("save", "teachers", teacherData);
+                        if (res && res.success) {
+                            const updated = updatedT.map(t => t.id === nextId ? { ...t, synced: true } : t);
+                            setTeachers(updated);
+                            localStorage.setItem('school_leave_teachers', JSON.stringify(updated));
+                            showAlert(teacherForm.id ? "แก้ไขข้อมูลครูสำเร็จและซิงก์ขึ้น Google Sheets แล้วค่ะ" : "เพิ่มรายชื่อครูใหม่สำเร็จและซิงก์ขึ้น Google Sheets แล้วค่ะ");
+                        } else {
+                            throw new Error(res.error || "Unknown error");
+                        }
+                    } catch (err) {
+                        console.error("Apps Script Save Teacher Fail:", err);
+                        showAlert("บันทึกข้อมูลครูลงเครื่องสำเร็จแล้วค่ะ (จะซิงก์คลาวด์ทีหลังเมื่อพร้อม)", "warning");
+                    }
+                } else {
+                    showAlert("บันทึกข้อมูลครูสำเร็จ (โหมดออฟไลน์)", "warning");
+                }
+
+                setTeacherForm({ id: '', name: '', pos: '' });
+                setShowTeacherModal(false);
+            };
+
+            // Format date for Thai layout (DD/MM/BE)
             const formatDateBE = (dateStr) => {
-                if (!dateStr) return '';
+                if (!dateStr) return '-';
                 const parts = dateStr.split('-');
                 if (parts.length !== 3) return dateStr;
                 const year = parseInt(parts[0]);
@@ -188,294 +811,774 @@
                 return `${parts[2]}/${parts[1]}/${yearBE}`;
             };
 
-            const handleLoginSubmit = (e) => {
-                e.preventDefault();
-                const isMasterPass = passwordInput === '0814' && selectedTeacher.isSecretary;
-                if (isMasterPass || passwordInput === '1234') {
-                    setIsAuthorizedMaster(isMasterPass);
-                    setCurrentPage('app');
-                    setShowLoginModal(false);
-                    setActiveTab(isMasterPass ? 'summary' : (selectedTeacher.role === 'admin' ? 'admin' : 'dashboard'));
-                    setPasswordInput('');
-                } else { alert("รหัสผ่านไม่ถูกต้อง"); }
+            // Export to Excel using SheetJS with current parameters
+            const handleExportExcel = () => {
+                const activeRecords = filteredRecords;
+                const activeSummary = globalSummary;
+
+                if (activeRecords.length === 0) {
+                    showAlert("ไม่มีข้อมูลการลาให้ส่งออกรายงานค่ะ", "error");
+                    return;
+                }
+
+                // 1. Prepare Data for Sheet 1: รายการขอลาทั้งหมด
+                const rawSheetData = activeRecords.map((r, index) => {
+                    const teacher = teachers.find(t => t.id === r.userId);
+                    return {
+                        'ลำดับ': index + 1,
+                        'ชื่อ-นามสกุล': teacher ? teacher.name : `ไม่ระบุชื่อ (ID: ${r.userId})`,
+                        'ตำแหน่ง': teacher ? teacher.pos : 'ไม่ระบุตำแหน่ง',
+                        'ประเภทการลา': r.type,
+                        'วันที่เริ่ม': formatDateBE(r.startDate),
+                        'วันที่สิ้นสุด': formatDateBE(r.endDate),
+                        'จำนวนวันลา': r.days,
+                        'เหตุผลความจำเป็น': r.reason,
+                        'ผู้ปฏิบัติหน้าที่แทน': r.substitute,
+                        'สถานะ': r.status === 'approved' ? 'อนุมัติแล้ว' : 'รอดำเนินการ'
+                    };
+                });
+
+                // 2. Prepare Data for Sheet 2: สรุปยอดสะสมรายบุคคล
+                const summarySheetData = activeSummary.map((t, index) => {
+                    return {
+                        'ลำดับ': index + 1,
+                        'ชื่อ-นามสกุล': t.name,
+                        'ตำแหน่ง': t.pos,
+                        'ลาป่วย (วัน)': t.sick.days,
+                        'ลาป่วย (ครั้ง)': t.sick.times,
+                        'ลากิจ (วัน)': t.personal.days,
+                        'ลากิจ (ครั้ง)': t.personal.times,
+                        'ลาบวช/ลาอื่นๆ (วัน)': t.others.days,
+                        'ลาบวช/ลาอื่นๆ (ครั้ง)': t.others.times,
+                        'รวมวันลาทั้งหมด': t.total.days,
+                        'รวมจำนวนครั้งที่ลา': t.total.times
+                    };
+                });
+
+                // Add Sum totals at the end of summary sheet
+                const totalSickDays = activeSummary.reduce((sum, t) => sum + t.sick.days, 0);
+                const totalSickTimes = activeSummary.reduce((sum, t) => sum + t.sick.times, 0);
+                const totalPersonalDays = activeSummary.reduce((sum, t) => sum + t.personal.days, 0);
+                const totalPersonalTimes = activeSummary.reduce((sum, t) => sum + t.personal.times, 0);
+                const totalOtherDays = activeSummary.reduce((sum, t) => sum + t.others.days, 0);
+                const totalOtherTimes = activeSummary.reduce((sum, t) => sum + t.others.times, 0);
+                const totalAllDays = activeSummary.reduce((sum, t) => sum + t.total.days, 0);
+                const totalAllTimes = activeSummary.reduce((sum, t) => sum + t.total.times, 0);
+
+                summarySheetData.push({
+                    'ลำดับ': '',
+                    'ชื่อ-นามสกุล': 'ยอดรวมทั้งสิ้น',
+                    'ตำแหน่ง': '',
+                    'ลาป่วย (วัน)': totalSickDays,
+                    'ลาป่วย (ครั้ง)': totalSickTimes,
+                    'ลากิจ (วัน)': totalPersonalDays,
+                    'ลากิจ (ครั้ง)': totalPersonalTimes,
+                    'ลาบวช/ลาอื่นๆ (วัน)': totalOtherDays,
+                    'ลาบวช/ลาอื่นๆ (ครั้ง)': totalOtherTimes,
+                    'รวมวันลาทั้งหมด': totalAllDays,
+                    'รวมจำนวนครั้งที่ลา': totalAllTimes
+                });
+
+                const wb = XLSX.utils.book_new();
+                
+                // Create sheet 1
+                const wsRaw = XLSX.utils.json_to_sheet(rawSheetData);
+                const wscolsRaw = [
+                    {wch: 6},  // ลำดับ
+                    {wch: 25}, // ชื่อ-นามสกุล
+                    {wch: 18}, // ตำแหน่ง
+                    {wch: 12}, // ประเภทการลา
+                    {wch: 12}, // วันที่เริ่ม
+                    {wch: 12}, // วันที่สิ้นสุด
+                    {wch: 12}, // จำนวนวันลา
+                    {wch: 25}, // เหตุผลความจำเป็น
+                    {wch: 25}, // ผู้ปฏิบัติหน้าที่แทน
+                    {wch: 12}  // สถานะ
+                ];
+                wsRaw['!cols'] = wscolsRaw;
+                XLSX.utils.book_append_sheet(wb, wsRaw, `ประวัติการลาปี ${filterYear}`);
+
+                // Create sheet 2
+                const wsSum = XLSX.utils.json_to_sheet(summarySheetData);
+                const wscolsSum = [
+                    {wch: 6},  // ลำดับ
+                    {wch: 25}, // ชื่อ-นามสกุล
+                    {wch: 18}, // ตำแหน่ง
+                    {wch: 14}, // ลาป่วยวัน
+                    {wch: 14}, // ลาป่วยครั้ง
+                    {wch: 14}, // ลากิจวัน
+                    {wch: 14}, // ลากิจครั้ง
+                    {wch: 20}, // ลาอื่นๆวัน
+                    {wch: 20}, // ลาอื่นๆครั้ง
+                    {wch: 18}, // รวมวัน
+                    {wch: 18}  // รวมครั้ง
+                ];
+                wsSum['!cols'] = wscolsSum;
+                XLSX.utils.book_append_sheet(wb, wsSum, "สรุปยอดสะสมเสนอเซ็น");
+
+                // Generate filename: ข้อมูลการลา_ปี_2569.xlsx
+                const filename = `รายงานการลาครู_หนองใส_${filterYear || '2569'}.xlsx`;
+                XLSX.writeFile(wb, filename);
+                showAlert("ดาวน์โหลดรายงาน Excel สำเร็จแล้วค่ะ");
             };
 
-            const handleSubmitRequest = async (e) => {
-                e.preventDefault();
-                setIsSubmitting(true);
-                const cv = (val) => {
-                    const p = val.split('-');
-                    return `${parseInt(p[0]) + 543}-${p[1]}-${p[2]}`;
-                };
+            // Filtered records based on query filters
+            const filteredRecords = useMemo(() => {
+                return records.filter(r => {
+                    const teacher = teachers.find(t => t.id === r.userId);
+                    const teacherName = teacher ? teacher.name : '';
+                    
+                    const matchTeacher = filterTeacher === '' || teacherName.includes(filterTeacher);
+                    const matchType = filterType === 'all' || r.type === filterType;
+                    const matchYear = filterYear === 'all' || (r.startDate && r.startDate.startsWith(filterYear));
+                    
+                    return matchTeacher && matchType && matchYear;
+                }).sort((a, b) => b.timestamp - a.timestamp);
+            }, [records, teachers, filterTeacher, filterType, filterYear]);
 
-                const newReq = {
-                    userId: selectedTeacher.id,
-                    ...formData,
-                    startDate: cv(formData.startDate),
-                    endDate: cv(formData.endDate),
-                    status: 'pending',
-                    timestamp: Date.now()
-                };
+            // Summary calculations for Sheet 2 / Tab 4
+            const globalSummary = useMemo(() => {
+                return teachers.map(t => {
+                    const approvedR = records.filter(r => r.userId === t.id && r.status === 'approved' && (filterYear === 'all' || (r.startDate && r.startDate.startsWith(filterYear))));
+                    
+                    const calcType = (type) => {
+                        const typeRecords = approvedR.filter(r => r.type === type);
+                        const days = typeRecords.reduce((sum, item) => sum + item.days, 0);
+                        return { days, times: typeRecords.length };
+                    };
 
-                try {
-                    await db.collection('artifacts').doc(appId).collection('public_data').add(newReq);
-                    setIsSuccessModalOpen(true);
-                    setActiveTab('history');
-                    setFormData({ type: 'ลากิจ', startDate: '', endDate: '', reason: '', substitute: '' });
-                } catch (err) { alert("Error: " + err.message); }
-                finally { setIsSubmitting(false); }
-            };
+                    const sick = calcType('ลาป่วย');
+                    const personal = calcType('ลากิจ');
+                    
+                    const otherRecords = approvedR.filter(r => r.type !== 'ลาป่วย' && r.type !== 'ลากิจ');
+                    const otherDays = otherRecords.reduce((sum, item) => sum + item.days, 0);
+                    const otherTimes = otherRecords.length;
 
-            const handleApprove = async (id, status) => {
-                await db.collection('artifacts').doc(appId).collection('public_data').doc(id).update({ status });
-            };
+                    return {
+                        ...t,
+                        sick,
+                        personal,
+                        others: { days: otherDays, times: otherTimes },
+                        total: {
+                            days: sick.days + personal.days + otherDays,
+                            times: sick.times + personal.times + otherTimes
+                        }
+                    };
+                }).sort((a, b) => a.id - b.id);
+            }, [records, teachers, filterYear]);
 
-            const handleDelete = async (id) => {
-                await db.collection('artifacts').doc(appId).collection('public_data').doc(id).delete();
-                setRequestToDelete(null);
-            };
+            // Get target item details for delete confirmation modal (DeepSeek suggestion)
+            const targetRecord = useMemo(() => {
+                if (deleteTarget && deleteTarget.type === 'record') {
+                    return records.find(r => r.id === deleteTarget.id);
+                }
+                return null;
+            }, [deleteTarget, records]);
 
-            const handleResetAllData = async () => {
-                setIsSubmitting(true);
-                try {
-                    const batch = db.batch();
-                    const snaps = await db.collection('artifacts').doc(appId).collection('public_data').get();
-                    snaps.forEach(doc => batch.delete(doc.ref));
-                    await batch.commit();
-                    setShowResetModal(false);
-                    alert("ล้างข้อมูลทั้งระบบเรียบร้อยแล้ว");
-                } catch (err) { alert("ล้มเหลว: " + err.message); }
-                finally { setIsSubmitting(false); }
-            };
-
-            const changeTabMobile = (tab) => {
-                setActiveTab(tab);
-                setIsMobileMenuOpen(false);
-            };
-
-            if (currentPage === 'selection') {
-                return (
-                    <div className="min-h-screen bg-slate-300 p-4 md:p-12 flex flex-col items-center">
-                        {showLoginModal && (
-                            <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-                                <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md p-10 animate-fade-in border-4 border-white text-center">
-                                    <Icon name="lock" size={48} className="text-blue-600 mb-4 mx-auto" />
-                                    <h3 className="text-2xl font-black text-slate-800 tracking-tight italic uppercase">ยืนยันตัวตน</h3>
-                                    <p className="text-blue-600 font-bold mb-8 uppercase text-xs tracking-widest">{selectedTeacher?.name}</p>
-                                    <form onSubmit={handleLoginSubmit} className="space-y-6">
-                                        <input autoFocus type="password" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} placeholder="ป้อนรหัสผ่าน" className="w-full p-4 bg-slate-50 border-2 rounded-2xl text-center text-3xl font-black tracking-widest outline-none focus:ring-4 focus:ring-blue-100" />
-                                        <div className="flex gap-4">
-                                            <button type="button" onClick={() => setShowLoginModal(false)} className="flex-1 py-4 text-slate-500 font-bold hover:bg-slate-100 rounded-xl transition-all">ยกเลิก</button>
-                                            <button type="submit" className="flex-1 bg-blue-700 text-white py-4 rounded-2xl font-black shadow-lg hover:bg-blue-800 transition-all">ตกลง</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        )}
-                        <div className="max-w-7xl w-full text-center">
-                            <div className="mb-12 inline-block px-10 py-6 bg-white/95 rounded-[2.5rem] border-2 border-slate-400 shadow-2xl animate-fade-in">
-                                <h1 className="text-3xl md:text-4xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">ระบบจัดการการลา โรงเรียนหนองใสพรเจริญวิทยา</h1>
-                                <p className="text-blue-700 font-bold uppercase tracking-widest text-[10px] mt-2 italic font-black">Leave Online Cloud (พ.ศ. {currentYearBE})</p>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 font-black mb-10">
-                                {teachersList.map(t => (
-                                    <div key={t.id} onClick={() => { setSelectedTeacher(t); setShowLoginModal(true); }} className={`teacher-card p-6 rounded-[1.5rem] shadow-xl text-left flex flex-col justify-between h-auto min-h-[9rem] group ${t.role === 'admin' ? 'border-blue-500' : ''}`}>
-                                        <div>
-                                            <h3 className="font-extrabold text-slate-900 text-xl leading-tight mb-2 break-words">{t.name}</h3>
-                                            <span className={`inline-block px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${t.role === 'admin' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}`}>{t.pos}</span>
-                                        </div>
-                                        <div className="flex justify-end items-center mt-4"><Icon name="chevron-right" className="text-slate-300 group-hover:text-blue-600 transition-colors" /></div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
+            const targetTeacher = useMemo(() => {
+                if (deleteTarget) {
+                    if (deleteTarget.type === 'teacher') {
+                        return teachers.find(t => t.id === deleteTarget.id);
+                    } else if (deleteTarget.type === 'record' && targetRecord) {
+                        return teachers.find(t => t.id === targetRecord.userId);
+                    }
+                }
+                return null;
+            }, [deleteTarget, targetRecord, teachers]);
 
             return (
-                <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row antialiased font-black relative overflow-x-hidden">
-                    {/* Modals */}
-                    {isSuccessModalOpen && (
-                        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-                            <div className="bg-white rounded-[2.5rem] p-10 shadow-2xl max-w-sm w-full text-center border-4 border-green-50 animate-fade-in font-black">
-                                <Icon name="check-circle" size={56} className="text-green-600 mb-6 mx-auto" />
-                                <h3 className="text-3xl font-black text-slate-800 mb-2 italic text-center">ส่งใบลาสำเร็จ!</h3>
-                                <p className="text-slate-500 font-bold mb-8 italic text-sm text-center">ข้อมูลถูกบันทึกขึ้นคลาวด์แล้ว ข้อมูลจะไม่หายเมื่อรีเฟรชหน้าจอ</p>
-                                <button onClick={() => setIsSuccessModalOpen(false)} className="w-full bg-green-600 text-white py-4 rounded-2xl font-black shadow-lg hover:bg-green-700 transition-all">ตกลง</button>
-                            </div>
-                        </div>
-                    )}
+                <div className="min-h-screen md:h-screen md:overflow-hidden flex flex-col md:flex-row bg-slate-100">
                     
-                    {showResetModal && (
-                        <div className="fixed inset-0 bg-red-900/80 backdrop-blur-lg z-[300] flex items-center justify-center p-4">
-                            <div className="bg-white rounded-[2.5rem] p-10 shadow-2xl max-w-md w-full text-center border-4 border-red-100 animate-fade-in font-black">
-                                <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><Icon name="trash-2" size={48} /></div>
-                                <h3 className="text-3xl font-black text-slate-800 mb-2 italic uppercase">ล้างข้อมูลยกเทอม?</h3>
-                                <p className="text-slate-600 font-bold mb-8 text-sm leading-relaxed">คำเตือน: ข้อมูลการลาทั้งหมดของบุคลากรทุกคนจะถูกลบทิ้งถาวรจาก Google Cloud เพื่อเริ่มเก็บข้อมูลเทอมใหม่ ไม่สามารถกู้คืนได้</p>
-                                <div className="flex flex-col gap-4">
-                                    <button disabled={isSubmitting} onClick={handleResetAllData} className="w-full bg-red-600 text-white py-5 rounded-2xl font-black shadow-xl hover:bg-red-700 transition-all flex items-center justify-center gap-3">
-                                        {isSubmitting ? <Icon name="loader" className="animate-spin" /> : <Icon name="trash-2" />} ยืนยันลบข้อมูลทั้งหมดถาวร
-                                    </button>
-                                    <button onClick={() => setShowResetModal(false)} className="w-full py-4 text-slate-400 font-black uppercase tracking-widest text-xs">ยกเลิก</button>
-                                </div>
-                            </div>
+                    {/* Floating Alert */}
+                    {alertMsg.text && (
+                        <div className="fixed top-5 right-5 z-[300] bg-slate-900/90 text-white rounded-2xl p-4 shadow-2xl flex items-center gap-3 animate-fade-in border border-slate-700">
+                            <Icon name={alertMsg.type === 'error' ? 'alert-circle' : alertMsg.type === 'warning' ? 'alert-triangle' : 'check-circle'} 
+                                  className={alertMsg.type === 'error' ? 'text-red-500' : alertMsg.type === 'warning' ? 'text-amber-500' : 'text-emerald-500'} />
+                            <span className="font-semibold text-sm">{alertMsg.text}</span>
                         </div>
                     )}
 
-                    {requestToDelete && (
-                        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-                            <div className="bg-white rounded-[2.5rem] p-10 shadow-2xl max-w-sm w-full text-center animate-fade-in border-4 border-red-50">
-                                <Icon name="alert-triangle" size={56} className="text-red-600 mb-6 mx-auto" />
-                                <h3 className="text-2xl font-black text-slate-800 mb-2">ยืนยันการลบ?</h3>
-                                <p className="text-slate-500 mb-8 font-bold text-sm leading-relaxed">คุณต้องการลบรายการนี้ออกจากระบบคลาวด์ถาวรใช่หรือไม่</p>
+                    {/* Delete Confirm Modal */}
+                    {deleteTarget && (
+                        <div className="fixed inset-0 bg-slate-955/70 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+                            <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-slate-100 text-center animate-fade-in">
+                                <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Icon name="trash-2" size={32} />
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900 mb-2">ยืนยันการลบข้อมูล?</h3>
+                                <p className="text-slate-500 text-sm mb-6 leading-relaxed">
+                                    {deleteTarget.type === 'record' 
+                                        ? `คุณต้องการลบประวัติการลาของ ${targetTeacher ? targetTeacher.name : 'ไม่ระบุชื่อ'} (${targetRecord ? `${targetRecord.type} วันที่ ${formatDateBE(targetRecord.startDate)}` : ''}) ใช่หรือไม่? ข้อมูลจะไม่สามารถกู้คืนกลับมาได้ค่ะ`
+                                        : `คุณต้องการลบชื่อของ ${targetTeacher ? targetTeacher.name : ''} (${targetTeacher ? targetTeacher.pos : ''}) ออกจากระบบ? การลบชื่อครูจะส่งผลต่อการกรอกใบลาในอนาคตค่ะ`
+                                    }
+                                </p>
                                 <div className="flex gap-4">
-                                    <button onClick={() => setRequestToDelete(null)} className="flex-1 py-4 bg-slate-100 font-bold rounded-xl">ยกเลิก</button>
-                                    <button onClick={() => handleDelete(requestToDelete)} className="flex-1 py-4 bg-red-600 text-white font-black rounded-xl shadow-lg">ลบข้อมูล</button>
+                                    <button onClick={() => setDeleteTarget(null)} className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold text-sm transition-all">ยกเลิก</button>
+                                    <button onClick={executeDelete} className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-red-200 transition-all">ลบข้อมูล</button>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* Mobile Header */}
-                    <div className="md:hidden bg-blue-900 text-white p-4 flex justify-between items-center sticky top-0 z-40 shadow-md">
-                        <div className="font-black italic text-xl tracking-tighter">SCHOOL LEAVE</div>
-                        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="px-4 py-2 bg-blue-800 rounded-xl text-white flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-transform min-w-[48px] min-h-[48px]">
-                            <Icon name={isMobileMenuOpen ? "x" : "menu"} size={24} />
-                            <span className="font-black text-sm tracking-widest">เมนู</span>
-                        </button>
-                    </div>
-
-                    {/* Mobile Overlay Background */}
-                    <div className={`md:hidden fixed inset-0 bg-slate-900/50 z-30 transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsMobileMenuOpen(false)}></div>
-
-                    {/* Sidebar (Responsive Layout) */}
-                    <aside className={`fixed inset-y-0 left-0 z-40 w-72 bg-white border-r-2 border-slate-200 flex flex-col h-screen transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                        <div className="p-8 font-black text-blue-700 italic text-2xl border-b-2 tracking-tighter italic hidden md:block">SCHOOL CLOUD</div>
-                        <div className="p-6 md:hidden border-b-2 bg-slate-50 flex flex-col justify-center items-center">
-                             <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-2"><Icon name="user" size={32} /></div>
-                             <p className="text-sm font-black text-slate-900 leading-tight text-center">{selectedTeacher?.name}</p>
-                             <p className="text-[10px] text-blue-600 font-bold uppercase mt-1 italic text-center">{selectedTeacher?.pos}</p>
+                    {/* Add/Edit Teacher Modal */}
+                    {showTeacherModal && (
+                        <div className="fixed inset-0 bg-slate-955/70 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+                            <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100 animate-fade-in">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                        <Icon name="user-plus" className="text-blue-600" />
+                                        {teacherForm.id ? "แก้ไขข้อมูลบุคลากร" : "เพิ่มรายชื่อบุคลากรใหม่"}
+                                    </h3>
+                                    <button onClick={() => setShowTeacherModal(false)} className="text-slate-400 hover:text-slate-600">
+                                        <Icon name="x" size={24} />
+                                    </button>
+                                </div>
+                                <form onSubmit={handleTeacherSubmit} className="space-y-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-slate-400 uppercase tracking-wider font-semibold">ชื่อ-นามสกุล</label>
+                                        <input type="text" value={teacherForm.name} onChange={e => setTeacherForm({...teacherForm, name: e.target.value})} placeholder="ป้อนชื่อและนามสกุล" required className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all font-semibold" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-slate-400 uppercase tracking-wider font-semibold">ตำแหน่ง</label>
+                                        <input type="text" value={teacherForm.pos} onChange={e => setTeacherForm({...teacherForm, pos: e.target.value})} placeholder="ตัวอย่างเช่น ครู คศ.3, ครูผู้ช่วย" required className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all font-semibold" />
+                                    </div>
+                                    <button type="submit" className="w-full py-4 bg-blue-700 hover:bg-blue-800 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all">
+                                        {teacherForm.id ? "บันทึกการแก้ไข" : "เพิ่มรายชื่อลงระบบ"}
+                                    </button>
+                                </form>
+                            </div>
                         </div>
-                        <nav className="flex-1 p-4 space-y-2 font-black text-slate-600 overflow-y-auto">
-                            <button onClick={() => changeTabMobile('dashboard')} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all ${activeTab === 'dashboard' ? 'bg-blue-700 text-white shadow-lg' : 'hover:bg-slate-50'}`}><Icon name="layout-dashboard" /> แผงควบคุม</button>
-                            {!isAdmin && <button onClick={() => changeTabMobile('request')} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all ${activeTab === 'request' ? 'bg-blue-700 text-white shadow-lg' : 'hover:bg-slate-50'}`}><Icon name="file-text" /> เขียนใบลา</button>}
-                            <button onClick={() => changeTabMobile('history')} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all ${activeTab === 'history' ? 'bg-blue-700 text-white shadow-lg' : 'hover:bg-slate-50'}`}><Icon name="history" /> ประวัติการลา</button>
-                            {(isAdmin || isMaster) && <button onClick={() => changeTabMobile('admin')} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all ${activeTab === 'admin' ? 'bg-blue-700 text-white shadow-lg' : 'hover:bg-slate-50'}`}><Icon name="user-check" /> พิจารณาอนุมัติ</button>}
-                            {(isAdmin || isMaster) && <button onClick={() => changeTabMobile('summary')} className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all ${activeTab === 'summary' ? 'bg-amber-600 text-white shadow-lg' : 'hover:bg-slate-50'}`}><Icon name="bar-chart-3" /> สรุปการลาครู</button>}
+                    )}
+
+                    {/* Sidebar Navigation */}
+                    <aside className="w-full md:w-72 bg-slate-900 text-white flex flex-col h-auto md:h-screen sticky top-0 z-50">
+                        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+                            <div>
+                                <h1 className="text-xl font-bold tracking-tight text-white italic">SCHOOL LEAVE</h1>
+                                <p className="text-[10px] text-blue-400 tracking-widest font-black uppercase mt-0.5">Leave Online V5 (PWA)</p>
+                            </div>
+                            <span className={`w-3 h-3 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-amber-500'} shadow`}></span>
+                        </div>
+
+                        {/* Sidebar Links - Desktop */}
+                        <nav className="hidden md:flex flex-col flex-1 p-4 space-y-1">
+                            <button onClick={() => setActiveTab('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold ${activeTab === 'dashboard' ? 'bg-blue-800 text-white shadow' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
+                                <Icon name="layout-dashboard" /> แผงควบคุม (Dashboard)
+                            </button>
+                            <button onClick={() => setActiveTab('request')} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold ${activeTab === 'request' ? 'bg-blue-800 text-white shadow' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
+                                <Icon name="file-text" /> {editMode ? "แก้ไขประวัติการลา" : "บันทึกการขอลาใหม่"}
+                            </button>
+                            <button onClick={() => setActiveTab('history')} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold ${activeTab === 'history' ? 'bg-blue-800 text-white shadow' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
+                                <Icon name="history" /> คลังข้อมูลประวัติการลา
+                            </button>
+                            <button onClick={() => setActiveTab('summary')} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold ${activeTab === 'summary' ? 'bg-blue-800 text-white shadow' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
+                                <Icon name="bar-chart-3" /> สรุปยอดลาเสนอเซ็น
+                            </button>
+                            <button onClick={() => setActiveTab('teachers')} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all font-bold ${activeTab === 'teachers' ? 'bg-blue-800 text-white shadow' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
+                                <Icon name="users" /> จัดการรายชื่อบุคลากร
+                            </button>
                         </nav>
-                        <div className="p-6 border-t-2 bg-slate-50/50 text-center font-black hidden md:block">
-                            <p className="text-sm font-black text-slate-900 leading-tight">{selectedTeacher?.name}</p>
-                            <p className="text-[10px] text-blue-600 font-bold uppercase mt-1 italic">{selectedTeacher?.pos} {isMaster && '(MASTER)'}</p>
-                            <button onClick={handleLogoutButton} className="w-full mt-4 py-3 bg-red-50 text-red-600 rounded-2xl font-bold text-xs uppercase shadow-sm">Logout</button>
-                        </div>
-                        <div className="p-4 md:hidden">
-                             <button onClick={handleLogoutButton} className="w-full py-4 bg-red-100 text-red-700 rounded-2xl font-black text-sm uppercase shadow-sm flex items-center justify-center gap-2"><Icon name="log-out" size={18}/> ออกจากระบบ</button>
+
+                        {/* Top Profile / Connection Info - Desktop */}
+                        <div className="hidden md:block p-6 border-t border-slate-800 text-slate-400 text-xs font-semibold">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="w-8 h-8 rounded-full bg-blue-900 text-blue-200 flex items-center justify-center font-bold">P</div>
+                                <div>
+                                    <p className="font-bold text-slate-200 text-sm leading-tight">บอสปอ</p>
+                                    <p className="text-[10px] text-slate-500">ธุรการโรงเรียน (ADMIN)</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 mt-3">
+                                <span className={`w-2 h-2 rounded-full ${APPS_SCRIPT_URL && isOnline ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+                                <span>{APPS_SCRIPT_URL ? (isOnline ? 'ระบบออนไลน์ / ซิงก์ Google Sheets ทำงาน' : 'ระบบออฟไลน์ / บันทึกข้อมูลลงเครื่อง') : 'ใช้โหมดออฟไลน์ / ยังไม่ตั้ง URL ซิงก์'}</span>
+                            </div>
                         </div>
                     </aside>
 
-                    <main className="flex-1 p-4 md:p-10 w-full md:w-auto overflow-x-hidden animate-fade-in font-black flex flex-col min-h-screen">
-                        <header className="mb-8 md:mb-10 flex flex-col md:flex-row justify-between md:items-end border-b pb-6 gap-4">
-                            <div><h2 className="text-3xl md:text-4xl font-black uppercase text-slate-900 italic tracking-tighter leading-none">{activeTab}</h2><p className="text-green-600 font-bold text-[10px] md:text-xs mt-2 uppercase tracking-widest italic">{isOnline ? '● ออนไลน์ (CLOUD ACTIVE)' : '● กำลังเชื่อมต่อ...'}</p></div>
+                    {/* Bottom Navigation - Mobile */}
+                    <nav className="md:hidden fixed bottom-0 inset-x-0 bg-slate-900 border-t border-slate-800 z-50 flex items-center justify-around p-2 text-white text-[9px] font-bold">
+                        <button onClick={() => setActiveTab('dashboard')} className={`flex flex-col items-center gap-1 py-1 px-3 rounded-lg ${activeTab === 'dashboard' ? 'text-blue-400' : 'text-slate-500'}`}>
+                            <Icon name="layout-dashboard" size={20} /> แผงควบคุม
+                        </button>
+                        <button onClick={() => setActiveTab('request')} className={`flex flex-col items-center gap-1 py-1 px-3 rounded-lg ${activeTab === 'request' ? 'text-blue-400' : 'text-slate-500'}`}>
+                            <Icon name="file-text" size={20} /> บันทึกใบลา
+                        </button>
+                        <button onClick={() => setActiveTab('history')} className={`flex flex-col items-center gap-1 py-1 px-3 rounded-lg ${activeTab === 'history' ? 'text-blue-400' : 'text-slate-500'}`}>
+                            <Icon name="history" size={20} /> คลังประวัติ
+                        </button>
+                        <button onClick={() => setActiveTab('summary')} className={`flex flex-col items-center gap-1 py-1 px-3 rounded-lg ${activeTab === 'summary' ? 'text-blue-400' : 'text-slate-500'}`}>
+                            <Icon name="bar-chart-3" size={20} /> สรุปเซ็น
+                        </button>
+                        <button onClick={() => setActiveTab('teachers')} className={`flex flex-col items-center gap-1 py-1 px-3 rounded-lg ${activeTab === 'teachers' ? 'text-blue-400' : 'text-slate-500'}`}>
+                            <Icon name="users" size={20} /> รายชื่อครู
+                        </button>
+                    </nav>
+
+                    {/* Main Content Area */}
+                    <main className="flex-1 p-4 md:p-10 pb-24 md:pb-10 max-w-7xl w-full mx-auto animate-fade-in custom-scrollbar overflow-y-auto md:h-screen">
+                        
+                        {/* Header Section */}
+                        <header className="mb-6 md:mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
+                            <div>
+                                <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight italic uppercase">{activeTab}</h2>
+                                <p className="text-xs text-slate-500 font-semibold mt-1">โรงเรียนหนองใสพรเจริญวิทยา สำนักงานเขตพื้นที่การศึกษาประถมศึกษาสกลนคร เขต ๒</p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                {activeTab === 'summary' && (
+                                    <button onClick={handleExportExcel} className="flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold shadow-lg shadow-emerald-100 transition-all text-sm">
+                                        <Icon name="file-spreadsheet" size={18} /> ส่งออกรายงาน Excel
+                                    </button>
+                                )}
+                                <div className="text-right hidden sm:block">
+                                    <span className="text-xs font-bold text-slate-400 block uppercase">เครือข่าย</span>
+                                    <span className={`text-xs font-black italic ${APPS_SCRIPT_URL && isOnline ? 'text-emerald-600' : 'text-amber-500'}`}>
+                                        {APPS_SCRIPT_URL && isOnline ? '● ONLINE (SHEETS SYNC)' : '● LOCAL STORAGE ONLY'}
+                                    </span>
+                                </div>
+                            </div>
                         </header>
 
-                        {activeTab === 'dashboard' && (
-                            <div className="bg-white rounded-[2.5rem] shadow-xl border-2 border-slate-100 overflow-hidden">
-                                <div className="p-6 md:p-10 border-b-2 font-black text-xl md:text-2xl uppercase italic text-slate-800 flex items-center gap-3"><Icon name="clipboard-list" className="text-blue-600" /> ยอดวันลา พ.ศ. {currentYearBE}</div>
-                                <div className="table-responsive-wrapper"><table className="w-full text-left min-w-[500px]">
-                                    <thead className="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400"><tr><th className="px-6 md:px-10 py-6">ประเภท</th><th className="px-6 md:px-10 py-6 text-center">อนุมัติแล้ว</th><th className="px-6 md:px-10 py-6 text-center">รออนุมัติ</th></tr></thead>
-                                    <tbody className="divide-y-2 font-bold text-slate-700 text-base md:text-lg">
-                                        {[{t:'ลากิจ', s:stats.personal}, {t:'ลาป่วย', s:stats.sick}, {t:'ลาคลอดบุตร', s:stats.maternity}, {t:'ลาช่วยภรรยา', s:stats.paternity}, {t:'ลาอุปสมบท', s:stats.ordination}].map((r, i) => (
-                                            <tr key={i} className="hover:bg-slate-50 transition-colors font-bold"><td className="px-6 md:px-10 py-6 md:py-8 uppercase leading-none">{r.t}</td><td className="px-6 md:px-10 py-6 md:py-8 text-center text-emerald-600 text-2xl md:text-4xl font-black leading-none">{r.s.used}</td><td className="px-6 md:px-10 py-6 md:py-8 text-center text-amber-500 text-2xl md:text-4xl font-black leading-none">{r.s.pending}</td></tr>
-                                        ))}
-                                    </tbody></table></div>
+                        {/* Warning Banner if APPS_SCRIPT_URL is not configured */}
+                        {!APPS_SCRIPT_URL && (
+                            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 text-amber-800 text-sm animate-fade-in shadow-sm">
+                                <Icon name="alert-triangle" className="text-amber-500 shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="font-bold text-sm">⚠️ ยังไม่ได้เชื่อมต่อระบบสำรองคลาวด์ Google Sheets</p>
+                                    <p className="text-xs text-amber-600 mt-1">ข้อมูลจะถูกจัดเก็บในบราวเซอร์ (Local Storage) ของเครื่องนี้เท่านั้น เพื่อให้ปลอดภัยและเรียกดู/พิมพ์รายงานจาก Google Sheets ได้ บอสปอสามารถสร้าง Web App จาก Apps Script นำ URL มากำหนดลงใน `APPS_SCRIPT_URL` ในไฟล์ซอร์สโค้ดค่ะ</p>
+                                </div>
                             </div>
                         )}
 
-                        {activeTab === 'request' && (
-                            <div className="max-w-3xl bg-white rounded-[2.5rem] p-6 md:p-12 shadow-xl border-2 border-slate-100">
-                                <h3 className="text-2xl md:text-3xl font-black mb-8 md:mb-10 uppercase border-b-4 border-blue-100 pb-4 inline-block leading-none italic font-black">เขียนใบลาใหม่</h3>
-                                <form onSubmit={handleSubmitRequest} className="space-y-6 md:space-y-8 font-bold text-slate-700">
-                                    <div className="space-y-2"><label className="text-xs uppercase tracking-widest text-slate-400 font-black">ประเภทการลา</label><select name="type" value={formData.type} onChange={(e)=>setFormData({...formData, type:e.target.value})} className="w-full p-4 md:p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-blue-100 text-base md:text-lg"><option>ลากิจ</option><option>ลาป่วย</option><option>ลาคลอดบุตร</option><option>ลาช่วยภรรยา</option><option>ลาอุปสมบท</option></select></div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                                        <div className="space-y-2"><label className="text-xs uppercase tracking-widest text-red-500 italic font-black">เริ่มวันที่</label><input type="date" value={formData.startDate} required className="w-full p-4 md:p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold" onChange={(e)=>setFormData({...formData, startDate:e.target.value})} /></div>
-                                        <div className="space-y-2"><label className="text-xs uppercase tracking-widest text-red-500 italic font-black">ถึงวันที่</label><input type="date" value={formData.endDate} required className="w-full p-4 md:p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold" onChange={(e)=>setFormData({...formData, endDate:e.target.value})} /></div>
+                        {/* TAB 1: DASHBOARD */}
+                        {activeTab === 'dashboard' && (
+                            <div className="space-y-6 md:space-y-8">
+                                {/* Dashboard Cards */}
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                                    <div className="bg-white p-5 md:p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
+                                        <div>
+                                            <span className="text-slate-400 text-xs font-bold block uppercase tracking-wider">ลาวันนี้</span>
+                                            <span className="text-3xl md:text-4xl font-extrabold text-slate-800 block mt-1">
+                                                {records.filter(r => {
+                                                    const todayStr = toBEYearString(new Date());
+                                                    return r.status === 'approved' && isDateInRange(todayStr, r.startDate, r.endDate);
+                                                }).length}
+                                            </span>
+                                        </div>
+                                        <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center"><Icon name="users" size={24} /></div>
                                     </div>
-                                    <div className="space-y-2"><label className="text-xs uppercase tracking-widest text-slate-400 font-black">ผู้ปฏิบัติหน้าที่แทน</label><input type="text" value={formData.substitute} required placeholder="ระบุชื่อเพื่อนครู" className="w-full p-4 md:p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold transition-all focus:border-blue-500" onChange={(e)=>setFormData({...formData, substitute:e.target.value})} /></div>
-                                    <div className="space-y-2"><label className="text-xs uppercase tracking-widest text-slate-400 font-black">เหตุผลความจำเป็น</label><textarea value={formData.reason} rows="4" required placeholder="ระบุเหตุผลในการขอลาครั้งนี้..." className="w-full p-4 md:p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold outline-none focus:border-blue-500" onChange={(e)=>setFormData({...formData, reason:e.target.value})}></textarea></div>
-                                    <button type="submit" disabled={isSubmitting} className="w-full bg-blue-700 text-white p-5 md:p-6 rounded-[2rem] font-black text-lg md:text-xl shadow-2xl active:scale-95 uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-blue-800 transition-all">
-                                        <Icon name="send" /> {isSubmitting ? 'กำลังส่งข้อมูล...' : 'ยืนยันส่งใบลาออนไลน์'}
-                                    </button>
+                                    <div className="bg-white p-5 md:p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
+                                        <div>
+                                            <span className="text-slate-400 text-xs font-bold block uppercase tracking-wider">รอพิจารณา</span>
+                                            <span className="text-3xl md:text-4xl font-extrabold text-amber-500 block mt-1">
+                                                {records.filter(r => r.status === 'pending').length}
+                                            </span>
+                                        </div>
+                                        <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center"><Icon name="clock" size={24} /></div>
+                                    </div>
+                                    <div className="bg-white p-5 md:p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
+                                        <div>
+                                            <span className="text-slate-400 text-xs font-bold block uppercase tracking-wider">รวมลาป่วยสะสม</span>
+                                            <span className="text-3xl md:text-4xl font-extrabold text-red-500 block mt-1">
+                                                {records.filter(r => r.status === 'approved' && r.type === 'ลาป่วย' && (filterYear === 'all' || r.startDate.startsWith(filterYear))).reduce((sum, r) => sum + r.days, 0)} วัน
+                                            </span>
+                                        </div>
+                                        <div className="w-12 h-12 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center"><Icon name="activity" size={24} /></div>
+                                    </div>
+                                    <div className="bg-white p-5 md:p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
+                                        <div>
+                                            <span className="text-slate-400 text-xs font-bold block uppercase tracking-wider">รวมลากิจสะสม</span>
+                                            <span className="text-3xl md:text-4xl font-extrabold text-emerald-600 block mt-1">
+                                                {records.filter(r => r.status === 'approved' && r.type === 'ลากิจ' && (filterYear === 'all' || r.startDate.startsWith(filterYear))).reduce((sum, r) => sum + r.days, 0)} วัน
+                                            </span>
+                                        </div>
+                                        <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center"><Icon name="file-text" size={24} /></div>
+                                    </div>
+                                </div>
+
+                                {/* Today's Leave Grid */}
+                                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                                    <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                                        <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                                            <Icon name="info" className="text-blue-600" /> บุคลากรที่ลาในวันนี้
+                                        </h3>
+                                        <span className="text-slate-400 text-xs font-bold">ข้อมูลอัปเดตเรียลไทม์</span>
+                                    </div>
+                                    <div className="overflow-x-auto custom-scrollbar">
+                                        <table className="w-full text-left border-collapse min-w-[600px]">
+                                            <thead className="bg-slate-50 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-100">
+                                                <tr>
+                                                    <th className="px-6 py-4">ชื่อ-นามสกุล</th>
+                                                    <th className="px-6 py-4">ตำแหน่ง</th>
+                                                    <th className="px-6 py-4">ประเภทการลา</th>
+                                                    <th className="px-6 py-4">ระยะเวลาที่ลา</th>
+                                                    <th className="px-6 py-4">จำนวน</th>
+                                                    <th className="px-6 py-4">ผู้ปฏิบัติแทน</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100 text-sm text-slate-600 font-semibold">
+                                                {records.filter(r => {
+                                                    const todayStr = toBEYearString(new Date());
+                                                    return r.status === 'approved' && isDateInRange(todayStr, r.startDate, r.endDate);
+                                                }).map(r => {
+                                                    const teacher = teachers.find(t => t.id === r.userId);
+                                                    return (
+                                                        <tr key={r.id} className="hover:bg-slate-50 transition-colors">
+                                                            <td className="px-6 py-4 font-bold text-slate-900">{teacher ? teacher.name : `ไม่ระบุชื่อ (ID: ${r.userId})`}</td>
+                                                            <td className="px-6 py-4">{teacher ? teacher.pos : '-'}</td>
+                                                            <td className="px-6 py-4">
+                                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${r.type === 'ลาป่วย' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>{r.type}</span>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-xs font-bold text-slate-500">{formatDateBE(r.startDate)} — {formatDateBE(r.endDate)}</td>
+                                                            <td className="px-6 py-4 font-black text-slate-900">{r.days} วัน</td>
+                                                            <td className="px-6 py-4">{r.substitute || '-'}</td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                                {records.filter(r => {
+                                                    const todayStr = toBEYearString(new Date());
+                                                    return r.status === 'approved' && isDateInRange(todayStr, r.startDate, r.endDate);
+                                                }).length === 0 && (
+                                                    <tr>
+                                                        <td colSpan="6" className="px-6 py-12 text-center text-slate-400 font-semibold italic opacity-50">
+                                                            🟢 วันนี้ไม่มีบุคลากรลางานในระบบค่ะ
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* TAB 2: RECORD LEAVE FORM */}
+                        {activeTab === 'request' && (
+                            <div className="max-w-3xl bg-white rounded-3xl border border-slate-100 p-6 md:p-8 shadow-sm">
+                                <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2 border-b border-slate-100 pb-4 leading-none italic uppercase">
+                                    <Icon name="file-text" className="text-blue-600" />
+                                    {editMode ? "แก้ไขรายการประวัติการลา" : "เขียนและบันทึกใบลาใหม่"}
+                                </h3>
+                                <form onSubmit={handleRecordSubmit} className="space-y-6 text-slate-700 font-semibold text-sm">
+                                    
+                                    {/* Teacher Select */}
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-slate-400 uppercase tracking-wider font-semibold">รายชื่อครูผู้ลา</label>
+                                        <select value={formData.userId} required onChange={e => setFormData({...formData, userId: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:bg-white transition-all font-semibold text-slate-700">
+                                            <option value="">-- กรุณาเลือกรายชื่อครู --</option>
+                                            {teachers.map(t => (
+                                                <option key={t.id} value={t.id}>{t.name} ({t.pos})</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Form Fields Grid */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-1">
+                                            <label className="text-xs text-slate-400 uppercase tracking-wider font-semibold">ประเภทการลา</label>
+                                            <select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:bg-white transition-all font-semibold">
+                                                <option>ลากิจ</option>
+                                                <option>ลาป่วย</option>
+                                                <option>ลาคลอดบุตร</option>
+                                                <option>ลาช่วยภรรยาคลอดบุตร</option>
+                                                <option>ลาอุปสมบท</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs text-slate-400 uppercase tracking-wider font-semibold">สถานะการอนุมัติ</label>
+                                            <select value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:bg-white transition-all font-semibold text-slate-700">
+                                                <option value="approved">🟢 อนุมัติแล้ว</option>
+                                                <option value="pending">🟡 รอดำเนินการ</option>
+                                                <option value="rejected">🔴 ไม่อนุมัติ</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* Date Range Picker */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-1">
+                                            <label className="text-xs text-slate-400 uppercase tracking-wider font-semibold">เริ่มวันที่</label>
+                                            <input type="date" value={formData.startDate} required onChange={e => setFormData({...formData, startDate: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all font-semibold" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs text-slate-400 uppercase tracking-wider font-semibold">ถึงวันที่</label>
+                                            <input type="date" value={formData.endDate} required onChange={e => setFormData({...formData, endDate: e.target.value})} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all font-semibold" />
+                                        </div>
+                                    </div>
+
+                                    {/* Calculated Days Count Banner */}
+                                    {currentDaysCount !== 0 && (
+                                        <div className={`border rounded-2xl p-4 text-center ${currentDaysCount === -1 ? 'bg-red-50 border-red-100 text-red-700' : 'bg-blue-50 border-blue-100 text-blue-700'}`}>
+                                            <span className="font-bold block text-base">
+                                                {currentDaysCount === -1 
+                                                    ? "⚠️ วันที่สิ้นสุดต้องอยู่หลังวันที่เริ่มต้นค่ะ" 
+                                                    : `คำนวณวันลาสะสมในใบลา: ${currentDaysCount} วัน`
+                                                }
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {/* Details */}
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-slate-400 uppercase tracking-wider font-semibold">ผู้ปฏิบัติหน้าที่แทน</label>
+                                        <input type="text" value={formData.substitute} onChange={e => setFormData({...formData, substitute: e.target.value})} placeholder="ระบุชื่อเพื่อนครูที่ปฏิบัติหน้าที่สอนแทน (ถ้ามี)" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all font-semibold" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-slate-400 uppercase tracking-wider font-semibold">เหตุผลการลา</label>
+                                        <textarea value={formData.reason} rows="3" onChange={e => setFormData({...formData, reason: e.target.value})} placeholder="ป้อนเหตุผลหรือรายละเอียดเพิ่มเติมในการลาครั้งนี้..." className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all font-semibold"></textarea>
+                                    </div>
+
+                                    {/* Form Buttons */}
+                                    <div className="flex gap-4 pt-4">
+                                        {editMode && (
+                                            <button type="button" onClick={() => {
+                                                setEditMode(false);
+                                                setFormData({ id: '', userId: '', type: 'ลากิจ', startDate: '', endDate: '', reason: '', substitute: '', status: 'approved' });
+                                                setActiveTab('history');
+                                            }} className="flex-1 py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-bold transition-all text-center">
+                                                ยกเลิกการแก้ไข
+                                            </button>
+                                        )}
+                                        <button type="submit" disabled={isSubmitting} className="flex-1 py-4 bg-blue-700 hover:bg-blue-800 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2">
+                                            <Icon name="save" /> {isSubmitting ? 'กำลังบันทึกข้อมูล...' : editMode ? 'บันทึกการแก้ไขประวัติ' : 'บันทึกประวัติการลา'}
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
                         )}
 
+                        {/* TAB 3: LEAVE ARCHIVE HISTORY */}
                         {activeTab === 'history' && (
-                            <div className="bg-white rounded-[2.5rem] border-2 overflow-hidden shadow-xl border-slate-100 font-black">
-                                <div className="table-responsive-wrapper"><table className="w-full text-left min-w-[600px]"><thead className="bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest"><tr><th className="px-6 md:px-10 py-6 text-left">ประเภท</th><th className="px-6 md:px-10 py-6 text-center">ระยะเวลาลา (พ.ศ.)</th><th className="px-6 md:px-10 py-6 text-right">สถานะ</th><th className="px-6 md:px-10 py-6 text-right">ลบ</th></tr></thead><tbody className="divide-y-2 font-bold text-slate-700 text-base md:text-lg">
-                                    {userRequests.map(req => (
-                                        <tr key={req.id} className="hover:bg-slate-50 transition-colors font-bold"><td className="px-6 md:px-10 py-6 md:py-8 uppercase text-sm leading-none">{req.type}</td><td className="px-6 md:px-10 py-6 md:py-8 text-center text-slate-500 italic text-xs md:text-sm leading-none font-bold">{formatDateBE(req.startDate)} — {formatDateBE(req.endDate)}</td><td className="px-6 md:px-10 py-6 md:py-8 text-right leading-none"><span className={`px-4 py-2 rounded-2xl text-[10px] md:text-xs font-black uppercase tracking-widest ${req.status === 'approved' ? 'bg-green-100 text-green-700' : req.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>{req.status === 'approved' ? 'อนุมัติแล้ว' : 'รอดำเนินการ'}</span></td><td className="px-6 md:px-10 py-6 md:py-8 text-right"><button onClick={() => setRequestToDelete(req.id)} className="text-red-400 hover:text-red-600 transition-colors"><Icon name="trash-2" size={20} /></button></td></tr>
-                                    ))}
-                                    {userRequests.length === 0 && <tr><td colSpan="4" className="px-10 py-20 text-center text-slate-400 font-black italic tracking-widest opacity-20 text-xl md:text-2xl leading-none">ไม่พบประวัติการลา</td></tr>}
-                                </tbody></table></div>
-                            </div>
-                        )}
-
-                        {activeTab === 'admin' && (
                             <div className="space-y-6">
-                                <div className="bg-blue-900 rounded-[3.5rem] p-8 md:p-10 text-white shadow-2xl flex justify-between items-center relative overflow-hidden leading-tight font-black">
-                                    <div className="relative z-10 font-black"><h3 className="text-3xl md:text-4xl italic uppercase tracking-tighter font-black">PENDING</h3><p className="font-bold opacity-80 mt-1 uppercase text-[10px] md:text-xs tracking-widest italic text-slate-200">รายการที่รอพิจารณา</p></div>
-                                    <div className="text-right z-10 leading-none"><span className="text-6xl md:text-8xl text-yellow-400 font-black">{requests.filter(r => r.status === 'pending').length}</span></div>
+                                {/* Search and Filter Bar */}
+                                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">ค้นหาชื่อครู</label>
+                                        <input type="text" value={filterTeacher} onChange={e => setFilterTeacher(e.target.value)} placeholder="พิมพ์ชื่อครูเพื่อค้นหา..." className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 font-semibold" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">ประเภทการลา</label>
+                                        <select value={filterType} onChange={e => setFilterType(e.target.value)} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-semibold">
+                                            <option value="all">แสดงทั้งหมด</option>
+                                            <option>ลากิจ</option>
+                                            <option>ลาป่วย</option>
+                                            <option>ลาคลอดบุตร</option>
+                                            <option>ลาช่วยภรรยาคลอดบุตร</option>
+                                            <option>ลาอุปสมบท</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs text-slate-400 font-bold uppercase tracking-wider">ปีการศึกษา (พ.ศ.)</label>
+                                        <select value={filterYear} onChange={e => setFilterYear(e.target.value)} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-semibold">
+                                            <option value="all">แสดงทุกปี</option>
+                                            <option value="2569">พ.ศ. 2569</option>
+                                            <option value="2568">พ.ศ. 2568</option>
+                                            <option value="2567">พ.ศ. 2567</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div className="space-y-4">
-                                    {requests.filter(r => r.status === 'pending').map(req => {
-                                        const t = teachersList.find(x => x.id === req.userId);
-                                        return (
-                                            <div key={req.id} className="bg-white p-6 md:p-10 rounded-[2.5rem] border-2 shadow-xl flex flex-col lg:flex-row lg:items-center justify-between gap-6 md:gap-8 hover:border-blue-400 group border-slate-100 transition-all font-black">
-                                                <div className="flex-1">
-                                                    <h4 className="font-black text-xl md:text-2xl text-slate-900 flex flex-wrap items-center gap-2 leading-tight">{t?.name} <span className="text-[10px] md:text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full uppercase ml-0 md:ml-2">{t?.pos}</span></h4>
-                                                    <div className="mt-2 text-blue-600 font-black text-xs md:text-sm uppercase tracking-widest flex flex-wrap gap-4 italic font-bold"><span>{req.type}</span><span>{formatDateBE(req.startDate)} - {formatDateBE(req.endDate)}</span></div>
-                                                    <div className="bg-slate-50 p-6 md:p-8 rounded-[2rem] border-l-[8px] md:border-l-[12px] border-blue-600 mt-6 italic font-bold text-slate-600 text-lg md:text-xl leading-relaxed shadow-inner">"{req.reason}"</div>
-                                                    <p className="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] italic flex items-center gap-2 underline decoration-blue-100 decoration-4 leading-none">ผู้ปฏิบัติแทน: {req.substitute || '-'}</p>
-                                                </div>
-                                                <div className="flex flex-row lg:flex-col gap-3 md:gap-4 w-full lg:w-auto">
-                                                    <button onClick={() => handleApprove(req.id, 'rejected')} className="flex-1 px-6 md:px-8 py-4 md:py-5 border-2 border-red-100 text-red-600 font-black rounded-2xl uppercase text-[10px] md:text-xs tracking-widest hover:bg-red-50 transition-all">Reject</button>
-                                                    <button onClick={() => handleApprove(req.id, 'approved')} className="flex-1 px-8 md:px-14 py-4 md:py-5 bg-emerald-600 text-white font-black rounded-2xl uppercase text-[10px] md:text-xs tracking-widest shadow-xl hover:bg-emerald-700 active:scale-95 transition-all">Approve</button>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                    {requests.filter(r => r.status === 'pending').length === 0 && <div className="text-center py-20 text-slate-400 font-black uppercase italic opacity-30 text-xl md:text-2xl tracking-widest">No Pending Items</div>}
+
+                                {/* Records Table */}
+                                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                                    <div className="overflow-x-auto custom-scrollbar">
+                                        <table className="w-full text-left border-collapse min-w-[900px]">
+                                            <thead className="bg-slate-50 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-100">
+                                                <tr>
+                                                    <th className="px-6 py-4">ชื่อ-นามสกุล</th>
+                                                    <th className="px-6 py-4">ประเภท</th>
+                                                    <th className="px-6 py-4">ระยะเวลาลา</th>
+                                                    <th className="px-6 py-4 text-center">จำนวนวัน</th>
+                                                    <th className="px-6 py-4">สาเหตุการลา</th>
+                                                    <th className="px-6 py-4">ผู้ปฏิบัติแทน</th>
+                                                    <th className="px-6 py-4 text-right">สถานะ</th>
+                                                    <th className="px-6 py-4 text-center">จัดการ</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100 text-sm text-slate-600 font-semibold">
+                                                {filteredRecords.map(r => {
+                                                    const teacher = teachers.find(t => t.id === r.userId);
+                                                    return (
+                                                        <tr key={r.id} className="hover:bg-slate-50 transition-colors">
+                                                            <td className="px-6 py-4 font-bold text-slate-900 leading-tight">
+                                                                {teacher ? teacher.name : `ไม่ระบุชื่อ (ID: ${r.userId})`}
+                                                                <span className="block text-[10px] text-slate-400 font-semibold mt-0.5">{teacher ? teacher.pos : ''}</span>
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${r.type === 'ลาป่วย' ? 'bg-red-50 text-red-600' : r.type === 'ลากิจ' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-600'}`}>{r.type}</span>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-xs font-bold text-slate-500">{formatDateBE(r.startDate)} — {formatDateBE(r.endDate)}</td>
+                                                            <td className="px-6 py-4 text-center font-extrabold text-slate-900">{r.days} วัน</td>
+                                                            <td className="px-6 py-4 truncate max-w-[150px]" title={r.reason}>{r.reason}</td>
+                                                            <td className="px-6 py-4">{r.substitute}</td>
+                                                            <td className="px-6 py-4 text-right">
+                                                                <span className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap inline-block ${r.status === 'approved' ? 'bg-emerald-50 text-emerald-500' : r.status === 'pending' ? 'bg-amber-50 text-amber-500' : 'bg-red-50 text-red-500'}`}>
+                                                                    {r.status === 'approved' ? 'อนุมัติแล้ว' : r.status === 'pending' ? 'รอดำเนินการ' : 'ปฏิเสธ'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-center">
+                                                                <div className="flex items-center justify-center gap-2">
+                                                                    <button onClick={() => startEditRecord(r)} className="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition-all flex items-center justify-center min-w-[32px] min-h-[32px]" title="แก้ไข">
+                                                                        <Icon name="pencil" size={16} />
+                                                                    </button>
+                                                                    <button onClick={() => confirmDelete('record', r.id)} className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-all flex items-center justify-center min-w-[32px] min-h-[32px]" title="ลบ">
+                                                                        <Icon name="trash-2" size={16} />
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                                {filteredRecords.length === 0 && (
+                                                    <tr>
+                                                        <td colSpan="8" className="px-6 py-20 text-center text-slate-400 font-semibold italic opacity-50 text-base">
+                                                            📂 ไม่พบประวัติการลาครูตามตัวกรองปัจจุบันค่ะ
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
+                        {/* TAB 4: SUMMARY & EXPORT */}
                         {activeTab === 'summary' && (
-                            <div className="space-y-6 animate-fade-in font-black">
-                                <div className="bg-amber-600 rounded-[3rem] p-8 md:p-10 text-white shadow-xl flex justify-between items-center relative overflow-hidden">
-                                    <div className="relative z-10"><h3 className="text-3xl md:text-4xl italic uppercase tracking-tighter font-black">LEAVE SUMMARY</h3><p className="font-bold opacity-90 mt-1 uppercase text-[10px] md:text-xs tracking-widest italic">สรุปยอดวันลา: วัน (ครั้ง)</p></div>
-                                    <Icon name="bar-chart-3" size={80} className="absolute right-10 opacity-10" />
+                            <div className="space-y-6">
+                                {/* Filter Bar for Summary */}
+                                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <label className="text-sm font-bold text-slate-500">ปีการศึกษาสำหรับการออกรายงาน:</label>
+                                        <select value={filterYear} onChange={e => setFilterYear(e.target.value)} className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-semibold text-sm">
+                                            <option value="2569">พ.ศ. 2569</option>
+                                            <option value="2568">พ.ศ. 2568</option>
+                                            <option value="2567">พ.ศ. 2567</option>
+                                        </select>
+                                    </div>
+                                    <span className="text-xs text-slate-400 font-semibold italic">สรุปนี้รวมเฉพาะรายที่มีสถานะ "อนุมัติแล้ว" เท่านั้นค่ะ</span>
                                 </div>
-                                <div className="bg-white rounded-[2.5rem] border-2 border-slate-100 overflow-hidden shadow-sm">
-                                    <div className="table-responsive-wrapper"><table className="w-full text-left min-w-[800px]"><thead className="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400"><tr><th className="px-6 md:px-8 py-6">ชื่อ-นามสกุล</th><th className="px-6 md:px-8 py-6 text-center">ลาป่วย (วัน/ครั้ง)</th><th className="px-6 md:px-8 py-6 text-center">ลากิจ (วัน/ครั้ง)</th><th className="px-6 md:px-8 py-6 text-center">ลาอื่นๆ (วัน/ครั้ง)</th><th className="px-6 md:px-8 py-6 text-center bg-slate-100">รวมทั้งหมด (วัน/ครั้ง)</th><th className="px-6 md:px-8 py-6 text-right">สถานะ</th></tr></thead><tbody className="divide-y divide-slate-100 text-slate-700 text-sm md:text-base font-black">
-                                        {globalSummary.map(t => (
-                                            <tr key={t.id} className="hover:bg-slate-50 transition-colors">
-                                                <td className="px-6 md:px-8 py-6 font-black text-slate-900 leading-tight">{t.name}<p className="text-[10px] text-slate-400 uppercase tracking-widest mt-1">{t.pos}</p></td>
-                                                <td className="px-6 md:px-8 py-6 text-center text-red-600 text-lg md:text-xl font-black">{t.sick.days} <span className="text-[10px] md:text-xs text-slate-400">({t.sick.times})</span></td>
-                                                <td className="px-6 md:px-8 py-6 text-center text-blue-600 text-lg md:text-xl font-black">{t.personal.days} <span className="text-[10px] md:text-xs text-slate-400">({t.personal.times})</span></td>
-                                                <td className="px-6 md:px-8 py-6 text-center text-amber-600 text-lg md:text-xl font-black">{t.others.days} <span className="text-[10px] md:text-xs text-slate-400">({t.others.times})</span></td>
-                                                <td className="px-6 md:px-8 py-6 text-center bg-slate-50 text-slate-900 text-xl md:text-2xl font-black">{t.total.days} <span className="text-[10px] md:text-xs text-slate-400">({t.total.times})</span></td>
-                                                <td className="px-6 md:px-8 py-6 text-right"><span className="text-[10px] bg-green-100 text-green-600 px-3 py-1 rounded-full uppercase font-black">Verified</span></td>
-                                            </tr>
-                                        ))}
-                                    </tbody></table></div>
+
+                                {/* Summary Grid Table */}
+                                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                                    <div className="overflow-x-auto custom-scrollbar">
+                                        <table className="w-full text-left border-collapse min-w-[800px]">
+                                            <thead className="bg-slate-50 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-100">
+                                                <tr>
+                                                    <th className="px-6 py-4">ชื่อ-นามสกุล</th>
+                                                    <th className="px-6 py-4 text-center">ลาป่วย (วัน / ครั้ง)</th>
+                                                    <th className="px-6 py-4 text-center">ลากิจ (วัน / ครั้ง)</th>
+                                                    <th className="px-6 py-4 text-center">ลาอื่นๆ (วัน / ครั้ง)</th>
+                                                    <th className="px-6 py-4 text-center bg-slate-50 font-extrabold text-slate-800">รวมวันลาสะสม (วัน / ครั้ง)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100 text-sm text-slate-600 font-semibold">
+                                                {globalSummary.map(t => (
+                                                    <tr key={t.id} className="hover:bg-slate-50 transition-colors">
+                                                        <td className="px-6 py-4 font-bold text-slate-900 leading-tight">
+                                                            {t.name}
+                                                            <span className="block text-[10px] text-slate-400 font-semibold mt-0.5">{t.pos}</span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-center text-red-600 font-bold">
+                                                            {t.sick.days} <span className="text-xs text-slate-400 font-medium">({t.sick.times})</span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-center text-blue-600 font-bold">
+                                                            {t.personal.days} <span className="text-xs text-slate-400 font-medium">({t.personal.times})</span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-center text-amber-600 font-bold">
+                                                            {t.others.days} <span className="text-xs text-slate-400 font-medium">({t.others.times})</span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-center bg-slate-50 font-black text-slate-950 text-base">
+                                                            {t.total.days} <span className="text-xs text-slate-500 font-semibold">({t.total.times})</span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         )}
-                        
+
+                        {/* TAB 5: TEACHER DIRECTORY */}
+                        {activeTab === 'teachers' && (
+                            <div className="space-y-6">
+                                {/* Add Teacher Banner */}
+                                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between gap-4">
+                                    <div>
+                                        <h3 className="font-bold text-slate-800 text-base">รายชื่อครูและตำแหน่งในโรงเรียน</h3>
+                                        <p className="text-xs text-slate-400 font-semibold mt-0.5">บอสสามารถเพิ่ม แก้ไข หรือลบชื่อบุคลากรที่ย้ายตำแหน่งออกได้จากแท็บนี้ค่ะ</p>
+                                    </div>
+                                    <button onClick={() => { setTeacherForm({ id: '', name: '', pos: '' }); setShowTeacherModal(true); }} className="flex items-center gap-2 px-5 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-2xl font-bold shadow-lg shadow-blue-100 transition-all text-sm">
+                                        <Icon name="user-plus" size={18} /> เพิ่มบุคลากรใหม่
+                                    </button>
+                                </div>
+
+                                {/* Teachers List */}
+                                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                                    <div className="overflow-x-auto custom-scrollbar">
+                                        <table className="w-full text-left border-collapse min-w-[600px]">
+                                            <thead className="bg-slate-50 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-100">
+                                                <tr>
+                                                    <th className="px-6 py-4">ID</th>
+                                                    <th className="px-6 py-4">ชื่อ-นามสกุล</th>
+                                                    <th className="px-6 py-4">ตำแหน่งในโรงเรียน</th>
+                                                    <th className="px-6 py-4 text-right">สิทธิ์เข้าถึง</th>
+                                                    <th className="px-6 py-4 text-center">การจัดการ</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100 text-sm text-slate-600 font-semibold">
+                                                {teachers.map(t => (
+                                                    <tr key={t.id} className="hover:bg-slate-50 transition-colors">
+                                                        <td className="px-6 py-4 font-bold text-slate-400">#{t.id}</td>
+                                                        <td className="px-6 py-4 font-bold text-slate-900">{t.name}</td>
+                                                        <td className="px-6 py-4">{t.pos}</td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <span className={`px-2.5 py-0.5 rounded text-[10px] font-black uppercase ${t.role === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'}`}>
+                                                                {t.role === 'admin' ? 'Admin / ผอ.' : 'Staff / ครู'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-center">
+                                                            <div className="flex items-center justify-center gap-2">
+                                                                <button onClick={() => { setTeacherForm({ id: t.id, name: t.name, pos: t.pos }); setShowTeacherModal(true); }} className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-all flex items-center justify-center min-w-[32px] min-h-[32px]" title="แก้ไข">
+                                                                    <Icon name="pencil" size={16} />
+                                                                </button>
+                                                                <button onClick={() => confirmDelete('teacher', t.id)} className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-all flex items-center justify-center min-w-[32px] min-h-[32px]" title="ลบ">
+                                                                    <Icon name="trash-2" size={16} />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                     </main>
                 </div>
             );
+        };
+
+        // Utility: Convert standard date object to BE YYYY-MM-DD string
+        const toBEYearString = (dateObj) => {
+            const y = dateObj.getFullYear() + 543;
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        };
+
+        // Check if date checkStr lies between startStr and endStr inclusive (all in BE format)
+        const isDateInRange = (checkStr, startStr, endStr) => {
+            if (!checkStr || !startStr || !endStr) return false;
+            try {
+                const check = parseInt(checkStr.replace(/-/g, ''));
+                const start = parseInt(startStr.replace(/-/g, ''));
+                const end = parseInt(endStr.replace(/-/g, ''));
+                return check >= start && check <= end;
+            } catch (e) {
+                return false;
+            }
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
