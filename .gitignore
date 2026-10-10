@@ -8,4 +8,5 @@ dist/
 .wrangler/
 *.log
 previews/
+.local/
 

@@ -13,7 +13,7 @@ Earth palette, totals → quick entry → ledger, cent arithmetic, local persist
 Text/image AI proposals require review and explicit confirmation. Selected-month questions use server-computed totals.
 Provider key is server-only; source env not copied. Production requires a verified allowed Google account and D1 quota.
 Local server binds only loopback; production cannot enable local auth bypass through an environment flag.
-Source reviewed independently. Build completed. No new tests or paid API calls performed.
+Source reviewed independently. Build and synthetic CAS checks passed. Real DeepSeek text/image requests, Brave owner Google login, D1 CRUD/undo and refresh persistence passed. Only synthetic test records were used and removed; live ledger returned to zero.
 
 ## Before production replacement
 
@@ -21,8 +21,8 @@ User decision, 2026-10-10: old financial records are no longer wanted. Omit migr
 
 1. Preserve source at baseline commit and legacy/budget-v1.html for code rollback.
 2. New installations start empty; existing data written in the new draft is retained. The old Firestore schema is not read by the replacement.
-3. Decide and implement cloud sync for new records if required; AI login currently does not sync the ledger.
-4. Configure owner email server-side, Firebase Google provider/domains, D1 quotas, Cloudflare secrets and output directory. GitHub Pages alone cannot run the paid AI server.
-5. Verify API calls, Thai receipts/slips, login/denied accounts, quotas, duplicates, new-data backup restore and mobile layout before promoting the branch.
+3. Cloud sync implemented in D1, owner-scoped, revision CAS, periodic refresh and explicit backup/choice on conflict. Storage deletion pauses sync.
+4. Owner allowlist set from existing authenticated Cloudflare owner; same Google account login verified in Brave. Firebase config reused from the original Budget source, domains extended without removing old domains. D1 quotas and server secrets configured. No provider keys copied into Git.
+5. New host: budget-app-porbboyza.pages.dev. Original GitHub Pages root redirects there; other unrelated pages remain unchanged. Code rollback baseline preserved.
 
-Production replacement is pending the remaining configuration and verification. Old-data migration is no longer a release requirement.
+Production rollout follows the verified preview. Old-data migration is not required. Image verification used synthetic Thai fixtures, not a broad real-receipt corpus. Desktop and narrow-window layouts reviewed; no physical-phone test claimed.

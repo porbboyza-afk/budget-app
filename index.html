@@ -5,13 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f7f3ed">
   <title>Budget — รายรับรายจ่าย</title>
+  <script src="redirect.js"></script>
   <link rel="stylesheet" href="styles.css">
-  <script type="module" src="app.js"></script>
   <script type="module" src="auth.js"></script>
+  <script type="module" src="app.js"></script>
 </head>
 <body>
   <aside class="sidebar">
-    <a class="brand" href="#"><span class="brand-icon">b.</span>budget<span class="draft">DRAFT 02</span></a>
+    <a class="brand" href="#"><span class="brand-icon">b.</span>budget</a>
     <p class="sidebar-caption">จัดการเงินให้สบายขึ้น</p>
     <nav aria-label="เมนูหลัก">
       <a class="nav-item active" href="#transactions"><span>☷</span> รายการเงินเข้า–ออก</a>
@@ -19,7 +20,7 @@
       <a class="nav-item" href="#data-tools"><span>↥</span> สำรองและกู้คืน</a>
     </nav>
     <div class="sidebar-note"><span class="note-dot"></span><strong>เริ่มจากเรื่องง่าย ๆ</strong><p>รับมาเท่าไร จ่ายไปเท่าไร<br>เห็นทุกอย่างในหน้าเดียว</p></div>
-    <div class="sidebar-foot">Budget · ดราฟแรก<br><span>ข้อมูลเก็บในเบราว์เซอร์นี้</span></div>
+    <div class="sidebar-foot">Budget · รายรับรายจ่าย<br><span>สำรองในเครื่อง · ซิงค์เมื่อเข้าสู่ระบบ</span></div>
   </aside>
   <main>
     <header class="page-header">
@@ -58,8 +59,9 @@
         <div class="ledger-foot"><span id="save-status" role="status">● บันทึกในเครื่องนี้</span><button id="clear-filter">ล้างตัวกรอง</button></div>
       </section>
     </div>
+    <section class="data-tools" aria-label="การซิงค์ข้อมูล"><div><h3>ข้อมูลของคุณ</h3><p id="sync-status" role="status">บันทึกในเครื่อง</p></div><div class="tool-actions"><button id="sync-retry" hidden>ซิงค์อีกครั้ง</button><span id="sync-conflict" hidden><button id="sync-use-cloud">ใช้ชุดคลาวด์</button><button id="sync-use-local">ใช้ชุดในเครื่อง</button></span></div></section>
     <section id="data-tools" class="data-tools"><div><h3>ข้อมูลของคุณ อยู่กับคุณ</h3><p>สำรองไว้ได้ และนำกลับมาใช้เมื่อไหร่ก็ได้</p></div><div class="tool-actions"><button id="export-csv">ส่งออก CSV</button><button id="backup">สำรองข้อมูล</button><button id="restore">กู้คืนจากไฟล์</button></div><input id="restore-file" type="file" accept=".json,application/json" hidden></section>
-    <footer>Budget ดราฟแรก · ลองใช้งานและจัดหน้าตาก่อนพัฒนาระบบคลาวด์ <span>เรียบง่ายขึ้น ในทุกวัน</span></footer>
+    <footer>Budget · จดรายรับรายจ่ายให้สบายขึ้น <span>เรียบง่ายขึ้น ในทุกวัน</span></footer>
   </main>
   <div id="toast" class="toast" role="status" hidden><span id="toast-text"></span><button id="undo" hidden>ย้อนกลับ</button><button id="dismiss-toast" aria-label="ปิดข้อความ">×</button></div>
   <dialog id="summary-dialog"><div class="dialog-heading"><h2>สรุปรายเดือน</h2><button id="close-summary" aria-label="ปิดสรุป">×</button></div><p id="summary-period"></p><div id="summary-content"></div><button id="summary-done" class="save-button">กลับไปจดรายการ</button></dialog>

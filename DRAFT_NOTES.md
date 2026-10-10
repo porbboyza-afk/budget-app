@@ -33,6 +33,10 @@ Undo คืนได้เฉพาะการลบล่าสุดระห
 ปรับหน้าตาและตำแหน่งปุ่มจากการใช้งานจริง แล้วทำระบบข้อมูลและซิงค์ที่เชื่อถือได้ ผู้ทำกับผู้ตรวจต้องเป็นคนละ subagent และยืนยันจากการรัน/ภาพจริงตามสิ่งที่รายงาน
 # Draft 02 — Quick entry (2026-10-10)
 
+## Release verification — 2026-10-10
+
+User requested continuing through remaining implementation and deployment. New D1 cloud sync, owner auth and quotas configured; no old data imported. Real text/image AI calls passed (synthetic Thai receipt total115 once, slip350). Brave owner login, cloud CRUD/undo, refresh persistence and selected-month AI answer passed. Test row removed; database returned to empty. Original GitHub Pages entry will redirect to new Pages host. No API token/key in notes or Git.
+
 ## Start fresh — 2026-10-10
 
 User explicitly discarded the need for old financial data: “ข้อมูลเก่าทิ้งเลยไม่มีประโยชน์ละ”. Migration removed from release requirements; new installations now start empty rather than seeded samples. Existing new-draft records retained; no remote data purge performed.

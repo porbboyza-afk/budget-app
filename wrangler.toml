@@ -1,7 +1,17 @@
-name = "budget-app"
+name = "budget-app-porbboyza"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-10-10"
 
 # Add BUDGET_AI_DB as a Cloudflare Pages D1 binding after verifying the project.
 # Store DEEPSEEK_API_KEY and BUDGET_ALLOWED_EMAILS as server secrets.
 # Missing auth/owner/quota configuration disables the paid AI endpoint.
+
+[[d1_databases]]
+binding = "BUDGET_AI_DB"
+database_name = "budget-app-data"
+database_id = "267fea8e-72d9-49c4-a13d-88d526d1e937"
+
+[vars]
+FIREBASE_WEB_API_KEY = "AIzaSyDUliKbJO1YyUNjZdBvkBULaWlEaBzmcAA"
+FIREBASE_PROJECT_ID = "budget1-ed2f4"
+FIREBASE_AUTH_DOMAIN = "budget1-ed2f4.firebaseapp.com"

@@ -19,7 +19,7 @@ function validateImage(image){
   if(!ok)throw new Failure('ชนิดไฟล์ภาพไม่ตรงกับข้อมูล');
   return {type:'image_url',image_url:{url:`data:${image.mimeType};base64,${image.data}`}};
 }
-async function identity(request,env){
+export async function authenticate(request,env){
   if(!env.FIREBASE_WEB_API_KEY||!env.FIREBASE_PROJECT_ID||!env.BUDGET_ALLOWED_EMAILS)throw new Failure('ยังไม่ได้ตั้งบัญชีที่อนุญาตให้ใช้ AI',503);
   const token=request.headers.get('authorization')?.match(/^Bearer ([A-Za-z0-9_.-]{100,10000})$/)?.[1];
   if(!token)throw new Failure('กรุณาเข้าสู่ระบบ Google ก่อนใช้ AI',401);
@@ -68,7 +68,7 @@ export async function handleAI(request,env,{local=false}={}){
   try{
     if(request.method!=='POST')throw new Failure('ไม่รองรับวิธีเรียกนี้',405);
     if(request.headers.get('origin')!==new URL(request.url).origin)throw new Failure('ไม่อนุญาตคำขอจากเว็บอื่น',403);
-    const user=local?'local-owner':await identity(request,env);
+    const user=local?'local-owner':await authenticate(request,env);
     if(!env.DEEPSEEK_API_KEY)throw new Failure('ยังไม่ได้ตั้ง API key ฝั่งเซิร์ฟเวอร์',503);
     const input=await readBody(request);
     if(!['extract','ask'].includes(input.action))throw new Failure('คำสั่งไม่ถูกต้อง');

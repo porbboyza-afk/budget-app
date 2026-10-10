@@ -1,5 +1,10 @@
 import {STORAGE_KEY,localDate,validDate,parseMoney,validateState,totals} from './model.js';
 import {requestAI} from './ai-client.js';
+import './auth.js';
+import {createCloudSync} from './cloud-sync.js';
+await window.budgetAuth.ready;
+let owner=window.budgetAuth.getUser()?.uid||'anonymous';
+let storageKey=STORAGE_KEY+':owner:'+encodeURIComponent(owner),cloudSync=null;
 const $=id=>document.getElementById(id);
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=cents=>new Intl.NumberFormat('th-TH',{minimumFractionDigits:cents%100?2:0,maximumFractionDigits:2}).format(cents/100);
@@ -7,17 +12,17 @@ const thaiDate=date=>new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'short
 const monthName=month=>new Intl.DateTimeFormat('th-TH',{month:'long',year:'numeric'}).format(new Date(month+'-01T12:00:00'));
 let state,storageFault=false,editingId=null,editingOriginal=null,entryType='expense',deleted=null,toastTimer,lastStoredRaw=null;
 const emptyState=()=>({version:1,openingCents:0,demo:false,entries:[]});
-try {lastStoredRaw=localStorage.getItem(STORAGE_KEY);state=lastStoredRaw?validateState(JSON.parse(lastStoredRaw)):emptyState();}
+try {lastStoredRaw=localStorage.getItem(storageKey);state=lastStoredRaw?validateState(JSON.parse(lastStoredRaw)):emptyState();}
 catch {state={version:1,openingCents:0,demo:false,entries:[]};storageFault=true;}
 $('month').value=localDate().slice(0,7);
 function notify(text,undo=false){clearTimeout(toastTimer);$('toast-text').textContent=text;$('undo').hidden=!deleted;$('toast').hidden=false;if(!deleted&&!undo)toastTimer=setTimeout(()=>$('toast').hidden=true,5000);}
 function commit(next){
   if(storageFault)throw new Error('อ่านข้อมูลเดิมไม่สำเร็จ โปรดกู้คืนจากไฟล์สำรองก่อนบันทึก');
-  if(localStorage.getItem(STORAGE_KEY)!==lastStoredRaw)throw new Error('ข้อมูลเปลี่ยนจากแท็บอื่น กรุณาโหลดหน้าใหม่ก่อนบันทึก');
+  if(localStorage.getItem(storageKey)!==lastStoredRaw)throw new Error('ข้อมูลเปลี่ยนจากแท็บอื่น กรุณาโหลดหน้าใหม่ก่อนบันทึก');
   const checked=validateState(next);
   const raw=JSON.stringify(checked);
-  try{localStorage.setItem(STORAGE_KEY,raw);lastStoredRaw=raw;}catch{throw new Error('บันทึกไม่สำเร็จ พื้นที่อาจเต็มหรือเบราว์เซอร์ปิดการเก็บข้อมูล');}
-  state=checked;render();
+  try{localStorage.setItem(storageKey,raw);lastStoredRaw=raw;}catch{throw new Error('บันทึกไม่สำเร็จ พื้นที่อาจเต็มหรือเบราว์เซอร์ปิดการเก็บข้อมูล');}
+  state=checked;render();cloudSync?.changed();
 }
 function setType(type){entryType=type;for(const t of ['income','expense']){$('type-'+t).classList.toggle('selected',t===type);$('type-'+t).setAttribute('aria-pressed',String(t===type));}$('submit-entry').innerHTML=(editingId?'บันทึกการแก้ไข':type==='income'?'บันทึกรายรับ':'บันทึกรายจ่าย')+' <span>↗</span>';}
 function resetForm(){editingId=null;editingOriginal=null;$('entry-form').reset();$('form-heading').textContent='เพิ่มรายการ';$('cancel-edit').hidden=true;$('form-error').textContent='';$('date').value=localDate();setType('expense');}
@@ -32,7 +37,7 @@ function render(){
   $('demo-banner').hidden=!state.demo&&!storageFault;
   if(!storageFault){$('demo-banner').querySelector('strong').textContent='ลองดูภาพด้วยข้อมูลตัวอย่าง';$('demo-banner').querySelector('span').textContent='รายการเหล่านี้เป็นตัวอย่างสำหรับดราฟแรก';}
   if(storageFault){$('demo-banner').querySelector('strong').textContent='อ่านข้อมูลเดิมไม่ได้ — ยังไม่แสดงยอดจริง';$('demo-banner').querySelector('span').textContent='สำรองข้อมูลดิบไว้ก่อน หรือกู้คืนจากไฟล์';$('start-empty').hidden=true;for(const key of ['balance','income','expense'])$(key).textContent='—';}
-  $('save-status').textContent=storageFault?'● อ่านข้อมูลเดิมไม่สำเร็จ':'● '+(state.demo?'ข้อมูลตัวอย่าง · ':'')+'เก็บเฉพาะเครื่องนี้';
+  $('save-status').textContent=storageFault?'● อ่านข้อมูลเดิมไม่สำเร็จ':'● '+(state.demo?'ข้อมูลตัวอย่าง · ':'')+'บันทึกในเครื่องแล้ว';
   const search=$('search').value.trim().toLocaleLowerCase(),type=$('filter-type').value;
   const rows=[...all].reverse().filter(r=>(type==='all'||r.type===type)&&`${r.description} ${r.category}`.toLocaleLowerCase().includes(search)).sort((a,b)=>b.date.localeCompare(a.date));
   $('entry-count').textContent=rows.length+' รายการ';
@@ -104,7 +109,7 @@ $('summary-nav').onclick=()=>{
 $('close-summary').onclick=$('summary-done').onclick=()=>$('summary-dialog').close();
 resetForm();render();if(matchMedia('(pointer: fine)').matches&&!storageFault)$('amount').focus({preventScroll:true});if(storageFault)notify('อ่านข้อมูลเดิมไม่สำเร็จ ยังไม่ได้เขียนทับ โปรดกู้คืนจากไฟล์สำรอง');
 
-window.addEventListener('storage',event=>{if(event.key!==STORAGE_KEY)return;try{const next=event.newValue?validateState(JSON.parse(event.newValue)):emptyState();state=next;lastStoredRaw=event.newValue;storageFault=false;$('start-empty').hidden=false;render();notify('อัปเดตข้อมูลจากแท็บอื่นแล้ว');}catch{storageFault=true;lastStoredRaw=event.newValue;render();notify('ข้อมูลจากแท็บอื่นอ่านไม่ได้ กรุณากู้คืนจากไฟล์');}});
+window.addEventListener('storage',event=>{if(event.key!==storageKey&&event.key!==null)return;if(event.newValue===null){lastStoredRaw=null;cloudSync?.pause();notify('ข้อมูลในเครื่องถูกล้าง ระบบพักซิงค์ไว้ กรุณาเลือกกู้คืนจากคลาวด์หรือโหลดหน้าใหม่');return;}try{const next=validateState(JSON.parse(event.newValue));state=next;lastStoredRaw=event.newValue;storageFault=false;$('start-empty').hidden=false;render();cloudSync?.changed();notify('อัปเดตข้อมูลจากแท็บอื่นแล้ว');}catch{storageFault=true;lastStoredRaw=event.newValue;render();notify('ข้อมูลจากแท็บอื่นอ่านไม่ได้ กรุณากู้คืนจากไฟล์');}});
 
 // AI proposes data only. Every write goes through the same validated local commit.
 let aiAction='extract',aiImage=null,aiPreviewURL=null,aiBusy=false,aiGeneration=0,aiReviewedRaw=null;
@@ -223,3 +228,24 @@ $('ai-save-reviewed').onclick=()=>{
     commit({...state,entries:[...state.entries,...rows]});$('month').value=rows[0].date.slice(0,7);$('search').value='';$('filter-type').value='all';render();$('ai-dialog').close();notify('ตรวจและบันทึก '+rows.length+' รายการจาก AI แล้ว');
   }catch(error){$('ai-error').textContent=error.message;}
 };
+
+function configureSync(){
+  cloudSync?.dispose();cloudSync=null;
+  $('sync-conflict').hidden=true;
+  if(owner==='anonymous'){$('sync-status').textContent='บันทึกในเครื่อง · เข้าสู่ระบบเพื่อซิงค์';$('sync-retry').hidden=true;return;}
+  $('sync-retry').hidden=false;
+  cloudSync=createCloudSync({key:storageKey,getRaw:()=>lastStoredRaw,getState:()=>{if(storageFault)throw new Error('อ่านข้อมูลในเครื่องไม่ได้');return state;},
+    applyState:next=>{if(storageFault)throw new Error('อ่านข้อมูลในเครื่องไม่ได้ โปรดสำรองและกู้คืนก่อน');if(localStorage.getItem(storageKey)!==lastStoredRaw)throw new Error('ข้อมูลเปลี่ยนจากแท็บอื่น กรุณาโหลดใหม่');const raw=JSON.stringify(validateState(next));localStorage.setItem(storageKey,raw);lastStoredRaw=raw;state=next;deleted=null;resetForm();if($('ai-dialog').open)$('ai-dialog').close();render();},
+    status:(text,conflict)=>{$('sync-status').textContent=text;$('sync-conflict').hidden=!conflict;},notify,
+    backup:(data,label)=>download(JSON.stringify(data,null,2),'budget-'+label+'-'+localDate()+'.json','application/json')});
+  if(!storageFault)cloudSync.start();
+}
+$('sync-retry').onclick=()=>cloudSync?.retry();$('sync-use-cloud').onclick=()=>cloudSync?.useCloud();$('sync-use-local').onclick=()=>cloudSync?.useLocal();
+window.addEventListener('budget-auth-changed',()=>{
+  const nextOwner=window.budgetAuth.getUser()?.uid||'anonymous';if(nextOwner===owner)return;
+  cloudSync?.dispose();cloudSync=null;owner=nextOwner;storageKey=STORAGE_KEY+':owner:'+encodeURIComponent(owner);
+  deleted=null;storageFault=false;editingId=null;editingOriginal=null;lastStoredRaw=null;
+  try{lastStoredRaw=localStorage.getItem(storageKey);state=lastStoredRaw?validateState(JSON.parse(lastStoredRaw)):emptyState();}catch{state=emptyState();storageFault=true;}
+  aiGeneration++;if($('ai-dialog').open)$('ai-dialog').close();clearAIImage();clearAIResult();resetForm();render();configureSync();notify('เปลี่ยนบัญชีแล้ว · แสดงเฉพาะข้อมูลของบัญชีนี้');
+});
+configureSync();

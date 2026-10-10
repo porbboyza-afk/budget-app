@@ -11,6 +11,8 @@
 .entry-name{font-size:14px}.entry-meta{font-size:11px}.stat-label{font-size:13px}.field{font-size:12px}.field>input{font-size:14px}.entry-actions button{font-size:11px}.form-sub{font-size:12px}.form-note{font-size:11px}.tool-actions button{font-size:12px}.demo-banner{font-size:12px}
 
 /* Draft 02: totals, quick entry, then the ledger on every screen. */
+.ai-account{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--muted)}
+.ai-account button{font-size:12px;min-height:40px}
 main{max-width:1400px;margin-right:auto;padding-top:24px}
 .demo-banner{margin-top:14px;margin-bottom:14px}
 .stats{margin-top:14px;margin-bottom:18px}
