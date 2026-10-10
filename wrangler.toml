@@ -1,0 +1,7 @@
+name = "budget-app"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-10-10"
+
+# Add BUDGET_AI_DB as a Cloudflare Pages D1 binding after verifying the project.
+# Store DEEPSEEK_API_KEY and BUDGET_ALLOWED_EMAILS as server secrets.
+# Missing auth/owner/quota configuration disables the paid AI endpoint.

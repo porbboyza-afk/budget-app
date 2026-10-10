@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS ai_quota (
+  bucket TEXT PRIMARY KEY,
+  used INTEGER NOT NULL CHECK(used > 0)
+);
