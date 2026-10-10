@@ -3,12 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f7f3ed">
+  <meta name="theme-color" content="#80563e">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Budget — รายรับรายจ่าย</title>
   <script src="redirect.js"></script>
   <link rel="stylesheet" href="styles.css">
   <script type="module" src="auth.js"></script>
   <script type="module" src="app.js"></script>
+  <script type="module" src="pwa.js"></script>
 </head>
 <body>
   <aside class="sidebar">
@@ -27,6 +32,7 @@
       <div><div class="eyebrow">BUDGET · รายรับรายจ่าย</div><h1>จดเงินวันนี้</h1><p>จดง่าย เห็นชัด ไม่ต้องคิดหลายขั้น</p></div>
       <div class="period-controls"><button id="prev-month" aria-label="เดือนก่อน">‹</button><label><span class="sr-only">เลือกเดือนและปี</span><input type="month" id="month"></label><button id="next-month" aria-label="เดือนถัดไป">›</button></div>
     </header>
+    <section class="app-tools" aria-label="ติดตั้งและการเชื่อมต่อ"><span id="connection-status" role="status"></span><button id="install-app">＋ ติดตั้ง Budget</button><button id="update-app" hidden>อัปเดตแอป</button><span id="ios-install" hidden>ติดตั้งบน iPhone: แตะแชร์ → เพิ่มไปยังหน้าจอโฮม</span></section>
     <section class="demo-banner" id="demo-banner"><div><strong>ลองดูภาพด้วยข้อมูลตัวอย่าง</strong><span>รายการเหล่านี้เป็นตัวอย่างสำหรับดราฟแรก</span></div><button id="start-empty">เริ่มจดข้อมูลของฉัน</button></section>
     <section class="stats" aria-label="ยอดสรุป">
       <article class="balance-card"><div class="stat-label">คงเหลือจากรายการที่จด <span>↗</span></div><div class="stat-amount" id="balance">—</div><div class="stat-foot" id="balance-caption">ยอดทั้งหมดถึงสิ้นเดือนที่เลือก</div></article>
@@ -65,6 +71,7 @@
   </main>
   <div id="toast" class="toast" role="status" hidden><span id="toast-text"></span><button id="undo" hidden>ย้อนกลับ</button><button id="dismiss-toast" aria-label="ปิดข้อความ">×</button></div>
   <dialog id="summary-dialog"><div class="dialog-heading"><h2>สรุปรายเดือน</h2><button id="close-summary" aria-label="ปิดสรุป">×</button></div><p id="summary-period"></p><div id="summary-content"></div><button id="summary-done" class="save-button">กลับไปจดรายการ</button></dialog>
+  <dialog id="install-dialog" aria-labelledby="install-heading"><h2 id="install-heading">ติดตั้ง Budget</h2><p>Brave / Chrome: เปิดเมนูเบราว์เซอร์แล้วเลือกติดตั้งแอป หรือใช้ไอคอนติดตั้งในแถบที่อยู่เมื่อปรากฏ</p><p>iPhone / iPad: เปิดผ่าน Safari แล้วแตะแชร์ → เพิ่มไปยังหน้าจอโฮม</p><p>เปิดเว็บออนไลน์ครั้งแรกให้ขึ้น «พร้อมใช้แบบออฟไลน์» ก่อนใช้งานโดยไม่ต่อเน็ต AI และซิงค์ข้อมูลยังต้องใช้อินเทอร์เน็ต</p><button id="install-close" class="save-button" type="button">เข้าใจแล้ว</button></dialog>
   <dialog id="ai-dialog" class="ai-dialog" aria-labelledby="ai-heading">
     <div class="dialog-heading"><h2 id="ai-heading">ช่วยจดด้วย AI</h2><button id="ai-close" type="button" aria-label="ปิด AI">×</button></div>
     <p id="ai-guidance"></p>

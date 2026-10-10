@@ -1,5 +1,11 @@
 # Budget replacement handoff — 2026-10-10
 
+## PWA follow-up — 2026-10-10
+
+User authorized PWA, a more dimensional earth palette with additional colors, press effects, and GitHub push. Added standalone Thai manifest, 192/512 PNG icons, public-shell-only service worker, install/update controls and iPhone instructions. Offline startup reads the last signed-in owner's local scope; this pointer carries no token and does not authorize any server request. AI/auth/cloud remain online services. Offline opening before any successful online visit is unsupported. Browser data clearing still requires an external backup. Palette now includes dusty blue, sand, terracotta and muted plum; reduced-motion is respected.
+
+Independent security source review passed after fixing cache versioning: build embeds a SHA-256 asset digest in the deployed worker, isolating pending releases from the active cache. Actual Brave preview showed an activated controller, standalone manifest, 192/512 icons and 13 public-only cached URLs. Desktop layout viewed. Offline reload and installation on a physical phone have not been verified.
+
 ## Verified identity
 
 Target: `https://github.com/porbboyza-afk/budget-app`.

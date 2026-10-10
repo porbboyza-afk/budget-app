@@ -11,7 +11,7 @@ for(const name of ['DEEPSEEK_API_KEY','DEEPSEEK_ENV_FILE','FIREBASE_WEB_API_KEY'
 if(!env.DEEPSEEK_API_KEY&&env.DEEPSEEK_ENV_FILE){const external=envPairs(await readFile(env.DEEPSEEK_ENV_FILE,'utf8'));env.DEEPSEEK_API_KEY=external.DEEPSEEK_API_KEY;}
 env.LOCAL_LEDGER=localLedger;
 const port=8771,origin=`http://127.0.0.1:${port}`;
-const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json'};
+const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png'};
 http.createServer(async(req,res)=>{
   try{
     if(req.headers.host!==`127.0.0.1:${port}`){res.writeHead(403);res.end('Forbidden');return;}
