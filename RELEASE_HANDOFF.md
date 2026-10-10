@@ -17,11 +17,12 @@ Source reviewed independently. Build completed. No new tests or paid API calls p
 
 ## Before production replacement
 
-1. Preserve old source at baseline commit and legacy/budget-v1.html; this is a code backup, not a user-data backup.
-2. Export and verify old browser data and the signed-in user's Firestore monthlyData. Never copy financial records to Git.
-3. Implement read-only conversion with explicit year/date selection: old data has month slots and may lack dates/years. Never invent a date or double-count carry/summary totals/pocket details. Show preview and compare counts/totals before import.
-4. Keep old Firestore documents untouched. New schema needs its own path if cloud sync is added; AI login currently does not sync ledger data.
-5. Configure owner email server-side, Firebase Google provider/domains, D1 quotas, Cloudflare secrets and output directory. GitHub Pages alone cannot run the paid AI server.
-6. Verify API calls, Thai receipts/slips, login/denied accounts, quota, duplicates, backup restore, mobile layout and migration before promoting the branch.
+User decision, 2026-10-10: old financial records are no longer wanted. Omit migration and start the replacement with an empty ledger. Source: user message “ข้อมูลเก่าทิ้งเลยไม่มีประโยชน์ละ”. No remote data was purged as part of this change.
 
-Production replacement is pending those steps. Reverting source cannot recover missing browser data; verify backups before switching.
+1. Preserve source at baseline commit and legacy/budget-v1.html for code rollback.
+2. New installations start empty; existing data written in the new draft is retained. The old Firestore schema is not read by the replacement.
+3. Decide and implement cloud sync for new records if required; AI login currently does not sync the ledger.
+4. Configure owner email server-side, Firebase Google provider/domains, D1 quotas, Cloudflare secrets and output directory. GitHub Pages alone cannot run the paid AI server.
+5. Verify API calls, Thai receipts/slips, login/denied accounts, quotas, duplicates, new-data backup restore and mobile layout before promoting the branch.
+
+Production replacement is pending the remaining configuration and verification. Old-data migration is no longer a release requirement.

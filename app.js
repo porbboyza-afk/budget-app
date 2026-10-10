@@ -1,4 +1,4 @@
-import {STORAGE_KEY,localDate,validDate,parseMoney,validateState,totals,sampleState} from './model.js';
+import {STORAGE_KEY,localDate,validDate,parseMoney,validateState,totals} from './model.js';
 import {requestAI} from './ai-client.js';
 const $=id=>document.getElementById(id);
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -6,7 +6,8 @@ const money=cents=>new Intl.NumberFormat('th-TH',{minimumFractionDigits:cents%10
 const thaiDate=date=>new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'short',year:'numeric'}).format(new Date(date+'T12:00:00'));
 const monthName=month=>new Intl.DateTimeFormat('th-TH',{month:'long',year:'numeric'}).format(new Date(month+'-01T12:00:00'));
 let state,storageFault=false,editingId=null,editingOriginal=null,entryType='expense',deleted=null,toastTimer,lastStoredRaw=null;
-try {lastStoredRaw=localStorage.getItem(STORAGE_KEY);state=lastStoredRaw?validateState(JSON.parse(lastStoredRaw)):sampleState();}
+const emptyState=()=>({version:1,openingCents:0,demo:false,entries:[]});
+try {lastStoredRaw=localStorage.getItem(STORAGE_KEY);state=lastStoredRaw?validateState(JSON.parse(lastStoredRaw)):emptyState();}
 catch {state={version:1,openingCents:0,demo:false,entries:[]};storageFault=true;}
 $('month').value=localDate().slice(0,7);
 function notify(text,undo=false){clearTimeout(toastTimer);$('toast-text').textContent=text;$('undo').hidden=!deleted;$('toast').hidden=false;if(!deleted&&!undo)toastTimer=setTimeout(()=>$('toast').hidden=true,5000);}
@@ -103,7 +104,7 @@ $('summary-nav').onclick=()=>{
 $('close-summary').onclick=$('summary-done').onclick=()=>$('summary-dialog').close();
 resetForm();render();if(matchMedia('(pointer: fine)').matches&&!storageFault)$('amount').focus({preventScroll:true});if(storageFault)notify('อ่านข้อมูลเดิมไม่สำเร็จ ยังไม่ได้เขียนทับ โปรดกู้คืนจากไฟล์สำรอง');
 
-window.addEventListener('storage',event=>{if(event.key!==STORAGE_KEY)return;try{const next=event.newValue?validateState(JSON.parse(event.newValue)):sampleState();state=next;lastStoredRaw=event.newValue;storageFault=false;$('start-empty').hidden=false;render();notify('อัปเดตข้อมูลจากแท็บอื่นแล้ว');}catch{storageFault=true;lastStoredRaw=event.newValue;render();notify('ข้อมูลจากแท็บอื่นอ่านไม่ได้ กรุณากู้คืนจากไฟล์');}});
+window.addEventListener('storage',event=>{if(event.key!==STORAGE_KEY)return;try{const next=event.newValue?validateState(JSON.parse(event.newValue)):emptyState();state=next;lastStoredRaw=event.newValue;storageFault=false;$('start-empty').hidden=false;render();notify('อัปเดตข้อมูลจากแท็บอื่นแล้ว');}catch{storageFault=true;lastStoredRaw=event.newValue;render();notify('ข้อมูลจากแท็บอื่นอ่านไม่ได้ กรุณากู้คืนจากไฟล์');}});
 
 // AI proposes data only. Every write goes through the same validated local commit.
 let aiAction='extract',aiImage=null,aiPreviewURL=null,aiBusy=false,aiGeneration=0,aiReviewedRaw=null;
