@@ -23,8 +23,7 @@ const ready=(async()=>{
   if(!navigator.onLine){offline(button,status);return;}
   try{
     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
-    let response;try{response=await fetch('/api/config',{cache:'no-store',signal:controller.signal});}finally{clearTimeout(timer);}if(!response.ok)throw new Error();
-    const config=await response.json();
+    let config;try{const response=await fetch('/api/config',{cache:'no-store',signal:controller.signal});if(!response.ok)throw new Error();config=await response.json();}finally{clearTimeout(timer);}
     if(config.localPreview){local=true;if(button)button.hidden=true;if(status)status.textContent='AI พร้อมใช้ในเครื่องนี้';announce();return;}
     if(!config.firebase)throw new Error();
     const [{initializeApp},authSDK]=await bounded(Promise.all([import('https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js'),import('https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js')]));
@@ -32,6 +31,6 @@ const ready=(async()=>{
     await bounded(new Promise((resolve,reject)=>{const unsubscribe=sdk.onAuthStateChanged(auth,()=>{unsubscribe();resolve();},reject);}));
     sdk.onAuthStateChanged(auth,user=>{offlineUser=null;try{if(user)localStorage.setItem(OWNER_KEY,user.uid);else localStorage.removeItem(OWNER_KEY);}catch{}if(button)button.textContent=user?'ออกจากระบบ':'เข้าสู่ระบบ Google';if(status)status.textContent=user?'เข้าสู่ระบบแล้ว · ตรวจสิทธิ์โดยเซิร์ฟเวอร์':'เข้าสู่ระบบเพื่อซิงค์ข้อมูลและใช้ AI';announce();});
     if(button){button.disabled=false;button.onclick=async()=>{button.disabled=true;try{if(auth.currentUser)await sdk.signOut(auth);else{if(status)status.textContent='กำลังเปิดหน้าเข้าสู่ระบบ Google…';await sdk.signInWithPopup(auth,new sdk.GoogleAuthProvider());}}catch(error){if(status)status.textContent=loginError(error);}finally{button.disabled=false;}};}
-  }catch{offline(button,status);}
+  }catch{auth=null;sdk=null;local=false;offline(button,status);}
 })();
 window.budgetAuth={ready,getUser,async getToken(){await ready;if(local)return 'local-preview';if(!auth?.currentUser)throw new Error('กรุณาเข้าสู่ระบบ Google ก่อนใช้ AI');return auth.currentUser.getIdToken();}};
