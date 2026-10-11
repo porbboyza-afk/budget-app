@@ -20,20 +20,19 @@
     <a class="brand" href="#"><span class="brand-icon">b.</span>budget</a>
     <p class="sidebar-caption">จัดการเงินให้สบายขึ้น</p>
     <nav aria-label="เมนูหลัก">
-      <a class="nav-item active" href="#transactions"><span>☷</span> รายการเงินเข้า–ออก</a>
-      <button class="nav-item" id="summary-nav"><span>▥</span> สรุปรายเดือน</button>
-      <a class="nav-item" href="#data-tools"><span>↥</span> สำรองและกู้คืน</a>
+      <a class="nav-item" href="#entry-panel"><span>＋</span> จด</a>
+      <a class="nav-item" href="#transactions"><span>☷</span> รายการ</a>
+      <a class="nav-item" href="#data-tools"><span>↥</span> ข้อมูล</a>
     </nav>
     <div class="sidebar-note"><span class="note-dot"></span><strong>เริ่มจากเรื่องง่าย ๆ</strong><p>รับมาเท่าไร จ่ายไปเท่าไร<br>เห็นทุกอย่างในหน้าเดียว</p></div>
     <div class="sidebar-foot">Budget · รายรับรายจ่าย<br><span>สำรองในเครื่อง · ซิงค์เมื่อเข้าสู่ระบบ</span></div>
   </aside>
   <main>
     <header class="page-header">
-      <div><div class="eyebrow">BUDGET · รายรับรายจ่าย</div><h1>จดเงินวันนี้</h1><p>จดง่าย เห็นชัด ไม่ต้องคิดหลายขั้น</p></div>
-      <div class="period-controls"><button id="prev-month" aria-label="เดือนก่อน">‹</button><label><span class="sr-only">เลือกเดือนและปี</span><input type="month" id="month"></label><button id="next-month" aria-label="เดือนถัดไป">›</button></div>
+      <div class="page-copy"><h1>รายรับรายจ่าย</h1><p>จดง่าย เห็นชัด ในหน้าเดียว</p></div>
+      <section class="ai-account account-bar" aria-label="บัญชีและการเข้าสู่ระบบ"><button id="ai-login" type="button" disabled>เข้าสู่ระบบ Google</button><span id="ai-account-status" role="status" aria-live="polite">กำลังเชื่อมต่อบัญชี…</span></section>
     </header>
-    <section class="ai-account account-bar" aria-label="บัญชีและการเข้าสู่ระบบ"><div><strong>บัญชีของคุณ</strong><span id="ai-account-status" role="status" aria-live="polite">กำลังเชื่อมต่อบัญชี…</span></div><button id="ai-login" type="button" disabled>เข้าสู่ระบบ Google</button></section>
-    <section class="app-tools" aria-label="ติดตั้งและการเชื่อมต่อ"><span id="connection-status" role="status"></span><button id="install-app">＋ ติดตั้ง Budget</button><button id="update-app" hidden>อัปเดตแอป</button><span id="ios-install" hidden>ติดตั้งบน iPhone: แตะแชร์ → เพิ่มไปยังหน้าจอโฮม</span></section>
+    <section class="overview-heading" aria-label="เดือนและสรุป"><div class="period-controls"><button id="prev-month" aria-label="เดือนก่อน">‹</button><label><span class="sr-only">เลือกเดือนและปี</span><input type="month" id="month"></label><button id="next-month" aria-label="เดือนถัดไป">›</button></div><div class="overview-actions"><button id="summary-nav" type="button">สรุปรายเดือน</button><button id="ai-ask-open" type="button">✦ ถาม AI เรื่องเงิน</button></div></section>
     <section class="demo-banner" id="demo-banner"><div><strong>ลองดูภาพด้วยข้อมูลตัวอย่าง</strong><span>รายการเหล่านี้เป็นตัวอย่างสำหรับดราฟแรก</span></div><button id="start-empty">เริ่มจดข้อมูลของฉัน</button></section>
     <section class="stats" aria-label="ยอดสรุป">
       <article class="balance-card"><div class="stat-label">คงเหลือจากรายการที่จด <span>↗</span></div><div class="stat-amount" id="balance">—</div><div class="stat-foot" id="balance-caption">ยอดทั้งหมดถึงสิ้นเดือนที่เลือก</div></article>
@@ -43,6 +42,7 @@
     <div class="workspace">
       <aside class="entry-panel panel" id="entry-panel">
         <div class="form-eyebrow">จดได้เลยตรงนี้</div><h2 id="form-heading">เพิ่มรายการ</h2><p class="form-sub">ใส่จำนวนเงินแล้วบันทึกได้เลย รายละเอียดและหมวดเว้นได้</p>
+        <div class="ai-shortcuts"><button id="ai-extract-open" type="button">✦ ช่วยจดด้วย AI</button><button id="ai-image-open" type="button">▧ อ่านใบเสร็จ / สลิป</button><span>AI เตรียมรายการให้ตรวจ ก่อนคุณยืนยันบันทึก</span></div>
         <div class="type-switch" aria-label="ประเภทรายการ"><button id="type-income" type="button" aria-pressed="false">＋ รายรับ</button><button id="type-expense" type="button" class="selected" aria-pressed="true">− รายจ่าย</button></div>
         <form id="entry-form">
           <label class="field">จำนวนเงิน<div class="amount-input"><input id="amount" aria-label="จำนวนเงินเป็นบาท" inputmode="decimal" placeholder="0.00" required autocomplete="off"><span>บาท</span></div></label>
@@ -55,22 +55,22 @@
           <button id="cancel-edit" type="button" class="cancel-edit" hidden>ยกเลิกการแก้ไข</button>
         </form>
         <p class="form-note">บันทึกแล้วจดรายการถัดไปได้ทันที · ข้อมูลเก็บในเบราว์เซอร์นี้</p>
-        <div class="ai-shortcuts"><button id="ai-extract-open" type="button">✦ ช่วยจดด้วย AI</button><button id="ai-ask-open" type="button">✦ ถามเรื่องเงิน</button><span>พิมพ์ข้อความ หรืออ่านใบเสร็จ / สลิป แล้วตรวจเองก่อนบันทึก</span></div>
       </aside>
       <section class="ledger panel" id="transactions">
         <div class="section-heading"><div><h2>รายการล่าสุด</h2><p id="period-label">เดือนนี้</p></div><span class="count-badge" id="entry-count">0 รายการ</span></div>
         <div class="filters"><label class="search"><span>⌕</span><input id="search" type="search" placeholder="ค้นหารายการ…" aria-label="ค้นหารายการ"></label><label><span class="sr-only">ประเภทที่แสดง</span><select id="filter-type"><option value="all">ทั้งหมด</option><option value="income">รายรับ</option><option value="expense">รายจ่าย</option></select></label></div>
         <div class="table-head"><span>รายการ / วันที่</span><span>จำนวนเงิน</span><span>จัดการ</span></div>
         <div id="entries" aria-live="polite"></div>
+        <nav class="pagination" id="pagination" aria-label="หน้ารายการ" hidden><span id="page-range"></span><div class="page-buttons"><button id="page-prev" type="button">‹ ก่อนหน้า</button><span id="page-status" role="status" aria-live="polite"></span><button id="page-next" type="button">ถัดไป ›</button></div></nav>
         <div class="ledger-foot"><span id="save-status" role="status">● บันทึกในเครื่องนี้</span><button id="clear-filter">ล้างตัวกรอง</button></div>
       </section>
     </div>
-    <section class="data-tools" aria-label="การซิงค์ข้อมูล"><div><h3>ข้อมูลของคุณ</h3><p id="sync-status" role="status">บันทึกในเครื่อง</p></div><div class="tool-actions"><button id="sync-retry" hidden>ซิงค์อีกครั้ง</button><span id="sync-conflict" hidden><button id="sync-use-cloud">ใช้ชุดคลาวด์</button><button id="sync-use-local">ใช้ชุดในเครื่อง</button></span></div></section>
-    <section id="data-tools" class="data-tools"><div><h3>ข้อมูลของคุณ อยู่กับคุณ</h3><p>สำรองไว้ได้ และนำกลับมาใช้เมื่อไหร่ก็ได้</p></div><div class="tool-actions"><button id="export-csv">ส่งออก CSV</button><button id="backup">สำรองข้อมูล</button><button id="restore">กู้คืนจากไฟล์</button></div><input id="restore-file" type="file" accept=".json,application/json" hidden></section>
+    <section id="data-tools" class="data-tools"><div class="data-heading"><div><h2>ข้อมูลและสำรอง</h2><p id="sync-status" role="status">บันทึกในเครื่อง</p></div><div class="tool-actions"><button id="sync-retry" hidden>ซิงค์อีกครั้ง</button><span id="sync-conflict" hidden><button id="sync-use-cloud">ใช้ชุดคลาวด์</button><button id="sync-use-local">ใช้ชุดในเครื่อง</button></span></div></div><div class="tool-actions backup-actions"><button id="backup">สำรองข้อมูล</button><button id="restore">กู้คืนจากไฟล์</button><button id="export-csv">ส่งออก CSV</button></div><input id="restore-file" type="file" accept=".json,application/json" hidden><div class="app-tools" aria-label="ติดตั้งและการเชื่อมต่อ"><span id="connection-status" role="status"></span><button id="install-app">＋ ติดตั้ง Budget</button><button id="update-app" hidden>อัปเดตแอป</button><span id="ios-install" hidden>ติดตั้งบน iPhone: แตะแชร์ → เพิ่มไปยังหน้าจอโฮม</span></div></section>
     <footer>Budget · จดรายรับรายจ่ายให้สบายขึ้น <span>เรียบง่ายขึ้น ในทุกวัน</span></footer>
   </main>
   <div id="toast" class="toast" role="status" hidden><span id="toast-text"></span><button id="undo" hidden>ย้อนกลับ</button><button id="dismiss-toast" aria-label="ปิดข้อความ">×</button></div>
   <dialog id="summary-dialog"><div class="dialog-heading"><h2>สรุปรายเดือน</h2><button id="close-summary" aria-label="ปิดสรุป">×</button></div><p id="summary-period"></p><div id="summary-content"></div><button id="summary-done" class="save-button">กลับไปจดรายการ</button></dialog>
+  <dialog id="account-dialog" aria-labelledby="account-heading"><div class="dialog-heading"><h2 id="account-heading">บัญชีของคุณ</h2><button id="account-close" type="button" aria-label="ปิดบัญชี">×</button></div><p id="account-identity"></p><p>ข้อมูลในเครื่องแยกตามบัญชี สิทธิ์ซิงค์และ AI ตรวจโดยเซิร์ฟเวอร์ และต้องเชื่อมต่ออินเทอร์เน็ต</p><button id="account-logout" type="button">ออกจากระบบ</button></dialog>
   <dialog id="install-dialog" aria-labelledby="install-heading"><h2 id="install-heading">ติดตั้ง Budget</h2><p>Brave / Chrome: เปิดเมนูเบราว์เซอร์แล้วเลือกติดตั้งแอป หรือใช้ไอคอนติดตั้งในแถบที่อยู่เมื่อปรากฏ</p><p>iPhone / iPad: เปิดผ่าน Safari แล้วแตะแชร์ → เพิ่มไปยังหน้าจอโฮม</p><p>เปิดเว็บออนไลน์ครั้งแรกให้ขึ้น «พร้อมใช้แบบออฟไลน์» ก่อนใช้งานโดยไม่ต่อเน็ต AI และซิงค์ข้อมูลยังต้องใช้อินเทอร์เน็ต</p><button id="install-close" class="save-button" type="button">เข้าใจแล้ว</button></dialog>
   <dialog id="ai-dialog" class="ai-dialog" aria-labelledby="ai-heading">
     <div class="dialog-heading"><h2 id="ai-heading">ช่วยจดด้วย AI</h2><button id="ai-close" type="button" aria-label="ปิด AI">×</button></div>

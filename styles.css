@@ -110,3 +110,44 @@ dialog[open]{animation:dialog-in 180ms ease-out}
 .account-bar>div{display:flex;flex-direction:column;gap:4px;min-width:0}.account-bar strong{font-size:13px}.account-bar #ai-account-status{font-size:12px;overflow-wrap:anywhere;line-height:1.7}
 .account-bar #ai-login{flex-shrink:0;min-height:46px;padding:11px 18px;background:linear-gradient(145deg,#71899b,#536c7e);border-color:#50697b;color:#fff;font-size:14px;font-weight:600;box-shadow:inset 0 1px 0 #ffffff40,0 3px 0 #405969,0 6px 12px #536c7e20}
 @media(max-width:650px){.account-bar{flex-direction:column;align-items:stretch;padding:14px;margin-top:16px}.account-bar #ai-login{width:100%;min-height:48px}}
+
+/* One page: compact overview, jot and AI, paged ledger, then data tools. */
+html{scroll-behavior:smooth}#entry-panel,#transactions,#data-tools{scroll-margin-top:18px}
+.page-header{align-items:flex-start;flex-direction:row;gap:16px}.page-copy{min-width:0}.page-copy h1{font-size:25px;margin:2px 0 5px}
+.page-header .account-bar{flex:0 1 240px;display:flex;align-items:flex-end;flex-direction:column;gap:7px;margin:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none;min-width:0;text-align:right}
+.page-header .account-bar #ai-login{width:auto;max-width:100%;min-height:44px;padding:9px 14px;font-size:13px;color:#52697a;background:linear-gradient(145deg,#f6f9fa,#e7eef2);border:1px solid #cedbe3;box-shadow:inset 0 1px 0 #fff,0 2px 5px #52697a0e;white-space:normal}
+.page-header .account-bar #ai-account-status{font-size:11px;line-height:1.6;color:#776d67}
+.overview-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:22px}
+.overview-actions{display:flex;gap:8px;flex-wrap:wrap}.overview-actions button{font-size:12px;min-height:44px}
+#ai-ask-open{color:#71597c;background:linear-gradient(145deg,#f7f2f8,#eee6f1);border-color:#ddcfdf}
+.period-controls button{width:44px;height:44px}.period-controls input{min-height:44px}
+.stats{gap:12px;margin:14px 0 20px}.balance-card,.stat-card{min-height:115px;padding:15px 18px}.stat-amount{overflow-wrap:anywhere}
+.entry-panel .ai-shortcuts{margin:14px 0 18px;padding:0 0 16px;border-top:0;border-bottom:1px solid var(--border);gap:8px}
+.ai-shortcuts button{min-height:44px}.ai-shortcuts span{width:100%;font-size:11px}
+button{box-shadow:inset 0 1px 0 #fff9,0 1px 3px #5848370c}
+.type-switch button{min-height:44px}.type-switch .selected{box-shadow:inset 0 1px 0 #fff,0 2px 5px #59483515}
+.save-button{box-shadow:inset 0 1px 0 #ffffff40,0 4px 0 #7d4c38,0 8px 16px #995f4925}
+.pagination{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:18px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)}
+.page-buttons{display:flex;align-items:center;gap:10px}.page-buttons button{min-height:44px;font-size:12px;white-space:nowrap}.page-buttons #page-status{white-space:nowrap;color:#493e34}
+.data-tools{display:flex;flex-direction:column;align-items:stretch;gap:18px;padding:20px;margin-top:24px}
+.data-heading{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}.data-heading p{line-height:1.7}
+.data-tools .tool-actions{display:flex;flex-wrap:wrap;gap:8px}.data-tools button{min-height:44px}.backup-actions button{font-size:13px}
+#sync-conflict{display:flex;flex-wrap:wrap;gap:8px}
+.data-tools .app-tools{margin:0;padding-top:16px;border-top:1px solid #dedce2}.app-tools #connection-status{width:100%;line-height:1.7}
+.filters input,.filters select{min-height:44px}.ledger-foot button{min-height:44px;padding:8px}.entry-actions button{min-height:44px}
+#account-logout{width:100%;min-height:44px;margin-top:12px;color:#a15f49;background:#f7eae3;border-color:#e3c8bb}
+#account-identity{overflow-wrap:anywhere;color:#52697a;font-weight:600}
+@media(max-width:850px){.sidebar .nav-item{justify-content:center;min-height:44px;padding:10px 16px;font-size:13px}.sidebar nav{gap:8px}}
+@media(max-width:650px){
+  .sidebar{padding:12px 16px}.sidebar nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.sidebar .nav-item{width:100%;margin:0}
+  main{padding:18px 16px}.page-header{flex-direction:row;align-items:flex-start;gap:12px}.page-copy h1{font-size:21px;margin:2px 0}.page-copy p{display:none}
+  .page-header .account-bar{flex:0 1 170px}.page-header .account-bar #ai-login{width:auto;min-height:44px;padding:9px 12px;font-size:12px}
+  .overview-heading{margin-top:18px;gap:10px}.overview-heading .period-controls{width:100%}.overview-actions{width:100%}.overview-actions button{flex:1}
+  .balance-card{min-height:102px}.stat-card{min-height:98px}.balance-card,.stat-card{padding:12px 14px}.stat-amount{font-size:26px;margin:5px 0}.stat-label{font-size:12px}.round-icon{width:22px;height:22px;flex-shrink:0}.stat-foot{font-size:10px}.stats{gap:10px;margin-bottom:16px}
+  .entry-panel,.ledger{padding:18px 14px}.entry-panel .ai-shortcuts{margin:12px 0 14px}.ai-shortcuts button{flex:1;min-width:0;font-size:12px;padding:10px 8px}
+  .entry-panel .field>input,.entry-panel select,.filters input,.filters select,.ai-dialog textarea,.ai-candidate input,.ai-candidate select{font-size:16px}
+  .amount-input input{font-size:32px}.form-sub{line-height:1.7}.pagination{justify-content:center;gap:8px}.pagination #page-range{width:100%;text-align:center}.page-buttons{justify-content:space-between;width:100%;gap:6px}.page-buttons button{padding:9px 10px}
+  .data-tools{padding:18px 14px}.backup-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))}.backup-actions button{font-size:12px;white-space:normal;padding:10px 5px}
+  footer{padding-bottom:10px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

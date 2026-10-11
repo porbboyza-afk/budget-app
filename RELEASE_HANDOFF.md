@@ -1,5 +1,13 @@
 # Budget replacement handoff — 2026-10-10
 
+## One-page organization and pagination — 2026-10-11
+
+User approved preserving the simple single page while organizing controls and limiting long lists. Account/login is a compact top-right control independent of the money form; signed-in users open a separate account dialog before logout. Shortcuts are จด / รายการ / ข้อมูล anchors. Month, totals, monthly summary and money questions are grouped; AI text/image entry buttons appear before manual fields. Sync, backup/restore/CSV and PWA tools share one data section.
+
+Ledger renders at most 10 matching monthly rows per page, with range, page count and previous/next controls. Search/type filter cover the full month before slicing. Month/filter/save/restore/account changes reset page; deletion and async updates clamp to valid bounds. Totals, CSV and AI context retain their existing complete-data semantics. Data schema and owner-scoped storage are unchanged.
+
+Independent source review found no blocker in pagination, relocated IDs/listeners or account/AI actions. Narrow Brave preview visually inspected (desktop window resized, not a physical phone). No automated test suite or new paid AI calls run in this change. Account dialog displays the current account identity via textContent, without copying it into documentation.
+
 ## Mobile account access — 2026-10-11
 
 User reported missing/unusable login on smartphone. Code placed the only login button after the entire entry form and AI tools. Moved account controls directly below the page header, before totals and entry, with a full-width 48px button on small screens. Auth startup now bounds config/SDK/session waits, avoids AbortSignal.timeout compatibility dependency, exposes retry on failure, and distinguishes blocked/cancelled popups, network, unsupported storage and unauthorized domain. Google popup remains invoked directly from the click; no cross-domain redirect flow was added. No physical smartphone login verification claimed.

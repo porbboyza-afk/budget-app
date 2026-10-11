@@ -11,6 +11,8 @@ const money=cents=>new Intl.NumberFormat('th-TH',{minimumFractionDigits:cents%10
 const thaiDate=date=>new Intl.DateTimeFormat('th-TH',{day:'numeric',month:'short',year:'numeric'}).format(new Date(date+'T12:00:00'));
 const monthName=month=>new Intl.DateTimeFormat('th-TH',{month:'long',year:'numeric'}).format(new Date(month+'-01T12:00:00'));
 let state,storageFault=false,editingId=null,editingOriginal=null,entryType='expense',deleted=null,toastTimer,lastStoredRaw=null;
+const PAGE_SIZE=10;
+let currentPage=1;
 const emptyState=()=>({version:1,openingCents:0,demo:false,entries:[]});
 try {lastStoredRaw=localStorage.getItem(storageKey);state=lastStoredRaw?validateState(JSON.parse(lastStoredRaw)):emptyState();}
 catch {state={version:1,openingCents:0,demo:false,entries:[]};storageFault=true;}
@@ -40,8 +42,15 @@ function render(){
   $('save-status').textContent=storageFault?'● อ่านข้อมูลเดิมไม่สำเร็จ':'● '+(state.demo?'ข้อมูลตัวอย่าง · ':'')+'บันทึกในเครื่องแล้ว';
   const search=$('search').value.trim().toLocaleLowerCase(),type=$('filter-type').value;
   const rows=[...all].reverse().filter(r=>(type==='all'||r.type===type)&&`${r.description} ${r.category}`.toLocaleLowerCase().includes(search)).sort((a,b)=>b.date.localeCompare(a.date));
+  const pageCount=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
+  currentPage=Math.max(1,Math.min(currentPage,pageCount));
+  const offset=(currentPage-1)*PAGE_SIZE,pageRows=rows.slice(offset,offset+PAGE_SIZE);
+  $('pagination').hidden=!rows.length;
+  $('page-range').textContent=rows.length?`แสดง ${offset+1}–${offset+pageRows.length} จาก ${rows.length} รายการ`:'';
+  $('page-status').textContent=`หน้า ${currentPage} จาก ${pageCount}`;
+  $('page-prev').disabled=currentPage===1;$('page-next').disabled=currentPage===pageCount;
   $('entry-count').textContent=rows.length+' รายการ';
-  $('entries').innerHTML=rows.length?rows.map(r=>`<article class="entry-row"><div class="entry-description"><span class="entry-symbol ${r.type==='income'?'income':'expense'}">${r.type==='income'?'↙':'↗'}</span><div><div class="entry-name">${escape(r.description)}</div><div class="entry-meta">${thaiDate(r.date)}${r.category?' · '+escape(r.category):''}</div></div></div><div class="entry-amount ${r.type==='income'?'income-text':'expense-text'}">${r.type==='income'?'+':'−'}${money(r.amountCents)}</div><div class="entry-actions"><button data-action="edit" data-id="${escape(r.id)}" aria-label="แก้ไข ${escape(r.description)}">แก้ไข</button><button class="delete" data-action="delete" data-id="${escape(r.id)}" aria-label="ลบ ${escape(r.description)}">ลบ</button></div></article>`).join(''):`<div class="empty-state">${all.length?'ไม่พบรายการที่ตรงกับตัวกรอง':'ยังไม่มีรายการในเดือนนี้'}<br><small>${all.length?'ลองเปลี่ยนคำค้นหาหรือล้างตัวกรอง':'เริ่มจดด้วยปุ่มรายรับหรือรายจ่ายได้เลย'}</small></div>`;
+  $('entries').innerHTML=rows.length?pageRows.map(r=>`<article class="entry-row"><div class="entry-description"><span class="entry-symbol ${r.type==='income'?'income':'expense'}">${r.type==='income'?'↙':'↗'}</span><div><div class="entry-name">${escape(r.description)}</div><div class="entry-meta">${thaiDate(r.date)}${r.category?' · '+escape(r.category):''}</div></div></div><div class="entry-amount ${r.type==='income'?'income-text':'expense-text'}">${r.type==='income'?'+':'−'}${money(r.amountCents)}</div><div class="entry-actions"><button data-action="edit" data-id="${escape(r.id)}" aria-label="แก้ไข ${escape(r.description)}">แก้ไข</button><button class="delete" data-action="delete" data-id="${escape(r.id)}" aria-label="ลบ ${escape(r.description)}">ลบ</button></div></article>`).join(''):`<div class="empty-state">${all.length?'ไม่พบรายการที่ตรงกับตัวกรอง':'ยังไม่มีรายการในเดือนนี้'}<br><small>${all.length?'ลองเปลี่ยนคำค้นหาหรือล้างตัวกรอง':'เริ่มจดด้วยปุ่มรายรับหรือรายจ่ายได้เลย'}</small></div>`;
 }
 $('type-income').onclick=()=>{setType('income');$('amount').focus({preventScroll:true});};$('type-expense').onclick=()=>{setType('expense');$('amount').focus({preventScroll:true});};
 $('entry-form').onsubmit=event=>{
@@ -52,7 +61,7 @@ $('entry-form').onsubmit=event=>{
     const row={id:editingId||crypto.randomUUID(),date,type:entryType,amountCents,description,category:$('category').value.trim()};
     if(editingId && JSON.stringify(state.entries.find(r=>r.id===editingId))!==editingOriginal)throw new Error('รายการนี้เปลี่ยนจากแท็บอื่น โปรดยกเลิกแล้วเปิดแก้ไขใหม่');
     const entries=editingId?state.entries.map(r=>r.id===editingId?row:r):[...state.entries,row];
-    const wasEditing=Boolean(editingId);commit({...state,entries});$('month').value=date.slice(0,7);$('search').value='';$('filter-type').value='all';render();resetForm();notify((wasEditing?'แก้ไข':'บันทึก')+' '+description+' '+money(amountCents)+' บาทแล้ว');$('amount').focus({preventScroll:true});
+    const wasEditing=Boolean(editingId);commit({...state,entries});currentPage=1;$('month').value=date.slice(0,7);$('search').value='';$('filter-type').value='all';render();resetForm();notify((wasEditing?'แก้ไข':'บันทึก')+' '+description+' '+money(amountCents)+' บาทแล้ว');$('amount').focus({preventScroll:true});
   }catch(error){$('form-error').textContent=error.message;}
 };
 $('cancel-edit').onclick=resetForm;
@@ -67,12 +76,15 @@ $('entries').onclick=event=>{
 };
 $('undo').onclick=()=>{if(!deleted)return;try{commit({...state,entries:[...state.entries,deleted]});deleted=null;notify('คืนรายการและบันทึกแล้ว');}catch(error){notify(error.message,true);}};
 $('dismiss-toast').onclick=()=>{$('toast').hidden=true;};
-function changeMonth(offset){const [year,month]=$('month').value.split('-').map(Number);const date=new Date(year,month-1+offset,1);if(date.getFullYear()<1900||date.getFullYear()>2200)return;$('month').value=localDate(date).slice(0,7);render();if(!editingId)resetForm();}
+function changeMonth(offset){const [year,month]=$('month').value.split('-').map(Number);const date=new Date(year,month-1+offset,1);if(date.getFullYear()<1900||date.getFullYear()>2200)return;currentPage=1;$('month').value=localDate(date).slice(0,7);render();if(!editingId)resetForm();}
 $('prev-month').onclick=()=>changeMonth(-1);$('next-month').onclick=()=>changeMonth(1);
 $('month').min='1900-01';$('month').max='2200-12';
-$('month').onchange=()=>{if(!/^\d{4}-\d{2}$/.test($('month').value)||!validDate($('month').value+'-01')){$('month').value=localDate().slice(0,7);}render();if(!editingId)resetForm();};
-$('search').oninput=render;$('filter-type').onchange=render;
-$('clear-filter').onclick=()=>{$('search').value='';$('filter-type').value='all';render();};
+$('month').onchange=()=>{currentPage=1;if(!/^\d{4}-\d{2}$/.test($('month').value)||!validDate($('month').value+'-01')){$('month').value=localDate().slice(0,7);}render();if(!editingId)resetForm();};
+function resetPage(){currentPage=1;render();}
+$('search').oninput=resetPage;$('filter-type').onchange=resetPage;
+$('clear-filter').onclick=()=>{$('search').value='';$('filter-type').value='all';resetPage();};
+function turnPage(delta){currentPage+=delta;render();$('transactions').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});}
+$('page-prev').onclick=()=>turnPage(-1);$('page-next').onclick=()=>turnPage(1);
 $('start-empty').onclick=()=>{
   if(!confirm('เริ่มจดใหม่โดยนำข้อมูลตัวอย่างทั้งหมดออก? หากเพิ่มรายการไว้ในชุดตัวอย่างแล้ว ให้สำรองข้อมูลก่อน'))return;
   try{commit({version:1,openingCents:0,demo:false,entries:[]});deleted=null;resetForm();notify('พร้อมจดข้อมูลของคุณแล้ว');}catch(error){notify(error.message);}
@@ -94,7 +106,7 @@ $('restore-file').onchange=async event=>{
     const next=validateState(JSON.parse(await file.text()));
     if(!confirm(`กู้คืน ${next.entries.length} รายการแทนข้อมูลในดราฟนี้? ควรสำรองชุดปัจจุบันก่อน`))return;
     const oldFault=storageFault;storageFault=false;
-    try{commit(next);}catch(error){storageFault=oldFault;throw error;}
+    try{commit(next);currentPage=1;render();}catch(error){storageFault=oldFault;throw error;}
     deleted=null;$('start-empty').hidden=false;resetForm();notify('กู้คืนข้อมูลและบันทึกแล้ว');
   }catch(error){notify(error instanceof SyntaxError?'ไฟล์ JSON อ่านไม่ได้':error.message);}finally{event.target.value='';}
 };
@@ -116,7 +128,7 @@ let aiAction='extract',aiImage=null,aiPreviewURL=null,aiBusy=false,aiGeneration=
 function clearAIImage(){aiImage=null;if(aiPreviewURL)URL.revokeObjectURL(aiPreviewURL);aiPreviewURL=null;$('ai-image').value='';$('ai-image-preview').removeAttribute('src');$('ai-image-preview').hidden=true;$('ai-image-remove').hidden=true;}
 function clearAIResult(){$('ai-review').hidden=true;$('ai-answer').hidden=true;$('ai-answer').textContent='';$('ai-candidates').replaceChildren();$('ai-warnings').replaceChildren();aiReviewedRaw=null;}
 function setAIBusy(busy){aiBusy=busy;for(const id of ['ai-submit','ai-text','ai-image','ai-image-remove','ai-save-reviewed'])$(id).disabled=busy;$('ai-close').disabled=busy;if(busy)$('ai-status').textContent='กำลังอ่านและเตรียมคำตอบ…';else if($('ai-status').textContent==='กำลังอ่านและเตรียมคำตอบ…')$('ai-status').textContent='';}
-function openAI(action){
+function openAI(action,image=false){
   if(storageFault){notify('อ่านข้อมูลเดิมไม่ได้ โปรดกู้คืนก่อนใช้ AI');return;}
   if(state.demo){notify('กด “เริ่มจดข้อมูลของฉัน” ก่อนใช้ AI เพื่อไม่ปะปนกับข้อมูลตัวอย่าง');return;}
   aiAction=action;aiGeneration++;clearAIResult();clearAIImage();$('ai-error').textContent='';$('ai-status').textContent='';$('ai-text').value='';
@@ -125,9 +137,10 @@ function openAI(action){
   $('ai-text-label').textContent=action==='extract'?'เล่าให้ฟังว่ารับหรือจ่ายอะไร':'อยากรู้เรื่องอะไร';
   $('ai-text').placeholder=action==='extract'?'วันนี้ข้าว 65 กาแฟ 50 เมื่อวานเติมน้ำมัน 800':'เดือนนี้จ่ายกับอะไรเยอะที่สุด';
   $('ai-submit').textContent=action==='extract'?'ให้ AI เตรียมรายการ':'ถาม AI';$('ai-image-tools').hidden=action!=='extract';
-  $('ai-dialog').showModal();$('ai-text').focus();
+  $('ai-dialog').showModal();if(image)$('ai-image').click();else $('ai-text').focus();
 }
 $('ai-extract-open').onclick=()=>openAI('extract');$('ai-ask-open').onclick=()=>openAI('ask');
+$('ai-image-open').onclick=()=>openAI('extract',true);
 $('ai-close').onclick=()=>$('ai-dialog').close();
 $('ai-dialog').addEventListener('cancel',event=>{if(aiBusy)event.preventDefault();});
 $('ai-dialog').addEventListener('close',()=>{aiGeneration++;clearAIImage();clearAIResult();$('ai-text').value='';});
@@ -225,7 +238,7 @@ $('ai-save-reviewed').onclick=()=>{
       rows.push({id:crypto.randomUUID(),type,date,amountCents:parseMoney(field('amount').value),description,category});
     }
     if(!rows.length)throw new Error('เลือกรายการที่ต้องการบันทึกอย่างน้อยหนึ่งรายการ');
-    commit({...state,entries:[...state.entries,...rows]});$('month').value=rows[0].date.slice(0,7);$('search').value='';$('filter-type').value='all';render();$('ai-dialog').close();notify('ตรวจและบันทึก '+rows.length+' รายการจาก AI แล้ว');
+    commit({...state,entries:[...state.entries,...rows]});currentPage=1;$('month').value=rows[0].date.slice(0,7);$('search').value='';$('filter-type').value='all';render();$('ai-dialog').close();notify('ตรวจและบันทึก '+rows.length+' รายการจาก AI แล้ว');
   }catch(error){$('ai-error').textContent=error.message;}
 };
 
@@ -244,8 +257,12 @@ $('sync-retry').onclick=()=>cloudSync?.retry();$('sync-use-cloud').onclick=()=>c
 window.addEventListener('budget-auth-changed',()=>{
   const nextOwner=window.budgetAuth.getUser()?.uid||'anonymous';if(nextOwner===owner)return;
   cloudSync?.dispose();cloudSync=null;owner=nextOwner;storageKey=STORAGE_KEY+':owner:'+encodeURIComponent(owner);
-  deleted=null;storageFault=false;editingId=null;editingOriginal=null;lastStoredRaw=null;
+  currentPage=1;deleted=null;storageFault=false;editingId=null;editingOriginal=null;lastStoredRaw=null;
   try{lastStoredRaw=localStorage.getItem(storageKey);state=lastStoredRaw?validateState(JSON.parse(lastStoredRaw)):emptyState();}catch{state=emptyState();storageFault=true;}
   aiGeneration++;if($('ai-dialog').open)$('ai-dialog').close();clearAIImage();clearAIResult();resetForm();render();configureSync();notify('เปลี่ยนบัญชีแล้ว · แสดงเฉพาะข้อมูลของบัญชีนี้');
 });
 configureSync();
+
+// These are shortcuts within one page, not separate application screens.
+function markShortcut(){for(const link of document.querySelectorAll('.sidebar nav a')){const selected=link.hash===location.hash;link.classList.toggle('active',selected);if(selected)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');}}
+window.addEventListener('hashchange',markShortcut);markShortcut();

@@ -1,5 +1,7 @@
 let auth, sdk, local=false,offlineUser=null;
 const OWNER_KEY='budget-last-owner-v1';
+const accountDialog=document.getElementById('account-dialog');
+document.getElementById('account-close').onclick=()=>accountDialog.close();
 function getUser(){return local?{uid:'local-owner',email:''}:auth?.currentUser?{uid:auth.currentUser.uid,email:auth.currentUser.email||''}:offlineUser;}
 function offline(button,status){
   try{const uid=localStorage.getItem(OWNER_KEY);if(uid&&/^[A-Za-z0-9_-]{1,128}$/.test(uid))offlineUser={uid,email:'',offline:true};}catch{}
@@ -29,8 +31,10 @@ const ready=(async()=>{
     const [{initializeApp},authSDK]=await bounded(Promise.all([import('https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js'),import('https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js')]));
     sdk=authSDK;auth=sdk.getAuth(initializeApp(config.firebase));
     await bounded(new Promise((resolve,reject)=>{const unsubscribe=sdk.onAuthStateChanged(auth,()=>{unsubscribe();resolve();},reject);}));
-    sdk.onAuthStateChanged(auth,user=>{offlineUser=null;try{if(user)localStorage.setItem(OWNER_KEY,user.uid);else localStorage.removeItem(OWNER_KEY);}catch{}if(button)button.textContent=user?'ออกจากระบบ':'เข้าสู่ระบบ Google';if(status)status.textContent=user?'เข้าสู่ระบบแล้ว · ตรวจสิทธิ์โดยเซิร์ฟเวอร์':'เข้าสู่ระบบเพื่อซิงค์ข้อมูลและใช้ AI';announce();});
-    if(button){button.disabled=false;button.onclick=async()=>{button.disabled=true;try{if(auth.currentUser)await sdk.signOut(auth);else{if(status)status.textContent='กำลังเปิดหน้าเข้าสู่ระบบ Google…';await sdk.signInWithPopup(auth,new sdk.GoogleAuthProvider());}}catch(error){if(status)status.textContent=loginError(error);}finally{button.disabled=false;}};}
+    sdk.onAuthStateChanged(auth,user=>{offlineUser=null;try{if(user)localStorage.setItem(OWNER_KEY,user.uid);else localStorage.removeItem(OWNER_KEY);}catch{}if(button)button.textContent=user?'บัญชี':'เข้าสู่ระบบ Google';if(status)status.textContent=user?'เข้าสู่ระบบแล้ว':'เข้าสู่ระบบเพื่อซิงค์และใช้ AI';document.getElementById('account-identity').textContent=user?(user.email||'บัญชี Google'):'';if(!user&&accountDialog.open)accountDialog.close();announce();});
+    if(button){button.disabled=false;button.onclick=async()=>{if(auth.currentUser){accountDialog.showModal();return;}button.disabled=true;try{if(status)status.textContent='กำลังเปิดหน้าเข้าสู่ระบบ Google…';await sdk.signInWithPopup(auth,new sdk.GoogleAuthProvider());}catch(error){if(status)status.textContent=loginError(error);}finally{button.disabled=false;}};}
+    const logout=document.getElementById('account-logout');
+    logout.onclick=async()=>{logout.disabled=true;try{await sdk.signOut(auth);accountDialog.close();}catch{if(status)status.textContent='ออกจากระบบไม่สำเร็จ กรุณาลองอีกครั้ง';}finally{logout.disabled=false;}};
   }catch{auth=null;sdk=null;local=false;offline(button,status);}
 })();
 window.budgetAuth={ready,getUser,async getToken(){await ready;if(local)return 'local-preview';if(!auth?.currentUser)throw new Error('กรุณาเข้าสู่ระบบ Google ก่อนใช้ AI');return auth.currentUser.getIdToken();}};
