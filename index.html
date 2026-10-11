@@ -32,6 +32,7 @@
       <div><div class="eyebrow">BUDGET · รายรับรายจ่าย</div><h1>จดเงินวันนี้</h1><p>จดง่าย เห็นชัด ไม่ต้องคิดหลายขั้น</p></div>
       <div class="period-controls"><button id="prev-month" aria-label="เดือนก่อน">‹</button><label><span class="sr-only">เลือกเดือนและปี</span><input type="month" id="month"></label><button id="next-month" aria-label="เดือนถัดไป">›</button></div>
     </header>
+    <section class="ai-account account-bar" aria-label="บัญชีและการเข้าสู่ระบบ"><div><strong>บัญชีของคุณ</strong><span id="ai-account-status" role="status" aria-live="polite">กำลังเชื่อมต่อบัญชี…</span></div><button id="ai-login" type="button" disabled>เข้าสู่ระบบ Google</button></section>
     <section class="app-tools" aria-label="ติดตั้งและการเชื่อมต่อ"><span id="connection-status" role="status"></span><button id="install-app">＋ ติดตั้ง Budget</button><button id="update-app" hidden>อัปเดตแอป</button><span id="ios-install" hidden>ติดตั้งบน iPhone: แตะแชร์ → เพิ่มไปยังหน้าจอโฮม</span></section>
     <section class="demo-banner" id="demo-banner"><div><strong>ลองดูภาพด้วยข้อมูลตัวอย่าง</strong><span>รายการเหล่านี้เป็นตัวอย่างสำหรับดราฟแรก</span></div><button id="start-empty">เริ่มจดข้อมูลของฉัน</button></section>
     <section class="stats" aria-label="ยอดสรุป">
@@ -55,7 +56,6 @@
         </form>
         <p class="form-note">บันทึกแล้วจดรายการถัดไปได้ทันที · ข้อมูลเก็บในเบราว์เซอร์นี้</p>
         <div class="ai-shortcuts"><button id="ai-extract-open" type="button">✦ ช่วยจดด้วย AI</button><button id="ai-ask-open" type="button">✦ ถามเรื่องเงิน</button><span>พิมพ์ข้อความ หรืออ่านใบเสร็จ / สลิป แล้วตรวจเองก่อนบันทึก</span></div>
-        <div class="ai-account"><span id="ai-account-status" role="status">กำลังตรวจการเชื่อมต่อ AI…</span><button id="ai-login" type="button">เข้าสู่ระบบ Google เพื่อใช้ AI</button></div>
       </aside>
       <section class="ledger panel" id="transactions">
         <div class="section-heading"><div><h2>รายการล่าสุด</h2><p id="period-label">เดือนนี้</p></div><span class="count-badge" id="entry-count">0 รายการ</span></div>

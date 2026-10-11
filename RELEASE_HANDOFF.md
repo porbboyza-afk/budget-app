@@ -1,5 +1,9 @@
 # Budget replacement handoff — 2026-10-10
 
+## Mobile account access — 2026-10-11
+
+User reported missing/unusable login on smartphone. Code placed the only login button after the entire entry form and AI tools. Moved account controls directly below the page header, before totals and entry, with a full-width 48px button on small screens. Auth startup now bounds config/SDK/session waits, avoids AbortSignal.timeout compatibility dependency, exposes retry on failure, and distinguishes blocked/cancelled popups, network, unsupported storage and unauthorized domain. Google popup remains invoked directly from the click; no cross-domain redirect flow was added. No physical smartphone login verification claimed.
+
 ## PWA follow-up — 2026-10-10
 
 User authorized PWA, a more dimensional earth palette with additional colors, press effects, and GitHub push. Added standalone Thai manifest, 192/512 PNG icons, public-shell-only service worker, install/update controls and iPhone instructions. Offline startup reads the last signed-in owner's local scope; this pointer carries no token and does not authorize any server request. AI/auth/cloud remain online services. Offline opening before any successful online visit is unsupported. Browser data clearing still requires an external backup. Palette now includes dusty blue, sand, terracotta and muted plum; reduced-motion is respected.
