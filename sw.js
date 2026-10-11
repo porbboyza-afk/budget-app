@@ -1,5 +1,5 @@
 const CACHE='budget-shell-v1';
-const SHELL=['/','/index.html','/styles.css','/app.js','/model.js','/ai-client.js','/auth.js','/cloud-sync.js','/redirect.js','/views.js','/pwa.js','/manifest.webmanifest','/icon-192.png','/icon-512.png'];
+const SHELL=['/','/index.html','/styles.css','/app.js','/model.js','/trips.js','/ai-client.js','/auth.js','/cloud-sync.js','/redirect.js','/views.js','/pwa.js','/manifest.webmanifest','/icon-192.png','/icon-512.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL))));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{
   for(const name of await caches.keys())if(name.startsWith('budget-shell-')&&name!==CACHE)await caches.delete(name);

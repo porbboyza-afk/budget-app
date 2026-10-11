@@ -17,20 +17,39 @@ export function parseMoney(value) {
   return cents;
 }
 export function validateState(data) {
-  if (!data || data.version !== 1 || !Array.isArray(data.entries) || data.entries.length > 100000 ||
+  if (!data || ![1,2].includes(data.version) || !Array.isArray(data.entries) || data.entries.length > 100000 ||
       !Number.isSafeInteger(data.openingCents) || Math.abs(data.openingCents) > 100000000000) throw new Error('ไฟล์นี้ไม่ใช่ข้อมูลจดเงินรุ่นที่รองรับ');
+  const trips=data.version===1?[]:data.trips;
+  if(!Array.isArray(trips)||trips.length>200)throw new Error('ข้อมูลทริปไม่ถูกต้องหรือมีเกิน 200 ทริป');
+  const tripIds=new Set();
+  for(const trip of trips){
+    if(!trip||typeof trip.id!=='string'||!trip.id||trip.id.length>100||tripIds.has(trip.id)||
+      typeof trip.name!=='string'||!trip.name.trim()||trip.name.length>80||!validDate(trip.startDate)||!validDate(trip.endDate)||trip.startDate>trip.endDate||
+      !Number.isSafeInteger(trip.budgetCents)||trip.budgetCents<0||trip.budgetCents>100000000000||typeof trip.archived!=='boolean')throw new Error('ชื่อ วันที่ หรืองบทริปไม่ถูกต้อง');
+    tripIds.add(trip.id);
+  }
   const ids = new Set();
   let totalMagnitude=Math.abs(data.openingCents);
   for (const row of data.entries) {
-    if (!row || typeof row.id !== 'string' || !row.id || ids.has(row.id) || !validDate(row.date) ||
+    if (!row || typeof row.id !== 'string' || !row.id || row.id.length>100 || ids.has(row.id) || !validDate(row.date) ||
         !['income','expense'].includes(row.type) || !Number.isSafeInteger(row.amountCents) || row.amountCents <= 0 || row.amountCents > 100000000000 ||
         typeof row.description !== 'string' || !row.description.trim() || row.description.length > 160 ||
         typeof row.category !== 'string' || row.category.length > 60) throw new Error('ข้อมูลรายการไม่ถูกต้องหรือมีรายการซ้ำ');
     ids.add(row.id);
+    if(data.version===2&&(typeof row.tripId!=='string'||(row.tripId&&!tripIds.has(row.tripId))))throw new Error('รายการอ้างอิงทริปที่ไม่มีอยู่');
     totalMagnitude+=row.amountCents;
     if(!Number.isSafeInteger(totalMagnitude))throw new Error('ยอดรวมเกินขนาดที่คำนวณได้อย่างแม่นยำ');
   }
-  return {version:1,openingCents:data.openingCents,demo:data.demo === true,entries:data.entries.map(row=>({id:row.id,date:row.date,type:row.type,amountCents:row.amountCents,description:row.description,category:row.category}))};
+  return {version:2,openingCents:data.openingCents,demo:data.demo === true,trips:trips.map(t=>({id:t.id,name:t.name.trim(),startDate:t.startDate,endDate:t.endDate,budgetCents:t.budgetCents,archived:t.archived})),entries:data.entries.map(row=>({id:row.id,date:row.date,type:row.type,amountCents:row.amountCents,description:row.description,category:row.category,tripId:data.version===2?row.tripId:''}))};
+}
+export function expenseCategories(entries){
+  const categories=new Map();
+  for(const row of entries){if(row.type!=='expense')continue;const key=row.category||'ไม่ระบุหมวด';categories.set(key,(categories.get(key)||0)+row.amountCents);}
+  return [...categories].sort((a,b)=>b[1]-a[1]);
+}
+export function tripTotals(state,id){
+  const entries=state.entries.filter(row=>row.tripId===id),expense=entries.filter(row=>row.type==='expense').reduce((sum,row)=>sum+row.amountCents,0);
+  return {entries,expense,categories:expenseCategories(entries)};
 }
 export function totals(state, month) {
   let income=0,expense=0,balance=state.openingCents;

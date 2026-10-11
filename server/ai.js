@@ -81,9 +81,15 @@ export async function handleAI(request,env,{local=false}={}){
       content=[{type:'text',text:JSON.stringify({referenceDate:input.date,text:message})},...(image?[image]:[])];
     }else{
       if(!message)throw new Failure('พิมพ์คำถามก่อน');if(input.image)throw new Failure('แนบภาพในโหมดช่วยจดเท่านั้น');
-      const ledger=contextData(input.context);
-      system=boundary+' JSON {"answer":"..."}. Explain ONLY the supplied selected-month ledger. Server totals are authoritative and in baht. State the month and that records may be incomplete. For comparisons or future spending with missing data ask for missing facts, do not invent prior-month values or obligations. No financial investment recommendations. Keep answer under 1200 characters.';
-      content=JSON.stringify({question:message,ledger});
+      const ledger=contextData(input.context);let previous=null;
+      if(input.context.previous){
+        const [year,month]=ledger.month.split('-').map(Number),date=new Date(Date.UTC(year,month-2,1));
+        const expected=String(date.getUTCFullYear()).padStart(4,'0')+'-'+String(date.getUTCMonth()+1).padStart(2,'0');
+        if(input.context.previous.month!==expected||input.context.entries.length+input.context.previous.entries?.length>500)throw new Failure('ข้อมูลเปรียบเทียบต้องเป็นเดือนก่อนและรวมไม่เกิน 500 รายการ');
+        previous=contextData(input.context.previous);
+      }
+      system=boundary+' JSON {"answer":"..."}. Explain ONLY the supplied selected-month ledger and optional preceding-month ledger. Server totals are authoritative and in baht. State months and that records may be incomplete; current month may be partial. Compare category totals and identify recorded transactions behind increases when preceding records exist. Empty prior records mean insufficient history, not proof of zero real spending. For missing data ask for facts, do not invent values or obligations. No financial investment recommendations. Keep answer under 1200 characters.';
+      content=JSON.stringify({question:message,ledger,previous});
     }
     await reserve(env,user,local);
     const response=await fetch('https://api.deepseek.com/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${env.DEEPSEEK_API_KEY}`},body:JSON.stringify({model:'deepseek-flash',thinking:{type:'disabled'},response_format:{type:'json_object'},max_tokens:2500,messages:[{role:'system',content:system},{role:'user',content}]}),signal:AbortSignal.timeout(45000)});

@@ -27,6 +27,7 @@ export async function handleLedger(request,env,{local=false}={}){
       return json(row?{state:checkState(JSON.parse(row.state_json)),revision:row.revision,updatedAt:row.updated_at}:{state:null,revision:0});
     }
     const input=await body(request);
+    if(input.state?.version!==2)throw new Failure('มีแอปรุ่นใหม่ กรุณาเปิดเมนูข้อมูลแล้วอัปเดตแอปก่อนซิงค์',426);
     if(!Number.isSafeInteger(input.revision)||input.revision<0||input.revision>=Number.MAX_SAFE_INTEGER)throw new Failure('รุ่นข้อมูลไม่ถูกต้อง');
     const state=checkState(input.state),raw=JSON.stringify(state),now=new Date().toISOString();
     let saved;

@@ -1,11 +1,11 @@
-const pages={overview:['ภาพรวม','ยอดเงินของเดือนที่เลือก'], 'entry-panel':['จดรายการ','จดเอง หรือให้ AI ช่วยเตรียมรายการ'],transactions:['รายการ','ค้นหาและจัดการรายการของเดือนที่เลือก'],'data-tools':['ข้อมูล','ซิงค์ สำรอง และจัดการข้อมูลของคุณ']};
+const pages={overview:['ภาพรวม','ยอดเงินของเดือนที่เลือก'], 'entry-panel':['จดรายการ','จดเอง หรือให้ AI ช่วยเตรียมรายการ'],transactions:['รายการ','ค้นหาและจัดการรายการของเดือนที่เลือก'],trips:['ทริป','งบและรายจ่ายของแต่ละทริป'],'data-tools':['ข้อมูล','ซิงค์ สำรอง และจัดการข้อมูลของคุณ']};
 let current='overview';
 export function activeView(){return current;}
 export function showView(id,{push=true,focus=false}={}){
   if(!Object.hasOwn(pages,id))id='overview';
   const changed=current!==id;current=id;
   for(const name of Object.keys(pages))document.getElementById(name).hidden=name!==id;
-  document.getElementById('period-bar').hidden=id==='entry-panel';
+  document.getElementById('period-bar').hidden=id==='entry-panel'||id==='trips';
   const [title,caption]=pages[id];
   const heading=document.getElementById('page-title');heading.textContent=title;
   document.getElementById('page-caption').textContent=caption;

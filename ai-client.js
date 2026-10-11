@@ -1,7 +1,9 @@
 // No provider credentials belong in browser code. The authenticated server calls AI.
 export async function requestAI(payload) {
+  const owner=window.budgetAuth?.getUser?.()?.uid;
   await window.budgetAuth?.ready;
   const token = await window.budgetAuth?.getToken?.();
+  if(window.budgetAuth?.getUser?.()?.uid!==owner)throw new Error('บัญชีเปลี่ยนระหว่างเตรียมคำขอ กรุณาส่งใหม่');
   if (!token) throw new Error('กรุณาเข้าสู่ระบบก่อนใช้ AI');
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 60000);
