@@ -1,5 +1,19 @@
 # Budget replacement handoff — 2026-10-10
 
+## Separate views — 2026-10-11
+
+Latest user steering supersedes the earlier single-page preference: fixed top menu on mobile and separate compact destinations. Added views.js with four hash routes: overview, entry-panel, transactions, data-tools. Only the active panel is shown; switching panels preserves mounted form/list state, supports browser back/forward and direct links, and avoids reinitializing auth or sync. Editing a ledger row opens the entry screen; summary's return-to-entry action does likewise. The month selector remains available for overview/list/CSV-data screens; entry uses its explicit date. Sync conflicts announce once and mark the data menu so hidden tools cannot silently conceal a conflict. views.js is public-build allowlisted and precached for offline navigation. This update includes the requested signed-in avatar and green dot.
+
+Independent review identified startup typing loss and month-change draft clearing. Entry controls are now disabled with a loading message until account/local-state initialization completes; switching reporting months no longer resets the entry form. Persistent data-menu conflict marker plus one-time notice address conflicts while the data screen is hidden.
+
+Cloud refresh also preserves the manual draft; existing stale-edit checks still reject edits to remotely changed rows. Independent follow-up source review found no remaining blocker. All four screens were visually inspected in a narrow Brave desktop window on preview; this was not a physical-phone check or live signed-in-avatar verification. Public-asset build and git diff whitespace checks passed. No automated tests or paid AI calls were run for this update.
+
+Cloud refresh also preserves the manual draft; existing stale-edit checks still reject edits to remotely changed rows. Independent follow-up source review found no remaining blocker. All four screens were visually inspected in a narrow Brave desktop window on preview; this was not a physical-phone check or live signed-in-avatar verification. Public-asset build and git diff whitespace checks passed. No automated tests or paid AI calls were run for this update.
+
+## Account avatar — 2026-10-11
+
+User requested a small circular account photo and green indicator after Google login. Header now renders the authenticated user's Google photo (HTTPS lh-number.googleusercontent.com only), with initial fallback if absent/blocked. The green dot means signed in, not proof of successful cloud sync. Button retains an accessible label and opens the account dialog; sign-out and startup fallback remove the avatar. Photo URLs/identity are not stored in persistent notes or copied to Git. CSP allows Googleusercontent images; service worker does not intercept or cache external profile requests. Other app colors remain unchanged.
+
 ## One-page organization and pagination — 2026-10-11
 
 User approved preserving the simple single page while organizing controls and limiting long lists. Account/login is a compact top-right control independent of the money form; signed-in users open a separate account dialog before logout. Shortcuts are จด / รายการ / ข้อมูล anchors. Month, totals, monthly summary and money questions are grouped; AI text/image entry buttons appear before manual fields. Sync, backup/restore/CSV and PWA tools share one data section.

@@ -151,3 +151,21 @@ button{box-shadow:inset 0 1px 0 #fff9,0 1px 3px #5848370c}
   footer{padding-bottom:10px}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* Green is reserved for the explicitly requested signed-in account indicator. */
+.page-header .account-bar #ai-login.signed-in{width:48px;height:48px;min-height:48px;padding:4px;border-radius:50%;background:#fffdf9;box-shadow:0 2px 6px #52697a18;overflow:visible}
+.account-avatar{display:grid;place-items:center;position:relative;width:38px;height:38px;border-radius:50%;background:linear-gradient(145deg,#e8ddef,#d6c5df);color:#70567c;font-size:17px;font-weight:600}
+.account-avatar img{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover}
+.account-dot{position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#29995d;border:2px solid #fffdf9;box-shadow:0 1px 3px #0002}
+
+/* Separate compact views keep all main destinations visible in the menu. */
+html{scroll-behavior:auto}.app-view{margin-top:18px}#page-title:focus{outline:none}
+#overview .stats{margin-top:0}.overview-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.overview-actions button,.view-action{display:flex;align-items:center;justify-content:center;min-height:44px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;font-size:13px;text-align:center}
+.view-action{background:linear-gradient(145deg,#f2e1d5,#e5c7b5);border-color:#d6b59f;color:#87543d;font-weight:600;box-shadow:inset 0 1px 0 #fff7,0 2px 5px #87543d10}
+.data-note{margin:0!important;line-height:1.7}.app-view.data-tools{margin-top:18px}
+.form-note a{color:#80563e;text-decoration:underline;text-underline-offset:3px;padding:5px 0;display:inline-block}
+#entry-fields{border:0;padding:0;margin:0;min-width:0}#entry-fields:disabled{opacity:.55}
+.nav-item.sync-warning:after{content:'!';display:inline-grid;place-items:center;min-width:16px;height:16px;margin-left:4px;border-radius:50%;background:#b87652;color:#fff;font-size:11px;font-weight:700}
+@media(max-width:850px){.sidebar{position:sticky;top:0;z-index:5}.sidebar nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));flex:1}.sidebar .nav-item{padding:10px 8px;min-width:0;white-space:normal}.brand{flex-shrink:0}#transactions{scroll-margin-top:145px}}
+@media(max-width:650px){.sidebar nav{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.sidebar .nav-item{font-size:12px;padding:10px 5px}.app-view{margin-top:14px}.overview-actions button,.view-action{font-size:12px;padding:10px 6px}.entry-panel .ai-shortcuts{margin-bottom:12px}.entry-panel .field{margin-bottom:12px}.entry-panel .field>input{padding:11px 10px}.amount-input input{padding:11px 12px}.form-sub{font-size:11px}.form-note{font-size:10px}.page-header{min-height:65px}}

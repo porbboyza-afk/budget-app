@@ -2,6 +2,7 @@ import {STORAGE_KEY,localDate,validDate,parseMoney,validateState,totals} from '.
 import {requestAI} from './ai-client.js';
 import './auth.js';
 import {createCloudSync} from './cloud-sync.js';
+import {showView,activeView} from './views.js';
 await window.budgetAuth.ready;
 let owner=window.budgetAuth.getUser()?.uid||'anonymous';
 let storageKey=STORAGE_KEY+':owner:'+encodeURIComponent(owner),cloudSync=null;
@@ -13,6 +14,7 @@ const monthName=month=>new Intl.DateTimeFormat('th-TH',{month:'long',year:'numer
 let state,storageFault=false,editingId=null,editingOriginal=null,entryType='expense',deleted=null,toastTimer,lastStoredRaw=null;
 const PAGE_SIZE=10;
 let currentPage=1;
+let shownSyncConflict=false;
 const emptyState=()=>({version:1,openingCents:0,demo:false,entries:[]});
 try {lastStoredRaw=localStorage.getItem(storageKey);state=lastStoredRaw?validateState(JSON.parse(lastStoredRaw)):emptyState();}
 catch {state={version:1,openingCents:0,demo:false,entries:[]};storageFault=true;}
@@ -69,17 +71,17 @@ $('entries').onclick=event=>{
   const button=event.target.closest('button[data-action]');if(!button)return;
   const row=state.entries.find(r=>r.id===button.dataset.id);if(!row)return;
   if(button.dataset.action==='edit'){
-    editingId=row.id;editingOriginal=JSON.stringify(row);setType(row.type);$('form-heading').textContent='แก้ไขรายการ';$('amount').value=(row.amountCents/100).toFixed(2);$('description').value=row.description;$('date').value=row.date;$('category').value=row.category;$('cancel-edit').hidden=false;$('form-error').textContent='';$('entry-panel').scrollIntoView({behavior:'smooth',block:'start'});$('amount').focus({preventScroll:true});
+    editingId=row.id;editingOriginal=JSON.stringify(row);setType(row.type);$('form-heading').textContent='แก้ไขรายการ';$('amount').value=(row.amountCents/100).toFixed(2);$('description').value=row.description;$('date').value=row.date;$('category').value=row.category;$('cancel-edit').hidden=false;$('form-error').textContent='';showView('entry-panel');$('amount').focus({preventScroll:true});
   }else{
     try{commit({...state,entries:state.entries.filter(r=>r.id!==row.id)});deleted=row;if(editingId===row.id)resetForm();notify('ลบ “'+row.description+'” แล้ว',true);}catch(error){notify(error.message);}
   }
 };
 $('undo').onclick=()=>{if(!deleted)return;try{commit({...state,entries:[...state.entries,deleted]});deleted=null;notify('คืนรายการและบันทึกแล้ว');}catch(error){notify(error.message,true);}};
 $('dismiss-toast').onclick=()=>{$('toast').hidden=true;};
-function changeMonth(offset){const [year,month]=$('month').value.split('-').map(Number);const date=new Date(year,month-1+offset,1);if(date.getFullYear()<1900||date.getFullYear()>2200)return;currentPage=1;$('month').value=localDate(date).slice(0,7);render();if(!editingId)resetForm();}
+function changeMonth(offset){const [year,month]=$('month').value.split('-').map(Number);const date=new Date(year,month-1+offset,1);if(date.getFullYear()<1900||date.getFullYear()>2200)return;currentPage=1;$('month').value=localDate(date).slice(0,7);render();}
 $('prev-month').onclick=()=>changeMonth(-1);$('next-month').onclick=()=>changeMonth(1);
 $('month').min='1900-01';$('month').max='2200-12';
-$('month').onchange=()=>{currentPage=1;if(!/^\d{4}-\d{2}$/.test($('month').value)||!validDate($('month').value+'-01')){$('month').value=localDate().slice(0,7);}render();if(!editingId)resetForm();};
+$('month').onchange=()=>{currentPage=1;if(!/^\d{4}-\d{2}$/.test($('month').value)||!validDate($('month').value+'-01')){$('month').value=localDate().slice(0,7);}render();};
 function resetPage(){currentPage=1;render();}
 $('search').oninput=resetPage;$('filter-type').onchange=resetPage;
 $('clear-filter').onclick=()=>{$('search').value='';$('filter-type').value='all';resetPage();};
@@ -118,8 +120,9 @@ $('summary-nav').onclick=()=>{
   $('summary-content').innerHTML=`<div class="summary-row"><span>รายรับ</span><strong>฿${money(sums.income)}</strong></div><div class="summary-row"><span>รายจ่าย</span><strong>฿${money(sums.expense)}</strong></div><div class="summary-row"><span>รับ − จ่าย เดือนนี้</span><strong>฿${money(sums.income-sums.expense)}</strong></div><p>รายจ่ายแยกหมวด</p>`+[...categories].sort((a,b)=>b[1]-a[1]).map(([key,cents])=>`<div class="summary-row"><span>${escape(key)}</span><strong>฿${money(cents)}</strong></div>`).join('');
   $('summary-dialog').showModal();
 };
-$('close-summary').onclick=$('summary-done').onclick=()=>$('summary-dialog').close();
-resetForm();render();if(matchMedia('(pointer: fine)').matches&&!storageFault)$('amount').focus({preventScroll:true});if(storageFault)notify('อ่านข้อมูลเดิมไม่สำเร็จ ยังไม่ได้เขียนทับ โปรดกู้คืนจากไฟล์สำรอง');
+$('close-summary').onclick=()=>$('summary-dialog').close();
+$('summary-done').onclick=()=>{$('summary-dialog').close();showView('entry-panel',{focus:true});};
+resetForm();render();$('entry-fields').disabled=false;$('entry-loading').hidden=true;if(activeView()==='entry-panel'&&matchMedia('(pointer: fine)').matches&&!storageFault)$('amount').focus({preventScroll:true});if(storageFault)notify('อ่านข้อมูลเดิมไม่สำเร็จ ยังไม่ได้เขียนทับ โปรดกู้คืนจากไฟล์สำรอง');
 
 window.addEventListener('storage',event=>{if(event.key!==storageKey&&event.key!==null)return;if(event.newValue===null){lastStoredRaw=null;cloudSync?.pause();notify('ข้อมูลในเครื่องถูกล้าง ระบบพักซิงค์ไว้ กรุณาเลือกกู้คืนจากคลาวด์หรือโหลดหน้าใหม่');return;}try{const next=validateState(JSON.parse(event.newValue));state=next;lastStoredRaw=event.newValue;storageFault=false;$('start-empty').hidden=false;render();cloudSync?.changed();notify('อัปเดตข้อมูลจากแท็บอื่นแล้ว');}catch{storageFault=true;lastStoredRaw=event.newValue;render();notify('ข้อมูลจากแท็บอื่นอ่านไม่ได้ กรุณากู้คืนจากไฟล์');}});
 
@@ -244,12 +247,13 @@ $('ai-save-reviewed').onclick=()=>{
 
 function configureSync(){
   cloudSync?.dispose();cloudSync=null;
+  shownSyncConflict=false;$('data-nav-link').classList.remove('sync-warning');$('data-nav-link').setAttribute('aria-label','ข้อมูล');
   $('sync-conflict').hidden=true;
   if(owner==='anonymous'){$('sync-status').textContent='บันทึกในเครื่อง · เข้าสู่ระบบเพื่อซิงค์';$('sync-retry').hidden=true;return;}
   $('sync-retry').hidden=false;
   cloudSync=createCloudSync({key:storageKey,getRaw:()=>lastStoredRaw,getState:()=>{if(storageFault)throw new Error('อ่านข้อมูลในเครื่องไม่ได้');return state;},
-    applyState:next=>{if(storageFault)throw new Error('อ่านข้อมูลในเครื่องไม่ได้ โปรดสำรองและกู้คืนก่อน');if(localStorage.getItem(storageKey)!==lastStoredRaw)throw new Error('ข้อมูลเปลี่ยนจากแท็บอื่น กรุณาโหลดใหม่');const raw=JSON.stringify(validateState(next));localStorage.setItem(storageKey,raw);lastStoredRaw=raw;state=next;deleted=null;resetForm();if($('ai-dialog').open)$('ai-dialog').close();render();},
-    status:(text,conflict)=>{$('sync-status').textContent=text;$('sync-conflict').hidden=!conflict;},notify,
+    applyState:next=>{if(storageFault)throw new Error('อ่านข้อมูลในเครื่องไม่ได้ โปรดสำรองและกู้คืนก่อน');if(localStorage.getItem(storageKey)!==lastStoredRaw)throw new Error('ข้อมูลเปลี่ยนจากแท็บอื่น กรุณาโหลดใหม่');const raw=JSON.stringify(validateState(next));localStorage.setItem(storageKey,raw);lastStoredRaw=raw;state=next;deleted=null;if($('ai-dialog').open)$('ai-dialog').close();render();},
+    status:(text,conflict)=>{$('sync-status').textContent=text;$('sync-conflict').hidden=!conflict;$('data-nav-link').classList.toggle('sync-warning',conflict);$('data-nav-link').setAttribute('aria-label',conflict?'ข้อมูล · ต้องเลือกชุดข้อมูลสำหรับซิงค์':'ข้อมูล');if(conflict&&!shownSyncConflict)notify('ซิงค์ต้องการให้เลือกชุดข้อมูล กรุณาเปิดหน้า “ข้อมูล”');shownSyncConflict=conflict;},notify,
     backup:(data,label)=>download(JSON.stringify(data,null,2),'budget-'+label+'-'+localDate()+'.json','application/json')});
   if(!storageFault)cloudSync.start();
 }
@@ -262,7 +266,3 @@ window.addEventListener('budget-auth-changed',()=>{
   aiGeneration++;if($('ai-dialog').open)$('ai-dialog').close();clearAIImage();clearAIResult();resetForm();render();configureSync();notify('เปลี่ยนบัญชีแล้ว · แสดงเฉพาะข้อมูลของบัญชีนี้');
 });
 configureSync();
-
-// These are shortcuts within one page, not separate application screens.
-function markShortcut(){for(const link of document.querySelectorAll('.sidebar nav a')){const selected=link.hash===location.hash;link.classList.toggle('active',selected);if(selected)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');}}
-window.addEventListener('hashchange',markShortcut);markShortcut();

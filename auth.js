@@ -2,11 +2,28 @@ let auth, sdk, local=false,offlineUser=null;
 const OWNER_KEY='budget-last-owner-v1';
 const accountDialog=document.getElementById('account-dialog');
 document.getElementById('account-close').onclick=()=>accountDialog.close();
+function accountButton(button,user){
+  if(!button)return;
+  button.replaceChildren();button.classList.toggle('signed-in',Boolean(user));
+  if(!user){button.textContent='เข้าสู่ระบบ Google';button.removeAttribute('aria-label');button.removeAttribute('title');return;}
+  const label=user.displayName||'Google';
+  button.setAttribute('aria-label','เปิดบัญชี '+label+' · เข้าสู่ระบบแล้ว');button.title='บัญชี · เข้าสู่ระบบแล้ว';
+  const avatar=document.createElement('span');avatar.className='account-avatar';avatar.setAttribute('aria-hidden','true');
+  const fallback=document.createElement('span');fallback.className='avatar-initial';fallback.textContent=Array.from(user.displayName||user.email||'G')[0].toLocaleUpperCase();avatar.append(fallback);
+  try{
+    const photo=new URL(user.photoURL);
+    if(photo.protocol==='https:'&&/^lh\d+\.googleusercontent\.com$/.test(photo.hostname)){
+      const image=document.createElement('img');image.alt='';image.referrerPolicy='no-referrer';image.hidden=true;
+      image.onload=()=>{fallback.hidden=true;image.hidden=false;};image.onerror=()=>image.remove();image.src=photo.href;avatar.append(image);
+    }
+  }catch{}
+  const dot=document.createElement('span');dot.className='account-dot';dot.setAttribute('aria-hidden','true');avatar.append(dot);button.append(avatar);
+}
 function getUser(){return local?{uid:'local-owner',email:''}:auth?.currentUser?{uid:auth.currentUser.uid,email:auth.currentUser.email||''}:offlineUser;}
 function offline(button,status){
   try{const uid=localStorage.getItem(OWNER_KEY);if(uid&&/^[A-Za-z0-9_-]{1,128}$/.test(uid))offlineUser={uid,email:'',offline:true};}catch{}
   if(status)status.textContent=navigator.onLine?'เชื่อมต่อบัญชีไม่สำเร็จ · ตรวจอินเทอร์เน็ตแล้วลองเชื่อมต่ออีกครั้ง':offlineUser?'ออฟไลน์ · ใช้ข้อมูลบัญชีล่าสุดในเครื่อง · เชื่อมต่อก่อนซิงค์หรือใช้ AI':'ออฟไลน์ · จดข้อมูลในเครื่องได้';
-  if(button){button.textContent='ลองเชื่อมต่ออีกครั้ง';button.disabled=false;button.onclick=()=>location.reload();}announce();
+  if(button){accountButton(button,null);button.textContent='ลองเชื่อมต่ออีกครั้ง';button.disabled=false;button.onclick=()=>location.reload();}announce();
 }
 function announce(){window.dispatchEvent(new CustomEvent('budget-auth-changed',{detail:getUser()}));}
 function bounded(promise,ms=12000){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Auth timeout')),ms);})]).finally(()=>clearTimeout(timer));}
@@ -31,7 +48,7 @@ const ready=(async()=>{
     const [{initializeApp},authSDK]=await bounded(Promise.all([import('https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js'),import('https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js')]));
     sdk=authSDK;auth=sdk.getAuth(initializeApp(config.firebase));
     await bounded(new Promise((resolve,reject)=>{const unsubscribe=sdk.onAuthStateChanged(auth,()=>{unsubscribe();resolve();},reject);}));
-    sdk.onAuthStateChanged(auth,user=>{offlineUser=null;try{if(user)localStorage.setItem(OWNER_KEY,user.uid);else localStorage.removeItem(OWNER_KEY);}catch{}if(button)button.textContent=user?'บัญชี':'เข้าสู่ระบบ Google';if(status)status.textContent=user?'เข้าสู่ระบบแล้ว':'เข้าสู่ระบบเพื่อซิงค์และใช้ AI';document.getElementById('account-identity').textContent=user?(user.email||'บัญชี Google'):'';if(!user&&accountDialog.open)accountDialog.close();announce();});
+    sdk.onAuthStateChanged(auth,user=>{offlineUser=null;try{if(user)localStorage.setItem(OWNER_KEY,user.uid);else localStorage.removeItem(OWNER_KEY);}catch{}accountButton(button,user);if(status)status.textContent=user?'เข้าสู่ระบบแล้ว':'เข้าสู่ระบบเพื่อซิงค์และใช้ AI';document.getElementById('account-identity').textContent=user?(user.email||'บัญชี Google'):'';if(!user&&accountDialog.open)accountDialog.close();announce();});
     if(button){button.disabled=false;button.onclick=async()=>{if(auth.currentUser){accountDialog.showModal();return;}button.disabled=true;try{if(status)status.textContent='กำลังเปิดหน้าเข้าสู่ระบบ Google…';await sdk.signInWithPopup(auth,new sdk.GoogleAuthProvider());}catch(error){if(status)status.textContent=loginError(error);}finally{button.disabled=false;}};}
     const logout=document.getElementById('account-logout');
     logout.onclick=async()=>{logout.disabled=true;try{await sdk.signOut(auth);accountDialog.close();}catch{if(status)status.textContent='ออกจากระบบไม่สำเร็จ กรุณาลองอีกครั้ง';}finally{logout.disabled=false;}};
