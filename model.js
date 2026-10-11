@@ -18,7 +18,7 @@ export function parseMoney(value) {
 }
 export function validateState(data) {
   if (!data || data.version !== 1 || !Array.isArray(data.entries) || data.entries.length > 100000 ||
-      !Number.isSafeInteger(data.openingCents) || Math.abs(data.openingCents) > 100000000000) throw new Error('ไฟล์นี้ไม่ใช่ข้อมูล Budget รุ่นที่รองรับ');
+      !Number.isSafeInteger(data.openingCents) || Math.abs(data.openingCents) > 100000000000) throw new Error('ไฟล์นี้ไม่ใช่ข้อมูลจดเงินรุ่นที่รองรับ');
   const ids = new Set();
   let totalMagnitude=Math.abs(data.openingCents);
   for (const row of data.entries) {

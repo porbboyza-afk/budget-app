@@ -9,7 +9,7 @@ export function showView(id,{push=true,focus=false}={}){
   const [title,caption]=pages[id];
   const heading=document.getElementById('page-title');heading.textContent=title;
   document.getElementById('page-caption').textContent=caption;
-  document.title='Budget — '+title;
+  document.title='จดเงิน — '+title;
   for(const link of document.querySelectorAll('.sidebar nav a')){
     const selected=link.hash==='#'+id;link.classList.toggle('active',selected);
     if(selected)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');

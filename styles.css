@@ -169,3 +169,14 @@ html{scroll-behavior:auto}.app-view{margin-top:18px}#page-title:focus{outline:no
 .nav-item.sync-warning:after{content:'!';display:inline-grid;place-items:center;min-width:16px;height:16px;margin-left:4px;border-radius:50%;background:#b87652;color:#fff;font-size:11px;font-weight:700}
 @media(max-width:850px){.sidebar{position:sticky;top:0;z-index:5}.sidebar nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));flex:1}.sidebar .nav-item{padding:10px 8px;min-width:0;white-space:normal}.brand{flex-shrink:0}#transactions{scroll-margin-top:145px}}
 @media(max-width:650px){.sidebar nav{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.sidebar .nav-item{font-size:12px;padding:10px 5px}.app-view{margin-top:14px}.overview-actions button,.view-action{font-size:12px;padding:10px 6px}.entry-panel .ai-shortcuts{margin-bottom:12px}.entry-panel .field{margin-bottom:12px}.entry-panel .field>input{padding:11px 10px}.amount-input input{padding:11px 12px}.form-sub{font-size:11px}.form-note{font-size:10px}.page-header{min-height:65px}}
+
+/* Small account photo, comfortable touch target, and visible auth errors. */
+.sidebar-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sidebar .account-bar{position:fixed;right:36px;top:34px;display:flex;align-items:center;justify-content:center;flex-direction:row;margin:0;padding:0;border:0;background:none;box-shadow:none;z-index:6}
+.sidebar .account-bar #ai-login{width:auto;min-height:44px;max-width:180px;padding:8px 12px;font-size:12px;line-height:1.5;white-space:normal;color:#52697a;background:linear-gradient(145deg,#f6f9fa,#e7eef2);border:1px solid #cedbe3;box-shadow:0 2px 5px #52697a0e}
+.sidebar .account-bar #ai-login.signed-in{display:grid;place-items:center;width:44px;height:44px;min-height:44px;padding:7px;border:0;border-radius:50%;background:transparent;box-shadow:none}
+.sidebar .account-avatar{width:30px;height:30px;font-size:14px}
+.sidebar .account-dot{width:9px;height:9px;right:-1px;bottom:-1px;border-width:1.5px}
+.account-notice:not(.sr-only){display:block;margin:12px 0 0;padding:10px 12px;border:1px solid #e3c8bb;border-radius:9px;background:#fff5ef;color:#92553f;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+.page-header{padding-right:190px;min-height:44px}
+@media(max-width:850px){.sidebar{display:block}.sidebar-top{width:100%}.sidebar .account-bar{position:static;flex-shrink:0}.sidebar nav{margin-top:8px}.page-header{padding-right:0;min-height:0}.account-notice:not(.sr-only){margin-top:8px}}

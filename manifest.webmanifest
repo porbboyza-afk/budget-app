@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Budget — รายรับรายจ่าย",
-  "short_name": "Budget",
+  "name": "จดเงิน — รายรับรายจ่าย",
+  "short_name": "จดเงิน",
   "lang": "th",
   "start_url": "/",
   "scope": "/",
