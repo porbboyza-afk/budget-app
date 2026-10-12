@@ -1,14 +1,33 @@
 // No provider credentials belong in browser code. The authenticated server calls AI.
 export async function requestAI(payload) {
-  const owner = window.budgetAuth?.getUser?.()?.uid;
-  await window.budgetAuth?.ready;
-  const token = await window.budgetAuth?.getToken?.();
-  if (window.budgetAuth?.getUser?.()?.uid !== owner)
-    throw new Error('บัญชีเปลี่ยนระหว่างเตรียมคำขอ กรุณาส่งใหม่');
-  if (!token) throw new Error('กรุณาเข้าสู่ระบบก่อนใช้ AI');
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 60000);
+  let timeout;
+  const deadline = new Promise((_, reject) => {
+    timeout = setTimeout(() => {
+      reject(new DOMException('AI request timed out', 'AbortError'));
+      controller.abort();
+    }, 60000);
+  });
   try {
+    return await Promise.race([deadline, performRequest()]);
+  } catch (error) {
+    if (error.name === 'AbortError') throw new Error('AI ใช้เวลานานเกินไป กรุณาลองใหม่');
+    if (error instanceof TypeError) throw new Error('เชื่อมต่อ AI ไม่สำเร็จ กรุณาตรวจการเชื่อมต่อ');
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  async function performRequest() {
+    const owner = window.budgetAuth?.getUser?.()?.uid;
+    await window.budgetAuth?.ready;
+    controller.signal.throwIfAborted();
+    const token = await window.budgetAuth?.getToken?.();
+    // A timed-out token promise may resolve later. Never send its stale payload.
+    controller.signal.throwIfAborted();
+    if (window.budgetAuth?.getUser?.()?.uid !== owner)
+      throw new Error('บัญชีเปลี่ยนระหว่างเตรียมคำขอ กรุณาส่งใหม่');
+    if (!token) throw new Error('กรุณาเข้าสู่ระบบก่อนใช้ AI');
     const response = await fetch('/api/ai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -26,11 +45,5 @@ export async function requestAI(payload) {
     }
     if (!body || typeof body !== 'object') throw new Error('AI ส่งคำตอบที่อ่านไม่ได้');
     return body;
-  } catch (error) {
-    if (error.name === 'AbortError') throw new Error('AI ใช้เวลานานเกินไป กรุณาลองใหม่');
-    if (error instanceof TypeError) throw new Error('เชื่อมต่อ AI ไม่สำเร็จ กรุณาตรวจการเชื่อมต่อ');
-    throw error;
-  } finally {
-    clearTimeout(timeout);
   }
 }

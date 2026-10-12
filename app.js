@@ -155,7 +155,13 @@ function rememberSave(rows, label) {
   lastSave = { rows, label };
   renderLastSave();
 }
+function clearSummary() {
+  if ($('summary-dialog').open) $('summary-dialog').close();
+  $('summary-content').replaceChildren();
+  $('summary-period').textContent = '';
+}
 function render() {
+  clearSummary();
   const month = $('month').value,
     all = state.entries.filter((r) => r.date.startsWith(month + '-'));
   const sums = totals(state, month);
@@ -390,6 +396,7 @@ $('start-empty').onclick = () => {
     commit(emptyState());
     deleted = null;
     lastSave = null;
+    aiUI.reset();
     tripsUI?.reset();
     resetForm();
     render();
@@ -487,6 +494,7 @@ $('restore-file').onchange = async (event) => {
     lastSave = null;
     tripsUI?.reset();
     $('start-empty').hidden = false;
+    aiUI.reset();
     resetForm();
     render();
     configureSync();
@@ -555,6 +563,11 @@ window.addEventListener('storage', (event) => {
   if (event.key !== storageKey && event.key !== null) return;
   if (event.newValue === null) {
     lastStoredRaw = null;
+    storageFault = true;
+    deleted = null;
+    lastSave = null;
+    aiUI.reset();
+    render();
     cloudSync?.pause();
     notify('ข้อมูลในเครื่องถูกล้าง ระบบพักซิงค์ไว้ กรุณาเลือกกู้คืนจากคลาวด์หรือโหลดหน้าใหม่');
     return;
@@ -589,7 +602,9 @@ window.addEventListener('storage', (event) => {
   } catch {
     storageFault = true;
     lastStoredRaw = event.newValue;
+    aiUI.reset();
     render();
+    cloudSync?.pause('ข้อมูลในเครื่องอ่านไม่ได้ · เลือกชุดคลาวด์หรือกู้คืนไฟล์สำรอง');
     notify('ข้อมูลจากแท็บอื่นอ่านไม่ได้ กรุณากู้คืนจากไฟล์');
   }
 });
@@ -631,11 +646,15 @@ function configureSync() {
       if (storageFault) throw new Error('อ่านข้อมูลในเครื่องไม่ได้');
       return state;
     },
-    applyState: (next) => {
-      if (storageFault) throw new Error('อ่านข้อมูลในเครื่องไม่ได้ โปรดสำรองและกู้คืนก่อน');
+    getLocalBackup: () => ({ state: storageFault ? null : state, raw: lastStoredRaw }),
+    applyState: (next, { recovery = false } = {}) => {
+      if (storageFault && !recovery)
+        throw new Error('อ่านข้อมูลในเครื่องไม่ได้ โปรดสำรองและกู้คืนก่อน');
       const { state: checked, raw } = repository.write(storageKey, next, lastStoredRaw);
       lastStoredRaw = raw;
       state = checked;
+      storageFault = false;
+      $('start-empty').hidden = false;
       legacyConflict = false;
       deleted = null;
       aiUI.reset();
@@ -660,8 +679,12 @@ function configureSync() {
         'budget-' + label + '-' + localDate() + '.json',
         'application/json',
       ),
+    backupRaw: (raw, label) =>
+      download(raw, 'budget-' + label + '-' + localDate() + '.json', 'application/json'),
   });
   if (legacyConflict) cloudSync.pause('พบแท็บรุ่นเก่า · เลือกชุดข้อมูลเพื่อรักษาทริป');
+  else if (storageFault)
+    cloudSync.pause('ข้อมูลในเครื่องอ่านไม่ได้ · เลือกชุดคลาวด์หรือกู้คืนไฟล์สำรอง');
   else if (!storageFault) cloudSync.start();
 }
 $('sync-retry').onclick = () => cloudSync?.retry();
@@ -677,6 +700,9 @@ window.addEventListener('budget-auth-changed', () => {
   currentPage = 1;
   deleted = null;
   lastSave = null;
+  $('search').value = '';
+  $('filter-type').value = 'all';
+  $('trip-filter').value = '';
   storageFault = false;
   legacyConflict = false;
   editingId = null;

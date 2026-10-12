@@ -153,6 +153,22 @@ test('repository isolates owner keys and rejects stale writes', () => {
   assert.throws(() => repo.write(key, emptyState(), null));
   assert.equal(repo.readRaw(key), saved.raw);
 });
+test('AI batch undo compares entry values independently of object property order', () => {
+  const after = {
+    id: 'ai-order',
+    type: 'expense',
+    date: '2026-10-01',
+    amountCents: 1234,
+    description: 'Synthetic AI entry',
+    category: 'Food',
+    tripId: '',
+  };
+  const checked = validateState({ ...emptyState(), entries: [after] });
+  assert.notEqual(JSON.stringify(checked.entries[0]), JSON.stringify(after));
+  const save = { rows: [{ after, before: null }] };
+  assert.equal(canUndoSave(checked, save), true);
+  assert.deepEqual(undoSave(checked, save).entries, []);
+});
 test('repository preserves legacy backup and uses recovery without rewriting raw', () => {
   const storage = memoryStorage(),
     repo = createLedgerRepository(storage),
@@ -183,8 +199,13 @@ test('repository adapter failure cannot change the supplied state', () => {
   assert.equal(value.entries.length, 2);
 });
 
-test('valid restore can replace damaged or null JSON while preserving original raw', () => {
-  for (const damaged of ['{broken', 'null']) {
+test('valid restore preserves malformed JSON and invalid legacy/current schemas', () => {
+  for (const damaged of [
+    '{broken',
+    'null',
+    JSON.stringify({ ...state(), entries: [{ ...row('broken', '2026-10-01'), amountCents: -1 }] }),
+    JSON.stringify({ version: 1, openingCents: 0, entries: null }),
+  ]) {
     const storage = memoryStorage(),
       repo = createLedgerRepository(storage),
       key = repo.keyFor('owner');

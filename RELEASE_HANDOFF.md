@@ -1,5 +1,11 @@
 # Budget replacement handoff — 2026-10-10
 
+## Functional audit before everyday use — 2026-10-12
+
+User requested another full code/usage audit and fixes before real use. Independent reviewers checked ledger/UI, cloud/PWA and AI/auth/backend. Fixed stale account summaries, storage-deletion resurrection and empty uploads after reload with retained sync metadata, invalid-schema repair snapshots, AI batch undo property-order comparison, whole-request token/network deadlines, paused/stale sync responses, false identical-data conflicts, backward remote revisions, damaged-data cloud recovery, partial AI quota consumption and invalid ledger payload shapes. Schema 2 and owner keys unchanged; no migration. Source backup: `backup/jodngern-before-functional-audit-20261012`.
+
+Verification: 56 synthetic TAP tests passed; 11 isolated Brave UI scenario groups and 3 actual service-worker offline/update groups passed. APIs/Firebase/D1 were mocked for these scenarios; exact quota SQL also checked with in-memory SQLite. No paid AI calls or real ledger writes. See `FUNCTIONAL_AUDIT.md` for coverage, commands and practical limits; device/native verification is not claimed.
+
 ## Code cleanup and Android preparation — 2026-10-12
 
 User requested a code-quality check and orderly base for later Android development. Added platform-independent ledger-domain.js for queries, paging, AI context/proposal validation and guarded undo; ledger-repository.js centralizes validated local/cloud writes, legacy recovery and scoped preferences using an injected synchronous storage interface; ui-format.js removes duplicate web formatting. Extracted AI dialog/image handling into ai-ui.js. app.js remains web orchestration and trips.js remains web presentation. API/schema/owner keys unchanged. Public module allowlist and offline shell include new dependencies.

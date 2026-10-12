@@ -19,18 +19,21 @@ export function createLedgerRepository(storage) {
     assertCurrent(key, expectedRaw);
     const state = validateState(next),
       raw = JSON.stringify(state);
-    let priorVersion;
+    let priorVersion,
+      priorValid = false;
     try {
-      priorVersion = expectedRaw ? JSON.parse(expectedRaw)?.version : undefined;
+      const prior = expectedRaw ? JSON.parse(expectedRaw) : null;
+      priorVersion = prior?.version;
+      validateState(prior);
+      priorValid = true;
     } catch {}
     try {
       if (backupLegacy && expectedRaw) {
-        const suffix =
-          priorVersion === 1
+        const suffix = !priorValid
+          ? ':before-repair'
+          : priorVersion === 1
             ? ':before-version2'
-            : ![1, 2].includes(priorVersion)
-              ? ':before-repair'
-              : null;
+            : null;
         if (suffix && !storage.getItem(key + suffix)) storage.setItem(key + suffix, expectedRaw);
       }
       storage.setItem(key, raw);

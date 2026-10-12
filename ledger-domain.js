@@ -91,12 +91,19 @@ export function validateAICandidates(response) {
   return { entries, warnings: response.warnings };
 }
 export function canUndoSave(state, save) {
+  const sameEntry = (left, right) =>
+    left &&
+    right &&
+    ['id', 'date', 'type', 'amountCents', 'description', 'category', 'tripId'].every(
+      (field) => left[field] === right[field],
+    );
   return Boolean(
     save &&
-      save.rows.every(
-        ({ after }) =>
-          JSON.stringify(state.entries.find((row) => row.id === after.id)) ===
-          JSON.stringify(after),
+      save.rows.every(({ after }) =>
+        sameEntry(
+          state.entries.find((row) => row.id === after.id),
+          after,
+        ),
       ),
   );
 }

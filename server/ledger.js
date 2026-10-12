@@ -79,6 +79,8 @@ export async function handleLedger(request, env, { local = false } = {}) {
       );
     }
     const input = await body(request);
+    if (!input || typeof input !== 'object' || Array.isArray(input))
+      throw new Failure('รูปแบบข้อมูลไม่ถูกต้อง');
     if (input.state?.version !== 2)
       throw new Failure('มีแอปรุ่นใหม่ กรุณาเปิดเมนูข้อมูลแล้วอัปเดตแอปก่อนซิงค์', 426);
     if (

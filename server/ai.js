@@ -126,12 +126,19 @@ async function reserve(env, user, local) {
   if (!env.BUDGET_AI_DB) throw new Failure('ยังไม่ได้ตั้งระบบจำกัดค่าใช้จ่าย AI', 503);
   const statements = limits.map(([key, max]) =>
     env.BUDGET_AI_DB.prepare(
-      'INSERT INTO ai_quota (bucket, used) VALUES (?, 1) ON CONFLICT(bucket) DO UPDATE SET used=used+1 WHERE used < ? RETURNING used',
+      // The schema CHECK(used > 0) deliberately aborts an exhausted reservation.
+      // D1 batch rolls back every bucket on failure; a no-op would commit the others.
+      'INSERT INTO ai_quota (bucket, used) VALUES (?, 1) ON CONFLICT(bucket) DO UPDATE SET used=CASE WHEN used < ? THEN used+1 ELSE 0 END RETURNING used',
     ).bind(key, max),
   );
-  const results = await env.BUDGET_AI_DB.batch(statements);
-  if (results.some((r) => !r.results?.length))
-    throw new Failure('ถึงจำนวนการใช้ AI ที่กำหนด กรุณาลองใหม่ภายหลัง', 429);
+  try {
+    await env.BUDGET_AI_DB.batch(statements);
+  } catch (error) {
+    const detail = [error?.message, error?.cause?.message].filter(Boolean).join(' ');
+    if (/CHECK constraint failed:\s*used\s*>\s*0/i.test(detail))
+      throw new Failure('ถึงจำนวนการใช้ AI ที่กำหนด กรุณาลองใหม่ภายหลัง', 429);
+    throw error;
+  }
 }
 function contextData(context) {
   if (

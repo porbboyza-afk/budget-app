@@ -14,6 +14,8 @@
 
 เครื่องมือพัฒนาใช้ `npm ci` แล้วตรวจด้วย `npm test`, `npm run format:check` และ `npm run build` ใช้ `npm run format` จัดรูปแบบด้วย Prettier รุ่นที่ล็อกไว้ ไม่มีการเรียก AI หรือแตะข้อมูลจริงใน automated tests
 
+รายงานตรวจฟังก์ชันล่าสุดอยู่ใน [FUNCTIONAL_AUDIT.md](FUNCTIONAL_AUDIT.md) การตรวจหน้าจอแบบข้อมูลจำลองใช้ `python tests/browser_audit.py` และ `python tests/pwa_browser_audit.py` หลัง build ต้องมี Python Playwright และ Brave; สคริปต์ใช้บริบทเบราว์เซอร์ใหม่ ไม่เปิดโปรไฟล์ส่วนตัว
+
 ## ลองได้ในดราฟนี้
 
 - การเปิดใหม่เริ่มรายการว่าง ตามที่ผู้ใช้เลือกเริ่มใหม่ ข้อมูลที่จดในดราฟนี้แล้วคงอยู่
