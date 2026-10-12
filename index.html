@@ -1,111 +1,423 @@
 <!doctype html>
 <html lang="th">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#80563e">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icon-192.png" type="image/png">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>จดเงิน — รายรับรายจ่าย</title>
-  <script src="redirect.js"></script>
-  <link rel="stylesheet" href="styles.css">
-  <script type="module" src="views.js"></script>
-  <script type="module" src="auth.js"></script>
-  <script type="module" src="app.js"></script>
-  <script type="module" src="pwa.js"></script>
-</head>
-<body>
-  <aside class="sidebar">
-    <div class="sidebar-top"><a class="brand" href="#overview">จดเงิน</a><section class="ai-account account-bar" aria-label="บัญชีและการเข้าสู่ระบบ"><button id="ai-login" type="button" aria-label="เข้าสู่ระบบด้วย Google" disabled>เข้าสู่ระบบ</button></section></div>
-    <nav aria-label="เมนูหลัก">
-      <a class="nav-item active" href="#overview" aria-current="page"><span>▥</span> ภาพรวม</a>
-      <a class="nav-item" href="#entry-panel"><span>＋</span> จด</a>
-      <a class="nav-item" href="#transactions"><span>☷</span> รายการ</a>
-      <a class="nav-item" href="#trips"><span>◇</span> ทริป</a>
-      <a class="nav-item" id="data-nav-link" href="#data-tools"><span>↥</span> ข้อมูล</a>
-    </nav>
-    <span id="ai-account-status" class="account-notice sr-only" role="status" aria-live="polite">กำลังเชื่อมต่อบัญชี…</span>
-  </aside>
-  <main>
-    <header class="page-header">
-      <div class="page-copy"><h1 id="page-title" tabindex="-1">ภาพรวม</h1><p id="page-caption">ยอดเงินของเดือนที่เลือก</p></div>
-    </header>
-    <section id="period-bar" class="overview-heading" aria-label="เดือนที่เลือก"><div class="period-controls"><button id="prev-month" aria-label="เดือนก่อน">‹</button><label><span class="sr-only">เลือกเดือนและปี</span><input type="month" id="month"></label><button id="next-month" aria-label="เดือนถัดไป">›</button></div></section>
-    <section class="demo-banner" id="demo-banner"><div><strong>ลองดูภาพด้วยข้อมูลตัวอย่าง</strong><span>รายการเหล่านี้เป็นตัวอย่างสำหรับดราฟแรก</span></div><button id="start-empty">เริ่มจดข้อมูลของฉัน</button></section>
-    <section id="overview" class="app-view" aria-label="ภาพรวม">
-    <section class="stats" aria-label="ยอดสรุป">
-      <article class="balance-card"><div class="stat-label">คงเหลือจากรายการที่จด <span>↗</span></div><div class="stat-amount" id="balance">—</div><div class="stat-foot" id="balance-caption">ยอดทั้งหมดถึงสิ้นเดือนที่เลือก</div></article>
-      <article class="stat-card"><div class="stat-label"><span class="round-icon income">↙</span> รายรับในเดือนที่เลือก</div><div class="stat-amount income-text" id="income">—</div><div class="stat-foot" id="income-count">—</div></article>
-      <article class="stat-card"><div class="stat-label"><span class="round-icon expense">↗</span> รายจ่ายในเดือนที่เลือก</div><div class="stat-amount" id="expense">—</div><div class="stat-foot" id="expense-count">—</div></article>
-    </section>
-    <div class="overview-actions"><a class="view-action" href="#entry-panel">＋ จดรายการ</a><button id="summary-nav" type="button">สรุปรายเดือน</button><button id="ai-ask-open" type="button">✦ อธิบายรายจ่าย</button></div>
-    <section class="panel category-card"><h2>รายจ่ายหลัก 3 หมวด</h2><div id="category-overview" class="category-breakdown"></div><p id="expense-insight" class="expense-insight"></p><button id="expense-compare-open" type="button">ช่วยดูรายจ่ายที่เพิ่ม</button></section>
-    </section>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#80563e" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icon-192.png" type="image/png" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>จดเงิน — รายรับรายจ่าย</title>
+    <script src="redirect.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="views.js"></script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="app.js"></script>
+    <script type="module" src="pwa.js"></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <a class="brand" href="#overview">จดเงิน</a>
+        <section class="ai-account account-bar" aria-label="บัญชีและการเข้าสู่ระบบ">
+          <button id="ai-login" type="button" aria-label="เข้าสู่ระบบด้วย Google" disabled>
+            เข้าสู่ระบบ
+          </button>
+        </section>
+      </div>
+      <nav aria-label="เมนูหลัก">
+        <a class="nav-item active" href="#overview" aria-current="page"><span>▥</span> ภาพรวม</a>
+        <a class="nav-item" href="#entry-panel"><span>＋</span> จด</a>
+        <a class="nav-item" href="#transactions"><span>☷</span> รายการ</a>
+        <a class="nav-item" href="#trips"><span>◇</span> ทริป</a>
+        <a class="nav-item" id="data-nav-link" href="#data-tools"><span>↥</span> ข้อมูล</a>
+      </nav>
+      <span id="ai-account-status" class="account-notice sr-only" role="status" aria-live="polite"
+        >กำลังเชื่อมต่อบัญชี…</span
+      >
+    </aside>
+    <main>
+      <header class="page-header">
+        <div class="page-copy">
+          <h1 id="page-title" tabindex="-1">ภาพรวม</h1>
+          <p id="page-caption">ยอดเงินของเดือนที่เลือก</p>
+        </div>
+      </header>
+      <section id="period-bar" class="overview-heading" aria-label="เดือนที่เลือก">
+        <div class="period-controls">
+          <button id="prev-month" aria-label="เดือนก่อน">‹</button
+          ><label
+            ><span class="sr-only">เลือกเดือนและปี</span><input type="month" id="month" /></label
+          ><button id="next-month" aria-label="เดือนถัดไป">›</button>
+        </div>
+      </section>
+      <section class="demo-banner" id="demo-banner">
+        <div>
+          <strong>ลองดูภาพด้วยข้อมูลตัวอย่าง</strong
+          ><span>รายการเหล่านี้เป็นตัวอย่างสำหรับดราฟแรก</span>
+        </div>
+        <button id="start-empty">เริ่มจดข้อมูลของฉัน</button>
+      </section>
+      <section id="overview" class="app-view" aria-label="ภาพรวม">
+        <section class="stats" aria-label="ยอดสรุป">
+          <article class="balance-card">
+            <div class="stat-label">คงเหลือจากรายการที่จด <span>↗</span></div>
+            <div class="stat-amount" id="balance">—</div>
+            <div class="stat-foot" id="balance-caption">ยอดทั้งหมดถึงสิ้นเดือนที่เลือก</div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-label">
+              <span class="round-icon income">↙</span> รายรับในเดือนที่เลือก
+            </div>
+            <div class="stat-amount income-text" id="income">—</div>
+            <div class="stat-foot" id="income-count">—</div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-label">
+              <span class="round-icon expense">↗</span> รายจ่ายในเดือนที่เลือก
+            </div>
+            <div class="stat-amount" id="expense">—</div>
+            <div class="stat-foot" id="expense-count">—</div>
+          </article>
+        </section>
+        <div class="overview-actions">
+          <a class="view-action" href="#entry-panel">＋ จดรายการ</a
+          ><button id="summary-nav" type="button">สรุปรายเดือน</button
+          ><button id="ai-ask-open" type="button">✦ อธิบายรายจ่าย</button>
+        </div>
+        <section class="panel category-card">
+          <h2>รายจ่ายหลัก 3 หมวด</h2>
+          <div id="category-overview" class="category-breakdown"></div>
+          <p id="expense-insight" class="expense-insight"></p>
+          <button id="expense-compare-open" type="button">ช่วยดูรายจ่ายที่เพิ่ม</button>
+        </section>
+      </section>
       <section class="entry-panel panel app-view" id="entry-panel" aria-label="จดรายการ" hidden>
-        <h2 id="form-heading">เพิ่มรายการ</h2><p class="form-sub">ใส่จำนวนเงินแล้วบันทึกได้เลย</p>
+        <h2 id="form-heading">เพิ่มรายการ</h2>
+        <p class="form-sub">ใส่จำนวนเงินแล้วบันทึกได้เลย</p>
         <p id="entry-loading" class="form-sub" role="status">กำลังโหลดบัญชีและข้อมูล…</p>
-        <fieldset id="entry-fields" disabled><legend class="sr-only">ข้อมูลรายการที่จะจด</legend>
-        <div class="type-switch" aria-label="ประเภทรายการ"><button id="type-income" type="button" aria-pressed="false">＋ รายรับ</button><button id="type-expense" type="button" class="selected" aria-pressed="true">− รายจ่าย</button></div>
-        <form id="entry-form">
-          <label class="field">จำนวนเงิน<div class="amount-input"><input id="amount" aria-label="จำนวนเงินเป็นบาท" inputmode="decimal" placeholder="0.00" required autocomplete="off"><span>บาท</span></div></label>
-          <label class="field">หมายเหตุ <span class="optional">ไม่บังคับ</span><input id="description" placeholder="เช่น อาหารกลางวัน" maxlength="160"></label>
-          <label class="field">วันที่<input id="date" type="date" required></label>
-          <div class="field category-field"><label for="category">หมวด <span class="optional">ไม่บังคับ</span></label><input id="category" placeholder="เลือกด้านล่าง หรือพิมพ์เอง" maxlength="60" list="categories"><div id="category-chips" class="category-chips" aria-label="เลือกหมวดเร็ว"><button type="button" data-category="อาหาร">อาหาร</button><button type="button" data-category="เดินทาง">เดินทาง</button><button type="button" data-category="บ้าน">บ้าน</button><button type="button" data-category="ของใช้">ของใช้</button><button type="button" data-category="เที่ยว">เที่ยว</button></div></div>
-          <datalist id="categories"><option value="อาหาร"><option value="เดินทาง"><option value="บ้าน"><option value="ของใช้"><option value="เที่ยว"><option value="งานประจำ"><option value="รายได้เสริม"></datalist>
-          <label class="field trip-field">ทริป <span class="optional">ไม่บังคับ</span><select id="entry-trip"><option value="">ไม่ผูกกับทริป</option></select></label>
-          <p id="trip-hint" class="trip-hint"></p>
-          <p id="form-error" class="form-error" role="alert"></p>
-          <button class="save-button" type="submit" id="submit-entry">บันทึกรายจ่าย <span>↗</span></button>
-          <button id="cancel-edit" type="button" class="cancel-edit" hidden>ยกเลิกการแก้ไข</button>
-        </form>
-        <div class="ai-shortcuts"><button id="ai-extract-open" type="button">✦ จดหลายรายการ</button><button id="ai-image-open" type="button">▧ อ่านสลิป / ใบเสร็จ</button></div>
+        <fieldset id="entry-fields" disabled>
+          <legend class="sr-only">ข้อมูลรายการที่จะจด</legend>
+          <div class="type-switch" aria-label="ประเภทรายการ">
+            <button id="type-income" type="button" aria-pressed="false">＋ รายรับ</button
+            ><button id="type-expense" type="button" class="selected" aria-pressed="true">
+              − รายจ่าย
+            </button>
+          </div>
+          <form id="entry-form">
+            <label class="field"
+              >จำนวนเงิน
+              <div class="amount-input">
+                <input
+                  id="amount"
+                  aria-label="จำนวนเงินเป็นบาท"
+                  inputmode="decimal"
+                  placeholder="0.00"
+                  required
+                  autocomplete="off"
+                /><span>บาท</span>
+              </div></label
+            >
+            <label class="field"
+              >หมายเหตุ <span class="optional">ไม่บังคับ</span
+              ><input id="description" placeholder="เช่น อาหารกลางวัน" maxlength="160"
+            /></label>
+            <label class="field">วันที่<input id="date" type="date" required /></label>
+            <div class="field category-field">
+              <label for="category">หมวด <span class="optional">ไม่บังคับ</span></label
+              ><input
+                id="category"
+                placeholder="เลือกด้านล่าง หรือพิมพ์เอง"
+                maxlength="60"
+                list="categories"
+              />
+              <div id="category-chips" class="category-chips" aria-label="เลือกหมวดเร็ว">
+                <button type="button" data-category="อาหาร">อาหาร</button
+                ><button type="button" data-category="เดินทาง">เดินทาง</button
+                ><button type="button" data-category="บ้าน">บ้าน</button
+                ><button type="button" data-category="ของใช้">ของใช้</button
+                ><button type="button" data-category="เที่ยว">เที่ยว</button>
+              </div>
+            </div>
+            <datalist id="categories">
+              <option value="อาหาร"></option>
+              <option value="เดินทาง"></option>
+              <option value="บ้าน"></option>
+              <option value="ของใช้"></option>
+              <option value="เที่ยว"></option>
+              <option value="งานประจำ"></option>
+              <option value="รายได้เสริม"></option>
+            </datalist>
+            <label class="field trip-field"
+              >ทริป <span class="optional">ไม่บังคับ</span
+              ><select id="entry-trip">
+                <option value="">ไม่ผูกกับทริป</option>
+              </select></label
+            >
+            <p id="trip-hint" class="trip-hint"></p>
+            <p id="form-error" class="form-error" role="alert"></p>
+            <button class="save-button" type="submit" id="submit-entry">
+              บันทึกรายจ่าย <span>↗</span>
+            </button>
+            <button id="cancel-edit" type="button" class="cancel-edit" hidden>
+              ยกเลิกการแก้ไข
+            </button>
+          </form>
+          <div class="ai-shortcuts">
+            <button id="ai-extract-open" type="button">✦ จดหลายรายการ</button
+            ><button id="ai-image-open" type="button">▧ อ่านสลิป / ใบเสร็จ</button>
+          </div>
         </fieldset>
-        <section id="last-saved" class="last-saved" aria-label="รายการที่เพิ่งบันทึก" hidden><p id="last-saved-text" role="status"></p><div><button id="last-saved-edit" type="button">แก้ไข</button><button id="last-saved-undo" type="button">ย้อนกลับการบันทึก</button><a href="#transactions">ดูรายการ</a></div></section>
+        <section id="last-saved" class="last-saved" aria-label="รายการที่เพิ่งบันทึก" hidden>
+          <p id="last-saved-text" role="status"></p>
+          <div>
+            <button id="last-saved-edit" type="button">แก้ไข</button
+            ><button id="last-saved-undo" type="button">ย้อนกลับการบันทึก</button
+            ><a href="#transactions">ดูรายการ</a>
+          </div>
+        </section>
       </section>
-      <section class="ledger panel app-view" id="transactions" aria-label="รายการเงินเข้าออก" hidden>
-        <div class="section-heading"><div><h2>รายการล่าสุด</h2><p id="period-label">เดือนนี้</p></div><span class="count-badge" id="entry-count">0 รายการ</span></div>
-        <div class="filters"><label class="search"><span>⌕</span><input id="search" type="search" placeholder="ค้นหารายการ…" aria-label="ค้นหารายการ"></label><label><span class="sr-only">ประเภทที่แสดง</span><select id="filter-type"><option value="all">ทั้งหมด</option><option value="income">รายรับ</option><option value="expense">รายจ่าย</option></select></label><label><span class="sr-only">กรองตามทริป</span><select id="trip-filter"><option value="">ทุกทริปและรายการทั่วไป</option></select></label></div>
-        <div class="table-head"><span>รายการ / วันที่</span><span>จำนวนเงิน</span><span>จัดการ</span></div>
+      <section
+        class="ledger panel app-view"
+        id="transactions"
+        aria-label="รายการเงินเข้าออก"
+        hidden
+      >
+        <div class="section-heading">
+          <div>
+            <h2>รายการล่าสุด</h2>
+            <p id="period-label">เดือนนี้</p>
+          </div>
+          <span class="count-badge" id="entry-count">0 รายการ</span>
+        </div>
+        <div class="filters">
+          <label class="search"
+            ><span>⌕</span
+            ><input
+              id="search"
+              type="search"
+              placeholder="ค้นหารายการ…"
+              aria-label="ค้นหารายการ" /></label
+          ><label
+            ><span class="sr-only">ประเภทที่แสดง</span
+            ><select id="filter-type">
+              <option value="all">ทั้งหมด</option>
+              <option value="income">รายรับ</option>
+              <option value="expense">รายจ่าย</option>
+            </select></label
+          ><label
+            ><span class="sr-only">กรองตามทริป</span
+            ><select id="trip-filter">
+              <option value="">ทุกทริปและรายการทั่วไป</option>
+            </select></label
+          >
+        </div>
+        <div class="table-head">
+          <span>รายการ / วันที่</span><span>จำนวนเงิน</span><span>จัดการ</span>
+        </div>
         <div id="entries" aria-live="polite"></div>
-        <nav class="pagination" id="pagination" aria-label="หน้ารายการ" hidden><span id="page-range"></span><div class="page-buttons"><button id="page-prev" type="button">‹ ก่อนหน้า</button><span id="page-status" role="status" aria-live="polite"></span><button id="page-next" type="button">ถัดไป ›</button></div></nav>
-        <div class="ledger-foot"><span id="save-status" role="status">● บันทึกในเครื่องนี้</span><button id="clear-filter">ล้างตัวกรอง</button></div>
+        <nav class="pagination" id="pagination" aria-label="หน้ารายการ" hidden>
+          <span id="page-range"></span>
+          <div class="page-buttons">
+            <button id="page-prev" type="button">‹ ก่อนหน้า</button
+            ><span id="page-status" role="status" aria-live="polite"></span
+            ><button id="page-next" type="button">ถัดไป ›</button>
+          </div>
+        </nav>
+        <div class="ledger-foot">
+          <span id="save-status" role="status">● บันทึกในเครื่องนี้</span
+          ><button id="clear-filter">ล้างตัวกรอง</button>
+        </div>
       </section>
-    <section id="trips" class="app-view trips-view" aria-label="ทริป" hidden>
-      <div class="section-heading"><h2>ทริปของฉัน</h2><button id="trips-new" class="view-action" type="button" disabled>＋ เพิ่มทริป</button></div>
-      <p id="trips-empty" class="empty-state" role="status">กำลังโหลดทริป…</p><div id="trips-list" class="trips-list"></div>
-      <nav id="trip-list-pagination" class="pagination" aria-label="หน้าทริป" hidden><div class="page-buttons"><button id="trip-list-prev" type="button">‹ ก่อนหน้า</button><span id="trip-list-page" role="status"></span><button id="trip-list-next" type="button">ถัดไป ›</button></div></nav>
-      <section id="trip-detail" class="panel trip-detail" hidden>
-        <div class="section-heading"><div><h2 id="trip-detail-title"></h2><p id="trip-detail-dates"></p></div><button id="trip-edit" type="button">แก้ไขทริป</button></div>
-        <div class="trip-stats"><div><span>จ่ายไปแล้ว</span><strong id="trip-detail-spent">—</strong></div><div><span>งบที่ตั้งไว้</span><strong id="trip-detail-budget">—</strong></div><div><span>งบคงเหลือ</span><strong id="trip-detail-remaining">—</strong></div></div>
-        <progress id="trip-detail-progress" max="100" value="0" aria-label="สัดส่วนรายจ่ายเทียบกับงบทริป"></progress><p id="trip-budget-note" class="trip-budget-note"></p>
-        <button id="trip-add-expense" class="save-button" type="button">＋ จดรายจ่ายของทริปนี้</button>
-        <h3>รายจ่ายหลัก 3 หมวด</h3><div id="trip-detail-categories" class="category-breakdown"></div>
-        <h3>รายการในทริป</h3><div id="trip-detail-entries"></div><nav class="pagination trip-pagination" aria-label="หน้ารายการในทริป"><div class="page-buttons"><button id="trip-entry-prev" type="button">‹ ก่อนหน้า</button><span id="trip-entry-page" role="status"></span><button id="trip-entry-next" type="button">ถัดไป ›</button></div></nav>
-        <button id="trip-archive" class="archive-trip" type="button">เก็บทริปนี้</button>
+      <section id="trips" class="app-view trips-view" aria-label="ทริป" hidden>
+        <div class="section-heading">
+          <h2>ทริปของฉัน</h2>
+          <button id="trips-new" class="view-action" type="button" disabled>＋ เพิ่มทริป</button>
+        </div>
+        <p id="trips-empty" class="empty-state" role="status">กำลังโหลดทริป…</p>
+        <div id="trips-list" class="trips-list"></div>
+        <nav id="trip-list-pagination" class="pagination" aria-label="หน้าทริป" hidden>
+          <div class="page-buttons">
+            <button id="trip-list-prev" type="button">‹ ก่อนหน้า</button
+            ><span id="trip-list-page" role="status"></span
+            ><button id="trip-list-next" type="button">ถัดไป ›</button>
+          </div>
+        </nav>
+        <section id="trip-detail" class="panel trip-detail" hidden>
+          <div class="section-heading">
+            <div>
+              <h2 id="trip-detail-title"></h2>
+              <p id="trip-detail-dates"></p>
+            </div>
+            <button id="trip-edit" type="button">แก้ไขทริป</button>
+          </div>
+          <div class="trip-stats">
+            <div><span>จ่ายไปแล้ว</span><strong id="trip-detail-spent">—</strong></div>
+            <div><span>งบที่ตั้งไว้</span><strong id="trip-detail-budget">—</strong></div>
+            <div><span>งบคงเหลือ</span><strong id="trip-detail-remaining">—</strong></div>
+          </div>
+          <progress
+            id="trip-detail-progress"
+            max="100"
+            value="0"
+            aria-label="สัดส่วนรายจ่ายเทียบกับงบทริป"
+          ></progress>
+          <p id="trip-budget-note" class="trip-budget-note"></p>
+          <button id="trip-add-expense" class="save-button" type="button">
+            ＋ จดรายจ่ายของทริปนี้
+          </button>
+          <h3>รายจ่ายหลัก 3 หมวด</h3>
+          <div id="trip-detail-categories" class="category-breakdown"></div>
+          <h3>รายการในทริป</h3>
+          <div id="trip-detail-entries"></div>
+          <nav class="pagination trip-pagination" aria-label="หน้ารายการในทริป">
+            <div class="page-buttons">
+              <button id="trip-entry-prev" type="button">‹ ก่อนหน้า</button
+              ><span id="trip-entry-page" role="status"></span
+              ><button id="trip-entry-next" type="button">ถัดไป ›</button>
+            </div>
+          </nav>
+          <button id="trip-archive" class="archive-trip" type="button">เก็บทริปนี้</button>
+        </section>
       </section>
-    </section>
-    <section id="data-tools" class="data-tools app-view" aria-label="ข้อมูลและสำรอง" hidden><div class="data-heading"><div><h2>ข้อมูลและสำรอง</h2><p id="sync-status" role="status">บันทึกในเครื่อง</p></div><div class="tool-actions"><button id="sync-retry" hidden>ซิงค์อีกครั้ง</button><span id="sync-conflict" hidden><button id="sync-use-cloud">ใช้ชุดคลาวด์</button><button id="sync-use-local">ใช้ชุดในเครื่อง</button></span></div></div><div class="tool-actions backup-actions"><button id="backup">สำรองข้อมูล</button><button id="restore">กู้คืนจากไฟล์</button><button id="export-csv">ส่งออก CSV</button></div><p class="data-note">CSV ใช้เดือนที่เลือกด้านบน · ไฟล์สำรองรวมข้อมูลทุกเดือน</p><input id="restore-file" type="file" accept=".json,application/json" hidden><div class="app-tools" aria-label="ติดตั้งและการเชื่อมต่อ"><span id="connection-status" role="status"></span><button id="install-app">＋ ติดตั้ง จดเงิน</button><button id="update-app" hidden>อัปเดตแอป</button><span id="ios-install" hidden>ติดตั้งบน iPhone: แตะแชร์ → เพิ่มไปยังหน้าจอโฮม</span></div></section>
-  </main>
-  <div id="toast" class="toast" role="status" hidden><span id="toast-text"></span><button id="undo" hidden>ย้อนกลับ</button><button id="dismiss-toast" aria-label="ปิดข้อความ">×</button></div>
-  <dialog id="summary-dialog"><div class="dialog-heading"><h2>สรุปรายเดือน</h2><button id="close-summary" aria-label="ปิดสรุป">×</button></div><p id="summary-period"></p><div id="summary-content"></div><button id="summary-done" class="save-button">กลับไปจดรายการ</button></dialog>
-  <dialog id="account-dialog" aria-labelledby="account-heading"><div class="dialog-heading"><h2 id="account-heading">บัญชีของคุณ</h2><button id="account-close" type="button" aria-label="ปิดบัญชี">×</button></div><p id="account-identity"></p><p>ข้อมูลในเครื่องแยกตามบัญชี สิทธิ์ซิงค์และ AI ตรวจโดยเซิร์ฟเวอร์ และต้องเชื่อมต่ออินเทอร์เน็ต</p><button id="account-logout" type="button">ออกจากระบบ</button></dialog>
-  <dialog id="trip-dialog" aria-labelledby="trip-heading"><h2 id="trip-heading">เพิ่มทริป</h2><form id="trip-form"><label class="field">ชื่อทริป<input id="trip-name" maxlength="80" placeholder="เช่น เชียงใหม่ 3 วัน" required></label><div class="trip-date-fields"><label class="field">วันเริ่ม<input id="trip-start" type="date" min="1900-01-01" max="2200-12-31" required></label><label class="field">วันจบ<input id="trip-end" type="date" min="1900-01-01" max="2200-12-31" required></label></div><label class="field">งบประมาณ (บาท) <span class="optional">ไม่บังคับ</span><input id="trip-budget" inputmode="decimal" placeholder="ยังไม่ตั้งงบก็ได้" autocomplete="off"></label><p id="trip-error" class="form-error" role="alert"></p><button id="trip-submit" class="save-button" type="submit">บันทึกทริป</button><button id="trip-cancel" class="cancel-edit" type="button">ยกเลิก</button></form></dialog>
-  <dialog id="install-dialog" aria-labelledby="install-heading"><h2 id="install-heading">ติดตั้ง จดเงิน</h2><p>Brave / Chrome: เปิดเมนูเบราว์เซอร์แล้วเลือกติดตั้งแอป หรือใช้ไอคอนติดตั้งในแถบที่อยู่เมื่อปรากฏ</p><p>iPhone / iPad: เปิดผ่าน Safari แล้วแตะแชร์ → เพิ่มไปยังหน้าจอโฮม</p><p>เปิดเว็บออนไลน์ครั้งแรกให้ขึ้น «พร้อมใช้แบบออฟไลน์» ก่อนใช้งานโดยไม่ต่อเน็ต AI และซิงค์ข้อมูลยังต้องใช้อินเทอร์เน็ต</p><button id="install-close" class="save-button" type="button">เข้าใจแล้ว</button></dialog>
-  <dialog id="ai-dialog" class="ai-dialog" aria-labelledby="ai-heading">
-    <div class="dialog-heading"><h2 id="ai-heading">ช่วยจดด้วย AI</h2><button id="ai-close" type="button" aria-label="ปิด AI">×</button></div>
-    <p id="ai-guidance"></p>
-    <form id="ai-form">
-      <label class="field" for="ai-text" id="ai-text-label">เล่าให้ฟังว่ารับหรือจ่ายอะไร</label>
-      <textarea id="ai-text" rows="3" maxlength="3000" placeholder="วันนี้ข้าว 65 กาแฟ 50 เมื่อวานเติมน้ำมัน 800"></textarea>
-      <div id="ai-image-tools" class="ai-image-tools"><label class="ai-file-label">แนบใบเสร็จ / สลิป<input id="ai-image" type="file" accept="image/jpeg,image/png,image/webp"></label><button type="button" id="ai-image-remove" hidden>นำภาพออก</button><p>JPG, PNG หรือ WebP ไม่เกิน 5 MB · ส่งภาพทั้งใบให้บริการ AI เมื่อกดอ่าน ตรวจข้อมูลส่วนตัวก่อนส่ง</p><img id="ai-image-preview" alt="ภาพที่จะส่งให้ AI อ่าน" hidden></div>
-      <button id="ai-submit" class="save-button" type="submit">ให้ AI เตรียมรายการ</button>
-    </form>
-    <p id="ai-status" role="status" aria-live="polite"></p>
-    <p id="ai-error" class="form-error" role="alert"></p>
-    <div id="ai-answer" class="ai-answer" hidden></div>
-    <section id="ai-review" hidden><h3>ตรวจรายการก่อนบันทึก</h3><p>แก้จำนวนเงิน วันที่ และรายละเอียดได้ เลือกเฉพาะรายการที่ต้องการบันทึก</p><ul id="ai-warnings"></ul><div id="ai-candidates"></div><button id="ai-save-reviewed" class="save-button" type="button">ยืนยันบันทึกรายการที่เลือก</button></section>
-  </dialog>
-</body>
+      <section id="data-tools" class="data-tools app-view" aria-label="ข้อมูลและสำรอง" hidden>
+        <div class="data-heading">
+          <div>
+            <h2>ข้อมูลและสำรอง</h2>
+            <p id="sync-status" role="status">บันทึกในเครื่อง</p>
+          </div>
+          <div class="tool-actions">
+            <button id="sync-retry" hidden>ซิงค์อีกครั้ง</button
+            ><span id="sync-conflict" hidden
+              ><button id="sync-use-cloud">ใช้ชุดคลาวด์</button
+              ><button id="sync-use-local">ใช้ชุดในเครื่อง</button></span
+            >
+          </div>
+        </div>
+        <div class="tool-actions backup-actions">
+          <button id="backup">สำรองข้อมูล</button><button id="restore">กู้คืนจากไฟล์</button
+          ><button id="export-csv">ส่งออก CSV</button>
+        </div>
+        <p class="data-note">CSV ใช้เดือนที่เลือกด้านบน · ไฟล์สำรองรวมข้อมูลทุกเดือน</p>
+        <input id="restore-file" type="file" accept=".json,application/json" hidden />
+        <div class="app-tools" aria-label="ติดตั้งและการเชื่อมต่อ">
+          <span id="connection-status" role="status"></span
+          ><button id="install-app">＋ ติดตั้ง จดเงิน</button
+          ><button id="update-app" hidden>อัปเดตแอป</button
+          ><span id="ios-install" hidden>ติดตั้งบน iPhone: แตะแชร์ → เพิ่มไปยังหน้าจอโฮม</span>
+        </div>
+      </section>
+    </main>
+    <div id="toast" class="toast" role="status" hidden>
+      <span id="toast-text"></span><button id="undo" hidden>ย้อนกลับ</button
+      ><button id="dismiss-toast" aria-label="ปิดข้อความ">×</button>
+    </div>
+    <dialog id="summary-dialog">
+      <div class="dialog-heading">
+        <h2>สรุปรายเดือน</h2>
+        <button id="close-summary" aria-label="ปิดสรุป">×</button>
+      </div>
+      <p id="summary-period"></p>
+      <div id="summary-content"></div>
+      <button id="summary-done" class="save-button">กลับไปจดรายการ</button>
+    </dialog>
+    <dialog id="account-dialog" aria-labelledby="account-heading">
+      <div class="dialog-heading">
+        <h2 id="account-heading">บัญชีของคุณ</h2>
+        <button id="account-close" type="button" aria-label="ปิดบัญชี">×</button>
+      </div>
+      <p id="account-identity"></p>
+      <p>
+        ข้อมูลในเครื่องแยกตามบัญชี สิทธิ์ซิงค์และ AI ตรวจโดยเซิร์ฟเวอร์ และต้องเชื่อมต่ออินเทอร์เน็ต
+      </p>
+      <button id="account-logout" type="button">ออกจากระบบ</button>
+    </dialog>
+    <dialog id="trip-dialog" aria-labelledby="trip-heading">
+      <h2 id="trip-heading">เพิ่มทริป</h2>
+      <form id="trip-form">
+        <label class="field"
+          >ชื่อทริป<input id="trip-name" maxlength="80" placeholder="เช่น เชียงใหม่ 3 วัน" required
+        /></label>
+        <div class="trip-date-fields">
+          <label class="field"
+            >วันเริ่ม<input
+              id="trip-start"
+              type="date"
+              min="1900-01-01"
+              max="2200-12-31"
+              required /></label
+          ><label class="field"
+            >วันจบ<input id="trip-end" type="date" min="1900-01-01" max="2200-12-31" required
+          /></label>
+        </div>
+        <label class="field"
+          >งบประมาณ (บาท) <span class="optional">ไม่บังคับ</span
+          ><input
+            id="trip-budget"
+            inputmode="decimal"
+            placeholder="ยังไม่ตั้งงบก็ได้"
+            autocomplete="off"
+        /></label>
+        <p id="trip-error" class="form-error" role="alert"></p>
+        <button id="trip-submit" class="save-button" type="submit">บันทึกทริป</button
+        ><button id="trip-cancel" class="cancel-edit" type="button">ยกเลิก</button>
+      </form>
+    </dialog>
+    <dialog id="install-dialog" aria-labelledby="install-heading">
+      <h2 id="install-heading">ติดตั้ง จดเงิน</h2>
+      <p>
+        Brave / Chrome: เปิดเมนูเบราว์เซอร์แล้วเลือกติดตั้งแอป
+        หรือใช้ไอคอนติดตั้งในแถบที่อยู่เมื่อปรากฏ
+      </p>
+      <p>iPhone / iPad: เปิดผ่าน Safari แล้วแตะแชร์ → เพิ่มไปยังหน้าจอโฮม</p>
+      <p>
+        เปิดเว็บออนไลน์ครั้งแรกให้ขึ้น «พร้อมใช้แบบออฟไลน์» ก่อนใช้งานโดยไม่ต่อเน็ต AI
+        และซิงค์ข้อมูลยังต้องใช้อินเทอร์เน็ต
+      </p>
+      <button id="install-close" class="save-button" type="button">เข้าใจแล้ว</button>
+    </dialog>
+    <dialog id="ai-dialog" class="ai-dialog" aria-labelledby="ai-heading">
+      <div class="dialog-heading">
+        <h2 id="ai-heading">ช่วยจดด้วย AI</h2>
+        <button id="ai-close" type="button" aria-label="ปิด AI">×</button>
+      </div>
+      <p id="ai-guidance"></p>
+      <form id="ai-form">
+        <label class="field" for="ai-text" id="ai-text-label">เล่าให้ฟังว่ารับหรือจ่ายอะไร</label>
+        <textarea
+          id="ai-text"
+          rows="3"
+          maxlength="3000"
+          placeholder="วันนี้ข้าว 65 กาแฟ 50 เมื่อวานเติมน้ำมัน 800"
+        ></textarea>
+        <div id="ai-image-tools" class="ai-image-tools">
+          <label class="ai-file-label"
+            >แนบใบเสร็จ / สลิป<input
+              id="ai-image"
+              type="file"
+              accept="image/jpeg,image/png,image/webp" /></label
+          ><button type="button" id="ai-image-remove" hidden>นำภาพออก</button>
+          <p>
+            JPG, PNG หรือ WebP ไม่เกิน 5 MB · ส่งภาพทั้งใบให้บริการ AI เมื่อกดอ่าน
+            ตรวจข้อมูลส่วนตัวก่อนส่ง
+          </p>
+          <img id="ai-image-preview" alt="ภาพที่จะส่งให้ AI อ่าน" hidden />
+        </div>
+        <button id="ai-submit" class="save-button" type="submit">ให้ AI เตรียมรายการ</button>
+      </form>
+      <p id="ai-status" role="status" aria-live="polite"></p>
+      <p id="ai-error" class="form-error" role="alert"></p>
+      <div id="ai-answer" class="ai-answer" hidden></div>
+      <section id="ai-review" hidden>
+        <h3>ตรวจรายการก่อนบันทึก</h3>
+        <p>แก้จำนวนเงิน วันที่ และรายละเอียดได้ เลือกเฉพาะรายการที่ต้องการบันทึก</p>
+        <ul id="ai-warnings"></ul>
+        <div id="ai-candidates"></div>
+        <button id="ai-save-reviewed" class="save-button" type="button">
+          ยืนยันบันทึกรายการที่เลือก
+        </button>
+      </section>
+    </dialog>
+  </body>
 </html>

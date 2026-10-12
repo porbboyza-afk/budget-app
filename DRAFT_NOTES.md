@@ -31,6 +31,7 @@ Undo คืนได้เฉพาะการลบล่าสุดระห
 ## ถัดไปหลังผู้ใช้ดูดราฟ
 
 ปรับหน้าตาและตำแหน่งปุ่มจากการใช้งานจริง แล้วทำระบบข้อมูลและซิงค์ที่เชื่อถือได้ ผู้ทำกับผู้ตรวจต้องเป็นคนละ subagent และยืนยันจากการรัน/ภาพจริงตามสิ่งที่รายงาน
+
 # Draft 02 — Quick entry (2026-10-10)
 
 ## Release verification — 2026-10-10
@@ -58,4 +59,3 @@ Existing storage and sample data are retained. This change does not add cloud sy
 This revision was reviewed from source; no new automated or interaction tests were run.
 Independent reviewer identified that active filters could hide a saved entry; saving now clears them.
 Sample mode still permits trial entries; use “เริ่มจดข้อมูลของฉัน” before recording real data.
-

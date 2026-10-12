@@ -1,0 +1,8 @@
+node_modules/
+dist/
+legacy/
+dashboard
+การลา
+.env*
+.dev.vars*
+package-lock.json
