@@ -1,5 +1,9 @@
 # Budget replacement handoff — 2026-10-10
 
+## Real owner login verification — 2026-10-14
+
+Completed the user-requested real-account test after fixing the UI helper's app-title filter: Brave and agent were in the same Windows session; opening a new app tab made the normal existing profile accessible. Production existing session, app logout, actual Google popup re-login to the same account, page reload and forced Firebase token refresh all passed. Ledger HTTP 200, unchanged local SHA-256/cloud revision and matching cloud/local state confirmed. AI authorization passed before an intentionally invalid command returned expected 400 without provider/quota use. No real financial records modified, no tokens/identities logged in notes; temporary probes removed and user left signed in. See `SECURITY_REVIEW.md`. This supersedes the unverified-login limitation of the initial security pass below; no app code change was required.
+
 ## Preventative security hardening — 2026-10-14
 
 At the user's explicit request, inspected live Firebase configuration via the existing CLI OAuth login and bounded REST calls after the CLI stalled. Matched the project/key before reducing the actual Firebase API key from 27 API targets to Authentication's Identity Toolkit and Secure Token only, using etag and an ignored local rollback backup. Live key metadata reread confirmed the restriction; invalid credential probes confirmed both auth services work, and an unauthenticated synthetic Firestore read was denied. Deployed Firestore Rules already require matching UID paths; 13 simulator cases passed without accessing financial records, so no Rules deployment was needed. Google provider/domain configuration was checked.

@@ -21,7 +21,15 @@ Public signing keys are cached with bounded fetches and refresh cooldowns. A wor
 
 Synthetic tests use ephemeral RSA keys and mocked JWKS/account/D1/provider responses. They verify valid-token behavior and deny unsigned, forged, expired, wrong-key/project, excluded-account, disabled and revoked tokens before data access. Browser/PWA tests remain isolated from the user's profile and actual provider billing. Public packaging excludes server modules, dependencies, test fixtures, notes and credentials.
 
-The final Node suite passed 66 TAP tests. A separate reviewer checked signature trust, authorization and the Cloudflare-shaped concurrent refresh case; no blocking flaw was identified. Preview Functions compiled with JOSE. Live key restrictions, deployed Rules and unauthenticated endpoint rejection were checked separately from synthetic tokens. Current-owner interactive browser login was not verified in this review; the local UI helper could not access an app window, and a CLI OAuth credential could not be exchanged for that app's browser sign-in. No new user account or financial record was created.
+The final Node suite passed 66 TAP tests. A separate reviewer checked signature trust, authorization and the Cloudflare-shaped concurrent refresh case; no blocking flaw was identified. Preview Functions compiled with JOSE. Live key restrictions, deployed Rules and unauthenticated endpoint rejection were checked separately from synthetic tokens. The initial pass did not verify current-owner interactive login; the follow-up below completes that check. No new user account or financial record was created.
+
+### Real owner login follow-up — 2026-10-14
+
+Verified in the user's existing normal Brave profile on production. The agent and Brave were both in Windows session 2; the old UI helper incorrectly required an already-open Budget tab, so it failed to find Brave when another site was active. The helper now opens a new app tab before targeting the app window.
+
+The existing real session returned ledger HTTP 200. Exercised app logout, the actual Google popup sign-in back to the same account, page reload and forced `getIdToken(true)` renewal. All passed; the signed-in avatar returned and the production ledger API again returned 200. Local data SHA-256 and cloud revision stayed equal to the pre-logout baseline, and cloud state matched local state. Account identity was compared in memory; no identity, token or ledger contents were written into this report.
+
+The AI endpoint accepted the real account authorization and then returned the expected 400 for a deliberately invalid command, which stops before quota reservation or provider invocation. No paid AI call or financial-record write was made. Temporary hash-only session-storage probes were removed, DevTools closed, and the user was left signed in. This was a desktop Brave test, not a physical-phone test.
 
 Install locked dependencies with `npm ci`; run `npm test`, `npm run format:check`, `npm run build`, and the documented optional Brave audits. JOSE is a server runtime dependency bundled into Pages Functions; it is not shipped as a public browser asset. The production dependency advisory check reported zero known vulnerabilities on this date.
 
