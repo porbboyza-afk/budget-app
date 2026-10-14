@@ -232,6 +232,8 @@ test('all browser module dependencies are public-build allowlisted and precached
     'ARCHITECTURE.md',
     'tests/ledger.test.js',
     'server/ai.js',
+    'server/auth-token.js',
+    'test-fixtures/firebase-auth.js',
     'package-lock.json',
   ])
     assert.equal(ASSETS.includes(forbidden), false);

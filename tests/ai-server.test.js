@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { handleAI } from '../server/ai.js';
+import { firebaseToken, JWKS_URL, publicJWKS } from '../test-fixtures/firebase-auth.js';
 
 // Implements D1's documented serialized, transactional batch behavior in memory.
 function mockQuotaDB(initial = [], failAt = -1) {
@@ -53,9 +54,7 @@ async function fixture(run) {
   const origin = 'https://synthetic.invalid',
     owner = 'synthetic-owner',
     project = 'synthetic-project';
-  const claims = { aud: project, iss: 'https://securetoken.google.com/' + project, sub: owner };
-  const token =
-    'header.' + Buffer.from(JSON.stringify(claims)).toString('base64url') + '.signature';
+  const token = firebaseToken(project, owner);
   const buckets = {
     day: 'day:2026-10-12:' + owner,
     minute: 'minute:' + Math.floor(now / 60000) + ':' + owner,
@@ -63,6 +62,7 @@ async function fixture(run) {
   };
   let providerCalls = 0;
   globalThis.fetch = async (url) => {
+    if (String(url) === JWKS_URL) return Response.json(publicJWKS);
     if (String(url).startsWith('https://identitytoolkit.googleapis.com/'))
       return Response.json({
         users: [{ localId: owner, emailVerified: true, email: 'synthetic@example.invalid' }],
@@ -181,7 +181,7 @@ test('AI server synthetic atomic quota boundaries', async (t) => {
       assert.equal((await handleAI(request(), excluded)).status, 403);
       const otherProject = env(db);
       otherProject.FIREBASE_PROJECT_ID = 'other-synthetic-project';
-      assert.equal((await handleAI(request(), otherProject)).status, 403);
+      assert.equal((await handleAI(request(), otherProject)).status, 401);
       assert.equal(db.rows().size, 0);
       assert.equal(calls(), 0);
     });

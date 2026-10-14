@@ -10,11 +10,13 @@
 
 คัดลอก `.env.example` เป็น `.env.local` และตั้ง `DEEPSEEK_API_KEY` หรือ `DEEPSEEK_ENV_FILE` ชี้ไฟล์ env เดิม เซิร์ฟเวอร์อ่านเฉพาะ DeepSeek key จากไฟล์นั้น ไม่ใส่ key ใน browser หรือ Git
 
-ไม่มี dependencies สำหรับ build; ต้องเปิดผ่าน HTTP เพื่อโหลด JavaScript modules
+ต้องเปิดผ่าน HTTP เพื่อโหลด JavaScript modules และรัน `npm ci` ก่อนใช้ backend เพื่อโหลด JOSE สำหรับตรวจลายเซ็น token ฝั่งเซิร์ฟเวอร์
 
 เครื่องมือพัฒนาใช้ `npm ci` แล้วตรวจด้วย `npm test`, `npm run format:check` และ `npm run build` ใช้ `npm run format` จัดรูปแบบด้วย Prettier รุ่นที่ล็อกไว้ ไม่มีการเรียก AI หรือแตะข้อมูลจริงใน automated tests
 
 รายงานตรวจฟังก์ชันล่าสุดอยู่ใน [FUNCTIONAL_AUDIT.md](FUNCTIONAL_AUDIT.md) การตรวจหน้าจอแบบข้อมูลจำลองใช้ `python tests/browser_audit.py` และ `python tests/pwa_browser_audit.py` หลัง build ต้องมี Python Playwright และ Brave; สคริปต์ใช้บริบทเบราว์เซอร์ใหม่ ไม่เปิดโปรไฟล์ส่วนตัว
+
+การตรวจและป้องกันด้านความปลอดภัยล่าสุดอยู่ใน [SECURITY_REVIEW.md](SECURITY_REVIEW.md) ครอบคลุม Rules ที่ใช้งานจริง การจำกัดบริการของ Firebase key และการตรวจลายเซ็น token ก่อนเข้าถึงข้อมูล
 
 ## ลองได้ในดราฟนี้
 

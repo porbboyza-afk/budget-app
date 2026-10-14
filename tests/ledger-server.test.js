@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { handleLedger } from '../server/ledger.js';
+import { firebaseToken, JWKS_URL, publicJWKS } from '../test-fixtures/firebase-auth.js';
 
 // Synthetic D1 statements implement the server's owner-scoped atomic CAS contract.
 // This verifies handler behavior; it does not exercise Cloudflare's actual database.
@@ -70,20 +71,12 @@ async function fixture(run) {
   const project = 'synthetic-ledger-project';
   const db = mockLedgerDB();
   const token = (owner, changes = {}) =>
-    'header.' +
-    Buffer.from(
-      JSON.stringify({
-        aud: project,
-        iss: 'https://securetoken.google.com/' + project,
-        sub: owner,
-        ...changes,
-      }),
-    ).toString('base64url') +
-    '.synthetic-signature';
+    firebaseToken(project, owner, { email: owner + '@example.invalid', ...changes });
   let authStatus = 200,
     verified = true,
     lookupCalls = 0;
   globalThis.fetch = async (url, options) => {
+    if (String(url) === JWKS_URL) return Response.json(publicJWKS);
     assert.match(String(url), /^https:\/\/identitytoolkit\.googleapis\.com\/v1\/accounts:lookup\?/);
     lookupCalls++;
     if (authStatus !== 200) return Response.json({ error: 'synthetic' }, { status: authStatus });
@@ -171,7 +164,7 @@ test('Ledger server authorization, owner isolation and revision CAS', async (t) 
               env,
             )
           ).status,
-          403,
+          401,
         );
         assert.equal((await handleLedger(request(), { BUDGET_AI_DB: db })).status, 503);
         const before = lookupCalls();

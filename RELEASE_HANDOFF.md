@@ -1,5 +1,11 @@
 # Budget replacement handoff — 2026-10-10
 
+## Preventative security hardening — 2026-10-14
+
+At the user's explicit request, inspected live Firebase configuration via the existing CLI OAuth login and bounded REST calls after the CLI stalled. Matched the project/key before reducing the actual Firebase API key from 27 API targets to Authentication's Identity Toolkit and Secure Token only, using etag and an ignored local rollback backup. Live key metadata reread confirmed the restriction; invalid credential probes confirmed both auth services work, and an unauthenticated synthetic Firestore read was denied. Deployed Firestore Rules already require matching UID paths; 13 simulator cases passed without accessing financial records, so no Rules deployment was needed. Google provider/domain configuration was checked.
+
+Added server-only JOSE 6.2.12 signature verification against fixed Google JWKS before account lookup, verified-email prefilter, disabled/revoked-account checks, cached keys and cold-fetch/failure guards. Full suite: 66 synthetic TAP tests passed; separate final reviewer found no blocking flaw. Dependency advisory check: zero known production dependency vulnerabilities. No data/schema migration or paid AI call. Current-owner interactive browser login was not verified in this review. See `SECURITY_REVIEW.md` for precise evidence, maintenance and limits. Source rollback: `backup/jodngern-before-security-hardening-20261014`; cloud key restrictions have a separate local rollback backup.
+
 ## Functional audit before everyday use — 2026-10-12
 
 User requested another full code/usage audit and fixes before real use. Independent reviewers checked ledger/UI, cloud/PWA and AI/auth/backend. Fixed stale account summaries, storage-deletion resurrection and empty uploads after reload with retained sync metadata, invalid-schema repair snapshots, AI batch undo property-order comparison, whole-request token/network deadlines, paused/stale sync responses, false identical-data conflicts, backward remote revisions, damaged-data cloud recovery, partial AI quota consumption and invalid ledger payload shapes. Schema 2 and owner keys unchanged; no migration. Source backup: `backup/jodngern-before-functional-audit-20261012`.

@@ -1,4 +1,5 @@
 import { parseMoney, validDate } from '../model.js';
+import { TokenKeyServiceError, verifyFirebaseToken } from './auth-token.js';
 export const MAX_BODY = 7 * 1024 * 1024;
 export function json(data, status = 200) {
   return Response.json(data, {
@@ -72,6 +73,24 @@ export async function authenticate(request, env) {
     .get('authorization')
     ?.match(/^Bearer ([A-Za-z0-9_.-]{100,10000})$/)?.[1];
   if (!token) throw new Failure('กรุณาเข้าสู่ระบบ Google ก่อนใช้ AI', 401);
+  let claims;
+  try {
+    claims = await verifyFirebaseToken(token, env.FIREBASE_PROJECT_ID);
+  } catch (error) {
+    // Reject forged/expired credentials before spending Firebase Auth API quota.
+    if (error instanceof TokenKeyServiceError)
+      throw new Failure('ระบบตรวจสอบบัญชีไม่พร้อม กรุณาลองใหม่ภายหลัง', 503);
+    throw new Failure('การเข้าสู่ระบบไม่ถูกต้องหรือหมดอายุ กรุณาเข้าสู่ระบบใหม่', 401);
+  }
+  const allowed = env.BUDGET_ALLOWED_EMAILS.split(',')
+    .map((x) => x.trim().toLowerCase())
+    .filter(Boolean);
+  if (
+    claims.email_verified !== true ||
+    typeof claims.email !== 'string' ||
+    !allowed.includes(claims.email.toLowerCase())
+  )
+    throw new Failure('บัญชีนี้ยังไม่ได้รับอนุญาตให้ใช้ AI', 403);
   const response = await fetch(
     `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${encodeURIComponent(env.FIREBASE_WEB_API_KEY)}`,
     {
@@ -83,21 +102,20 @@ export async function authenticate(request, env) {
   );
   if (!response.ok) throw new Failure('การเข้าสู่ระบบหมดอายุ กรุณาเข้าสู่ระบบใหม่', 401);
   const user = (await response.json()).users?.[0];
-  let claims;
-  try {
-    claims = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-  } catch {
-    throw new Failure('บัญชีไม่ถูกต้อง', 401);
-  }
-  const allowed = env.BUDGET_ALLOWED_EMAILS.split(',')
-    .map((x) => x.trim().toLowerCase())
-    .filter(Boolean);
+  const validSince = user?.validSince === undefined ? 0 : Number(user.validSince);
+  if (
+    user?.disabled === true ||
+    !Number.isSafeInteger(validSince) ||
+    validSince < 0 ||
+    claims.auth_time < validSince
+  )
+    throw new Failure('การเข้าสู่ระบบหมดอายุ กรุณาเข้าสู่ระบบใหม่', 401);
   if (
     !user ||
     claims.aud !== env.FIREBASE_PROJECT_ID ||
     claims.iss !== `https://securetoken.google.com/${env.FIREBASE_PROJECT_ID}` ||
     claims.sub !== user.localId ||
-    !user.emailVerified ||
+    user.emailVerified !== true ||
     !allowed.includes(user.email?.toLowerCase())
   )
     throw new Failure('บัญชีนี้ยังไม่ได้รับอนุญาตให้ใช้ AI', 403);
