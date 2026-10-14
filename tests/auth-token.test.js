@@ -154,6 +154,17 @@ test('Firebase JWT signature gate uses synthetic RSA and mock HTTP only', async 
         assert.equal(keyCalls, 1);
       },
     );
+    await t.test('native bearer request keeps signature and current-account checks', async () => {
+      const req = request(firebaseToken(project, owner));
+      req.headers.delete('origin');
+      assert.equal(await authenticate(req, env), owner);
+      const db = { prepare: () => ({ bind: () => ({ first: async () => null }) }) };
+      assert.equal((await handleLedger(req, { ...env, BUDGET_AI_DB: db })).status, 200);
+      const aiRequest = request(firebaseToken(project, owner), 'POST', 'ai');
+      aiRequest.headers.delete('origin');
+      // Authenticated, rejected by missing provider configuration before any quota/provider call.
+      assert.equal((await handleAI(aiRequest, env)).status, 503);
+    });
     await t.test('AI and ledger reject forgery before D1 and provider access', async () => {
       const before = lookupCalls;
       const token = firebaseToken(project, owner, {}, { alg: 'none' });

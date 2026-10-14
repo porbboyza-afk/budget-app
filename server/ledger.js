@@ -55,7 +55,11 @@ async function body(request) {
 export async function handleLedger(request, env, { local = false } = {}) {
   try {
     if (!['GET', 'PUT'].includes(request.method)) throw new Failure('ไม่รองรับวิธีเรียกนี้', 405);
-    if (request.method === 'PUT' && request.headers.get('origin') !== new URL(request.url).origin)
+    if (
+      request.method === 'PUT' &&
+      request.headers.has('origin') &&
+      request.headers.get('origin') !== new URL(request.url).origin
+    )
       throw new Failure('ไม่อนุญาตคำขอจากเว็บอื่น', 403);
     const owner = local ? 'local-owner' : await authenticate(request, env);
     const adapter = local ? env.LOCAL_LEDGER : null;

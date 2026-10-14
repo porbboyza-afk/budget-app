@@ -237,7 +237,11 @@ function extractResult(data) {
 export async function handleAI(request, env, { local = false } = {}) {
   try {
     if (request.method !== 'POST') throw new Failure('ไม่รองรับวิธีเรียกนี้', 405);
-    if (request.headers.get('origin') !== new URL(request.url).origin)
+    // Native clients carry a Firebase bearer token and do not send a browser Origin.
+    if (
+      request.headers.has('origin') &&
+      request.headers.get('origin') !== new URL(request.url).origin
+    )
       throw new Failure('ไม่อนุญาตคำขอจากเว็บอื่น', 403);
     const user = local ? 'local-owner' : await authenticate(request, env);
     if (!env.DEEPSEEK_API_KEY) throw new Failure('ยังไม่ได้ตั้ง API key ฝั่งเซิร์ฟเวอร์', 503);
